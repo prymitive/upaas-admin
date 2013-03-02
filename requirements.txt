@@ -1,6 +1,8 @@
-django<1.5
+django>=1.4.5,<1.5
 mongoengine>=0.7.9
 hamlpy>=0.82.2
 django-tastypie
 django-tastypie-mongoengine
 django-crispy-forms
+django-pipeline
+django-bootstrap-breadcrumbs>=0.3

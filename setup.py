@@ -18,5 +18,5 @@ setup(
     url='',
     packages=find_packages(),
     package_data={'upaas_admin': ['static/*.*', 'templates/*.*']},
-    scripts=['manage.py'],
+    scripts=['upaas_admin/manage.py'],
 )

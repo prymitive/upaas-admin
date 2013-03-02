@@ -37,38 +37,25 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
-    'django.contrib.admindocs',
+    'pipeline',
+    'django_bootstrap_breadcrumbs',
 )
+
 
 #==============================================================================
 # Calculation of directories relative to the project module location
 #==============================================================================
 
 import os
-import sys
 import upaas_admin as project_module
 
 PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
 
-PYTHON_BIN = os.path.dirname(sys.executable)
-ve_path = os.path.dirname(os.path.dirname(os.path.dirname(PROJECT_DIR)))
-# Assume that the presence of 'activate_this.py' in the python bin/
-# directory means that we're running in a virtual environment.
-if os.path.exists(os.path.join(PYTHON_BIN, 'activate_this.py')):
-    # We're running with a virtualenv python executable.
-    VAR_ROOT = os.path.join(os.path.dirname(PYTHON_BIN), 'var')
-elif ve_path and os.path.exists(os.path.join(ve_path, 'bin',
-        'activate_this.py')):
-    # We're running in [virtualenv_root]/src/[project_name].
-    VAR_ROOT = os.path.join(ve_path, 'var')
-else:
-    # Set the variable root to a path in the project which is
-    # ignored by the repository.
-    VAR_ROOT = os.path.join(PROJECT_DIR, 'var')
+VAR_ROOT = os.path.join(PROJECT_DIR, 'var')
 
 if not os.path.exists(VAR_ROOT):
     os.mkdir(VAR_ROOT)
+
 
 #==============================================================================
 # Project URLS and media settings
@@ -90,6 +77,7 @@ STATICFILES_DIRS = (
     os.path.join(PROJECT_DIR, 'static'),
 )
 
+
 #==============================================================================
 # Templates
 #==============================================================================
@@ -99,7 +87,17 @@ TEMPLATE_DIRS = (
 )
 
 TEMPLATE_CONTEXT_PROCESSORS += (
+    'django.core.context_processors.request',
 )
+
+#TODO cached loader?
+TEMPLATE_LOADERS = (
+    'hamlpy.template.loaders.HamlPyFilesystemLoader',
+    'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+)
+
 
 #==============================================================================
 # Middleware
@@ -108,6 +106,7 @@ TEMPLATE_CONTEXT_PROCESSORS += (
 MIDDLEWARE_CLASSES += (
 )
 
+
 #==============================================================================
 # Auth / security
 #==============================================================================
@@ -115,16 +114,53 @@ MIDDLEWARE_CLASSES += (
 AUTHENTICATION_BACKENDS += (
 )
 
+
 #==============================================================================
 # MongoEngine
 #==============================================================================
 
 from mongoengine import connect
 
-connect("upaas")
+#connect("upaas")
 
 AUTHENTICATION_BACKENDS = (
     'mongoengine.django.auth.MongoEngineBackend',
 )
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
+
+
+#==============================================================================
+# django-pipeline
+#==============================================================================
+
+STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
+
+PIPELINE_CSS = {
+    'base': {
+        'source_filenames': (
+            'bootstrap/css/bootstrap.css',
+        ),
+        'output_filename': 'css/bootstrap.css',
+    }
+}
+
+PIPELINE_JS = {
+    'base': {
+        'source_filenames': (
+            'jquery/jquery-1.9.1.js',
+            'bootstrap/js/bootstrap.js',
+        ),
+        'output_filename': 'js/base.js',
+        }
+}
+
+
+PIPELINE_JS = {
+    'html5shiv': {
+        'source_filenames': (
+            'bootstrap/js/html5shiv.js',
+        ),
+        'output_filename': 'js/html5shiv.js',
+        }
+}
