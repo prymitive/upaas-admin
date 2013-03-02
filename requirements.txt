@@ -1,4 +1,6 @@
-django>=1.5,<1.6
-mongoengine>=0.7.9,<0.8
+django<1.5
+mongoengine>=0.7.9
 hamlpy>=0.82.2
-
+django-tastypie
+django-tastypie-mongoengine
+django-crispy-forms
