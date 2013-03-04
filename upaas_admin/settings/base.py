@@ -39,6 +39,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'pipeline',
     'django_bootstrap_breadcrumbs',
+    'tastypie',
+    'tastypie_mongoengine',
 )
 
 
@@ -121,13 +123,15 @@ AUTHENTICATION_BACKENDS += (
 
 from mongoengine import connect
 
-#connect("upaas")
+MONGODB_DATABASE = 'upaas'
 
 AUTHENTICATION_BACKENDS = (
     'mongoengine.django.auth.MongoEngineBackend',
 )
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
+
+connect(MONGODB_DATABASE)
 
 
 #==============================================================================
