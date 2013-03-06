@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'django_bootstrap_breadcrumbs',
     'tastypie',
     'tastypie_mongoengine',
+    'upaas_admin.apps.users',
 )
 
 
