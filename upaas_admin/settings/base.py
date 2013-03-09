@@ -12,8 +12,8 @@ from django.conf.global_settings import *   # pylint: disable=W0614,W0401
 # Generic Django project settings
 #==============================================================================
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
+DEBUG = False
+TEMPLATE_DEBUG = False
 
 SITE_ID = 1
 # Local time zone for this installation. Choices can be found here:
@@ -168,4 +168,46 @@ PIPELINE_JS = {
         ),
         'output_filename': 'js/html5shiv.js',
         }
+}
+
+
+#==============================================================================
+# logging
+#==============================================================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+        },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+            },
+        'console':{
+            'level':'INFO',
+            'class':'logging.StreamHandler',
+            'formatter': 'standard'
+        },
+        },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django': {
+            'handlers':['console'],
+            'level': 'DEBUG',
+        },
+        'upaas_admin': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
 }

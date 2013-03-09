@@ -9,10 +9,13 @@ from django.conf.urls import patterns, include
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import TemplateView
 
-from django.contrib import admin
+from tastypie.api import Api
+
+from upaas_admin.apps.applications.api import ApplicationResource
 
 
-admin.autodiscover()
+v1_api = Api(api_name='v1')
+v1_api.register(ApplicationResource())
 
 
 urlpatterns = patterns(
@@ -22,7 +25,10 @@ urlpatterns = patterns(
      {'template_name': 'login.haml'}),
     (r'^logout$', 'django.contrib.auth.views.logout_then_login'),
 
+    (r'^api/', include(v1_api.urls)),
+
     (r'^', include('upaas_admin.apps.users.urls')),
+
 )
 
 

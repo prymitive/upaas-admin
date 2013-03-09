@@ -23,12 +23,23 @@ class User(MongoUser):
 
     @classmethod
     def generate_apikey(cls):
-        return hmac.new(str(uuid.uuid4()), digestmod=hashlib.sha1).hexdigest()
+        apikey = None
+        while apikey is None or User.objects.get(apikey=apikey):
+            apikey = hmac.new(
+                str(uuid.uuid4()), digestmod=hashlib.sha1).hexdigest()
+        return apikey
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.apikey:
             document.apikey = User.generate_apikey()
+
+    meta = {
+        'allow_inheritance': True,
+        'indexes': [
+            {'fields': ['username', 'apikey'], 'unique': True}
+        ]
+    }
 
 
 signals.pre_save.connect(User.pre_save, sender=User)
