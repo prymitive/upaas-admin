@@ -34,10 +34,10 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'pipeline',
+    'crispy_forms',
     'django_bootstrap_breadcrumbs',
     'tastypie',
     'tastypie_mongoengine',
@@ -114,9 +114,11 @@ MIDDLEWARE_CLASSES += (
 # Auth / security
 #==============================================================================
 
-AUTHENTICATION_BACKENDS += (
-)
-
+#AUTHENTICATION_BACKENDS += (
+#)
+LOGIN_URL = '/login'
+LOGOUT_URL = '/logout'
+LOGIN_REDIRECT_URL = '/'
 
 #==============================================================================
 # MongoEngine
@@ -126,9 +128,7 @@ from mongoengine import connect
 
 MONGODB_DATABASE = 'upaas'
 
-AUTHENTICATION_BACKENDS = (
-    'mongoengine.django.auth.MongoEngineBackend',
-)
+AUTHENTICATION_BACKENDS = ('mongoengine.django.auth.MongoEngineBackend',)
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
 

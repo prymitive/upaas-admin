@@ -6,10 +6,11 @@
 
 
 from django.conf.urls import patterns
-from django.views.generic import TemplateView
+
+from upaas_admin.apps.users.views import *
 
 
 urlpatterns = patterns(
     'upaas_admin.apps.users.views',
-    (r'^profile/my$', TemplateView.as_view()),
+    (r'^profile/my$', UserProfileView.as_view()),
 )

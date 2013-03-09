@@ -1,0 +1,10 @@
+- extends 'base.haml'
+
+
+- load i18n
+
+
+- block content
+  %h1
+    - trans "Welcome"
+    = object.username

@@ -9,12 +9,15 @@ import hmac
 import uuid
 import hashlib
 
+from mongoengine.queryset import QuerySetManager
 from mongoengine.django.auth import User as MongoUser
 from mongoengine.fields import StringField
 from mongoengine import signals
 
 
 class User(MongoUser):
+
+    _default_manager = QuerySetManager()
 
     apikey = StringField(required=True)
 
