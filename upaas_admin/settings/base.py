@@ -201,13 +201,5 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
-        'django': {
-            'handlers':['console'],
-            'level': 'DEBUG',
-        },
-        'upaas_admin': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
     },
 }

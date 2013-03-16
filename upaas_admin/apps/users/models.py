@@ -24,7 +24,7 @@ class User(MongoUser):
     @classmethod
     def generate_apikey(cls):
         apikey = None
-        while apikey is None or User.objects.get(apikey=apikey):
+        while apikey is None or User.objects(apikey=apikey):
             apikey = hmac.new(
                 str(uuid.uuid4()), digestmod=hashlib.sha1).hexdigest()
         return apikey
