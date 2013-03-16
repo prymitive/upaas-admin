@@ -24,7 +24,8 @@ class Command(BaseCommand):
                     help='New user first name'),
         make_option('--lastname', dest='lastname', help='New user last name'),
         make_option('--email', dest='email', help='New user email address'),
-        make_option('--admin', action='store_true', dest='admin', default=False,
+        make_option('--admin', action='store_true', dest='admin',
+                    default=False,
                     help='Give administrator privileges to new user'))
 
     def handle(self, *args, **options):
