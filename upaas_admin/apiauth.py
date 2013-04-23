@@ -24,7 +24,6 @@ class UpaasApiKeyAuthentication(Authentication):
             return True
         return False
 
-    # Optional but recommended
     def get_identifier(self, request):
         user = self.get_user(request)
         if user:

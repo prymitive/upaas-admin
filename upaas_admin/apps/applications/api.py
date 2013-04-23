@@ -39,13 +39,14 @@ class ApplicationResource(MongoEngineResource):
     def obj_create(self, bundle, request=None, **kwargs):
         log.debug(u"Going to create new application for user "
                   u"'%s'" % bundle.request.user.username)
-        if Application.objects(owner=request.user, name=bundle.data['name']):
+        if Application.objects(owner=bundle.request.user,
+                               name=bundle.data['name']):
             log.warning(u"Can't create new application, duplicated name '%s' "
                         u"for user '%s'" % (bundle.data['name'],
                                             bundle.request.user.username))
             raise exceptions.ValidationError(
                 u"User '%s' already created application with name '%s'" % (
-                    request.user.username, bundle.data['name']))
+                    bundle.request.user.username, bundle.data['name']))
         try:
             ret = super(MongoEngineResource, self).obj_create(
                 bundle, request=request, **kwargs)
