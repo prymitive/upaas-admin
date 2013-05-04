@@ -12,6 +12,12 @@ from django.conf.global_settings import *   # pylint: disable=W0614,W0401
 # Generic Django project settings
 #==============================================================================
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.dummy'
+    }
+}
+
 DEBUG = False
 TEMPLATE_DEBUG = False
 
@@ -41,6 +47,7 @@ INSTALLED_APPS = (
     'django_bootstrap_breadcrumbs',
     'tastypie',
     'tastypie_mongoengine',
+    #'mongoengine.django.mongo_auth',
     'upaas_admin.apps.users',
 )
 
@@ -114,8 +121,8 @@ MIDDLEWARE_CLASSES += (
 # Auth / security
 #==============================================================================
 
-#AUTHENTICATION_BACKENDS += (
-#)
+#AUTH_USER_MODEL = 'mongo_auth.MongoUser'
+
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
 LOGIN_REDIRECT_URL = '/'
