@@ -19,3 +19,9 @@ class Application(Document):
     owner = ListField(ReferenceField('User', reverse_delete_rule=DENY,
                                      dbref=False))
     metadata = StringField(help_text=_('Application metadata'))
+
+    meta = {
+        'indexes': [
+            {'fields': ['date_created', 'name', 'owner']}
+        ]
+    }
