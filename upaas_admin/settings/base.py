@@ -5,6 +5,9 @@
 """
 
 
+import os
+import sys
+
 from django.conf.global_settings import *   # pylint: disable=W0614,W0401
 
 
@@ -131,15 +134,38 @@ LOGIN_REDIRECT_URL = '/'
 # MongoEngine
 #==============================================================================
 
-from mongoengine import connect
-
-MONGODB_DATABASE = 'upaas'
-
 AUTHENTICATION_BACKENDS = ('mongoengine.django.auth.MongoEngineBackend',)
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
 
-connect(MONGODB_DATABASE)
+upaas_config = None
+
+from upaas.config.main import UPaaSConfig
+from upaas.config.base import ConfigurationError
+
+for path in ['upaas.yml', '/etc/upaas/upaas.yml', '/etc/upaas.yml']:
+    if os.path.isfile(path):
+        try:
+            upaas_config = UPaaSConfig.from_file(path)
+        except ConfigurationError:
+            print("Invalid config file at %s" % path)
+            sys.exit(1)
+        else:
+            break
+
+if not upaas_config:
+    print("No config file found")
+    sys.exit(1)
+
+from mongoengine import connect
+mongo_opts = dict(host=upaas_config.mongodb.host,
+                  port=upaas_config.mongodb.port)
+if upaas_config.mongodb.get('username'):
+    mongo_opts['username'] = upaas_config.mongodb.username
+    if upaas_config.mongodb.get('password'):
+        mongo_opts['password'] = upaas_config.mongodb.password
+
+connect(upaas_config.mongodb.database, **mongo_opts)
 
 
 #==============================================================================
@@ -181,7 +207,6 @@ PIPELINE_JS = {
 #==============================================================================
 # logging
 #==============================================================================
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -191,23 +216,24 @@ LOGGING = {
                       "%(message)s",
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
-        },
+    },
     'handlers': {
-        'null': {
-            'level': 'DEBUG',
-            'class': 'django.utils.log.NullHandler',
-            },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard'
+            'formatter': 'standard',
         },
-        },
+    },
     'loggers': {
         '': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
