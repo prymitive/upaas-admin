@@ -7,8 +7,15 @@
 
 import os
 import sys
+import logging
+
+from upaas.config.main import load_main_config
 
 from django.conf.global_settings import *   # pylint: disable=W0614,W0401
+
+
+# basic logger needed to print startup errors
+logging.basicConfig()
 
 
 #==============================================================================
@@ -138,23 +145,9 @@ AUTHENTICATION_BACKENDS = ('mongoengine.django.auth.MongoEngineBackend',)
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
 
-upaas_config = None
-
-from upaas.config.main import UPaaSConfig
-from upaas.config.base import ConfigurationError
-
-for path in ['upaas.yml', '/etc/upaas/upaas.yml', '/etc/upaas.yml']:
-    if os.path.isfile(path):
-        try:
-            upaas_config = UPaaSConfig.from_file(path)
-        except ConfigurationError:
-            print("Invalid config file at %s" % path)
-            sys.exit(1)
-        else:
-            break
+upaas_config = load_main_config()
 
 if not upaas_config:
-    print("No config file found")
     sys.exit(1)
 
 from mongoengine import connect
