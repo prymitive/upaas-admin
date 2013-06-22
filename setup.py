@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='upaas_admin',
+    name='upaas-admin',
     version='0.1',
     description="",
     author="Łukasz Mierzwa",
