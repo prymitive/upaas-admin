@@ -10,7 +10,7 @@ import logging
 import mongoengine
 
 from django.core import exceptions
-from django.http import HttpResponseNotFound
+from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.conf.urls import url
 
 from tastypie_mongoengine.resources import MongoEngineResource
@@ -76,16 +76,22 @@ class ApplicationResource(MongoEngineResource):
     def prepend_urls(self):
         """ Add the following array of urls to the GameResource base urls """
         return [
-            url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/build%s$" %
+            url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/build%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('build_package'), name="build"),
         ]
 
     def build_package(self, request, force_fresh=False, **kwargs):
         self.method_check(request, allowed=['put'])
-        app = Application.objects(request.bundle['name'])
+        app = Application.objects(
+            **self.remove_api_resource_names(kwargs)).first()
         if app:
-            return self.create_response(
-                request, app.build_package(force_fresh=force_fresh))
+            if app.metadata:
+                return self.create_response(
+                    request, app.build_package(force_fresh=force_fresh))
+            else:
+                return HttpResponseBadRequest(
+                    "No metadata registered for app '%s' with id '%s'" % (
+                        app.name, app.id))
         else:
-            raise HttpResponseNotFound
+            return HttpResponseNotFound("No such application")

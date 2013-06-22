@@ -6,12 +6,16 @@
 
 
 import datetime
+import logging
 
 from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
 
 from upaas_tasks.build import build_package as build_package_task
+
+
+log = logging.getLogger(__name__)
 
 
 class Application(Document):
@@ -30,4 +34,6 @@ class Application(Document):
 
     def build_package(self, force_fresh=False):
         task = build_package_task.delay(self.metadata, force_fresh=force_fresh)
+        log.info("Build task for app '%s' queued with id '%s'" % (self.name,
+                                                                  task.task_id))
         return task.task_id
