@@ -11,6 +11,8 @@ from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
 
+from upaas_tasks.build import build_package as build_package_task
+
 
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -25,3 +27,7 @@ class Application(Document):
             {'fields': ['date_created', 'name', 'owner']}
         ]
     }
+
+    def build_package(self, force_fresh=False):
+        task = build_package_task.delay(self.metadata, force_fresh=force_fresh)
+        return task.task_id

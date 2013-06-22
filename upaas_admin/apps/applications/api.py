@@ -10,11 +10,14 @@ import logging
 import mongoengine
 
 from django.core import exceptions
+from django.http import HttpResponseNotFound
+from django.conf.urls import url
 
 from tastypie_mongoengine.resources import MongoEngineResource
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
+from tastypie.utils import trailing_slash
 
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apiauth import UpaasApiKeyAuthentication
@@ -69,3 +72,20 @@ class ApplicationResource(MongoEngineResource):
         log.debug(u"Limiting query to user owned apps "
                   u"(length: %d)" % len(object_list))
         return object_list.filter(owner=request.user)
+
+    def prepend_urls(self):
+        """ Add the following array of urls to the GameResource base urls """
+        return [
+            url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/build%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('build_package'), name="build"),
+        ]
+
+    def build_package(self, request, force_fresh=False, **kwargs):
+        self.method_check(request, allowed=['put'])
+        app = Application.objects(request.bundle['name'])
+        if app:
+            return self.create_response(
+                request, app.build_package(force_fresh=force_fresh))
+        else:
+            raise HttpResponseNotFound

@@ -8,3 +8,4 @@ django-crispy-forms
 django-pipeline
 django-bootstrap-breadcrumbs>=0.3
 mongoqueue==0.6.0
+upaas-tasks

@@ -11,7 +11,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='upaas-admin',
-    version='0.1',
+    version='0.1-dev',
+    license='GPLv3',
     description="",
     author="Łukasz Mierzwa",
     author_email='l.mierzwa@gmail.com',

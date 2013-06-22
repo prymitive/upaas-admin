@@ -228,5 +228,15 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False,
         },
+        'tastypie': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'tastypie_mongoengine': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
     },
 }
