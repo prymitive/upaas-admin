@@ -33,7 +33,9 @@ class Application(Document):
     }
 
     def build_package(self, force_fresh=False):
-        task = build_package_task.delay(self.metadata, force_fresh=force_fresh)
+        task = build_package_task.apply_async((self.metadata,),
+                                              {'force_fresh': force_fresh},
+                                              queue='builder')
         log.info("Build task for app '%s' queued with id '%s'" % (self.name,
                                                                   task.task_id))
         return task.task_id
