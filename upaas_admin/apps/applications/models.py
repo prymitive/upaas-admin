@@ -36,6 +36,6 @@ class Application(Document):
         task = build_package_task.apply_async((self.metadata,),
                                               {'force_fresh': force_fresh},
                                               queue='builder')
-        log.info("Build task for app '%s' queued with id '%s'" % (self.name,
-                                                                  task.task_id))
+        log.info("Build task for app '%s' queued with id '%s'" % (
+            self.name, task.task_id))
         return task.task_id

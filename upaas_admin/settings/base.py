@@ -182,7 +182,7 @@ PIPELINE_JS = {
             'bootstrap/js/bootstrap.js',
         ),
         'output_filename': 'js/base.js',
-        }
+    }
 }
 
 
@@ -192,7 +192,7 @@ PIPELINE_JS = {
             'bootstrap/js/html5shiv.js',
         ),
         'output_filename': 'js/html5shiv.js',
-        }
+    }
 }
 
 
