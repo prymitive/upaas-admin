@@ -66,7 +66,6 @@ INSTALLED_APPS = (
 # Calculation of directories relative to the project module location
 #==============================================================================
 
-import os
 import upaas_admin as project_module
 
 PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
