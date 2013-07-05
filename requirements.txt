@@ -1,3 +1,7 @@
+pytest
+pytest-cov
+pytest-pep8
+pytest-capturelog
 django>=1.5,<1.6
 mongoengine<0.7.999
 blinker
@@ -6,6 +10,5 @@ django-tastypie==0.9.15
 django-tastypie-mongoengine
 django-crispy-forms
 django-pipeline
-django-bootstrap-breadcrumbs>=0.3
-mongoqueue==0.6.0
+django-bootstrap-breadcrumbs>=0.5.1
 upaas-tasks
