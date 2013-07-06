@@ -19,7 +19,7 @@ from tastypie.resources import ALL
 from tastypie.authorization import Authorization
 from tastypie.utils import trailing_slash
 
-from upaas_admin.apps.applications.models import Application
+from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apiauth import UpaasApiKeyAuthentication
 
 
@@ -74,24 +74,52 @@ class ApplicationResource(MongoEngineResource):
         return object_list.filter(owner=request.user)
 
     def prepend_urls(self):
-        """ Add the following array of urls to the GameResource base urls """
         return [
             url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/build%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('build_package'), name="build"),
+            url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/build_fresh%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('build_fresh_package'), name="build_fresh"),
         ]
 
-    def build_package(self, request, force_fresh=False, **kwargs):
+    def build_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
                 return self.create_response(
-                    request, app.build_package(force_fresh=force_fresh))
+                    request, app.build_package())
             else:
                 return HttpResponseBadRequest(
                     "No metadata registered for app '%s' with id '%s'" % (
                         app.name, app.id))
         else:
             return HttpResponseNotFound("No such application")
+
+    def build_fresh_package(self, request, **kwargs):
+        self.method_check(request, allowed=['put'])
+        app = Application.objects(
+            **self.remove_api_resource_names(kwargs)).first()
+        if app:
+            if app.metadata:
+                return self.create_response(
+                    request, app.build_package(force_fresh=True))
+            else:
+                return HttpResponseBadRequest(
+                    "No metadata registered for app '%s' with id '%s'" % (
+                        app.name, app.id))
+        else:
+            return HttpResponseNotFound("No such application")
+
+class PackageResource(MongoEngineResource):
+
+    class Meta:
+        queryset = Package.objects.all()
+        resource_name = 'package'
+        filtering = {
+            'id': ALL,
+        }
+        authentication = UpaasApiKeyAuthentication()
+        authorization = Authorization()
