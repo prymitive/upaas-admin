@@ -35,6 +35,7 @@ class ApplicationResource(MongoEngineResource):
         filtering = {
             'id': ALL,
             'name': ALL,
+            'owner': ALL,
         }
         authentication = UpaasApiKeyAuthentication()
         authorization = Authorization()
@@ -52,7 +53,7 @@ class ApplicationResource(MongoEngineResource):
                     bundle.request.user.username, bundle.data['name']))
         try:
             ret = super(MongoEngineResource, self).obj_create(
-                bundle, request=request, **kwargs)
+                bundle, request=request, owner=bundle.request.user, **kwargs)
         except mongoengine.ValidationError, e:
             log.warning(u"Can't create new application, invalid data payload: "
                         "%s" % e.message)
@@ -62,7 +63,6 @@ class ApplicationResource(MongoEngineResource):
                         "%s" % e.message)
             raise exceptions.ValidationError(e.message)
         else:
-            ret.obj.owner = [bundle.request.user]
             ret.obj.save()
             log.info(u"User %s created new application '%s' with id %s" % (
                 bundle.request.user.username, bundle.obj.name, bundle.obj.id))

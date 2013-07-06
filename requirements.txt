@@ -12,3 +12,5 @@ django-crispy-forms
 django-pipeline
 django-bootstrap-breadcrumbs>=0.5.1
 upaas-tasks
+celery-with-mongodb>=3.0,<4.0
+django-celery>=3.0,<4.0

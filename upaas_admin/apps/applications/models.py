@@ -12,20 +12,36 @@ from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_tasks.build import build_package as build_package_task
+from upaas_admin.apps.applications.tasks import build_package as \
+    build_package_task
 
 
 log = logging.getLogger(__name__)
 
 
+class Package(Document):
+    date_created = DateTimeField(required=True, default=datetime.datetime.now)
+    metadata = StringField(help_text=_('Application metadata'))
+
+    bytes = LongField(required=True)
+    checksum = StringField(required=True)
+
+    distro_name = StringField(required=True)
+    distro_version = StringField(required=True)
+    distro_arch = StringField(required=True)
+
+
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
-    name = StringField(required=True, max_length=100, verbose_name=_('name'),
-                       help_text=_('Application name'))
-    owner = ReferenceField('User', reverse_delete_rule=DENY, dbref=False)
+    name = StringField(required=True, max_length=100, unique_with='owner',
+                       verbose_name=_('name'), help_text=_('Application name'))
+    owner = ReferenceField('User', reverse_delete_rule=DENY, dbref=False,
+                           required=True)
     metadata = StringField(help_text=_('Application metadata'))
-    package = ReferenceField('Package', reverse_delete_rule=CASCADE,
-                             dbref=False)
+    current_package = ReferenceField(Package, reverse_delete_rule=CASCADE,
+                                     dbref=False)
+    packages = ListField(
+        ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
 
     meta = {
         'indexes': [

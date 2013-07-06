@@ -58,7 +58,9 @@ INSTALLED_APPS = (
     'tastypie',
     'tastypie_mongoengine',
     #'mongoengine.django.mongo_auth',
+    'djcelery',
     'upaas_admin.apps.users',
+    'upaas_admin.apps.applications',
 )
 
 
@@ -159,6 +161,42 @@ if upaas_config.mongodb.get('username'):
 
 connect(upaas_config.mongodb.database, **mongo_opts)
 
+#==============================================================================
+# celery
+#==============================================================================
+
+import djcelery
+djcelery.setup_loader()
+
+mongouri = "mongodb://"
+
+if upaas_config.mongodb.get('username'):
+    mongouri += upaas_config.mongodb.username
+    if upaas_config.mongodb.get('password'):
+        mongouri += ':' + upaas_config.mongodb.password
+    mongouri += "@"
+
+mongouri += "%s:%s/%s" % (upaas_config.mongodb.host,
+                          upaas_config.mongodb.port,
+                          upaas_config.mongodb.database)
+
+BROKER_URL = mongouri
+
+CELERY_MONGODB_BACKEND_SETTINGS = {
+    "host": upaas_config.mongodb.host,
+    "port": upaas_config.mongodb.port,
+    "database": upaas_config.mongodb.database,
+}
+
+if upaas_config.mongodb.get('username'):
+    CELERY_MONGODB_BACKEND_SETTINGS['user'] = upaas_config.mongodb.username
+    if upaas_config.mongodb.get('password'):
+        CELERY_MONGODB_BACKEND_SETTINGS['password'] = upaas_config.\
+            mongodb.password
+
+CELERY_RESULT_BACKEND = "mongodb"
+CELERY_MONGODB_BACKEND_SETTINGS = CELERY_MONGODB_BACKEND_SETTINGS
+CELERY_TRACK_STARTED = True
 
 #==============================================================================
 # django-pipeline
@@ -211,7 +249,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
         },
