@@ -113,6 +113,7 @@ class ApplicationResource(MongoEngineResource):
         else:
             return HttpResponseNotFound("No such application")
 
+
 class PackageResource(MongoEngineResource):
 
     class Meta:
