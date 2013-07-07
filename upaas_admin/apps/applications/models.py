@@ -63,3 +63,12 @@ class Application(Document):
         log.info("Build task for app '%s' queued with id '%s'" % (
             self.name, task.task_id))
         return task.task_id
+
+    def start_application(self):
+        if self.current_package:
+            task = send_task(
+                'upaas_admin.apps.applications.tasks.start_application',
+                (self.metadata, self.current_package.id), queue='builder')
+            log.info("Start task for app '%s' queued with id '%s'" % (
+                self.name, task.task_id))
+            return task.task_id

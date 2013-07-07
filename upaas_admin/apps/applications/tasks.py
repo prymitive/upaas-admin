@@ -7,16 +7,23 @@
 
 from __future__ import absolute_import
 
+import os
+import tempfile
+import shutil
+
 from celery import current_task
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 from celery.states import FAILURE
 
-from upaas.config.base import ConfigurationError
 from upaas.config.main import load_main_config
 from upaas.config.metadata import MetadataConfig
 from upaas.builder.builder import Builder
 from upaas.builder import exceptions
+from upaas.config.base import ConfigurationError
+from upaas.storage.utils import find_storage_handler
+from upaas.storage.exceptions import StorageError
+from upaas import tar
 from upaas_admin.apps.applications.models import Package, Application
 
 from upaas_tasks.celery import celery
@@ -34,13 +41,13 @@ def build_package(metadata, app_id=None, system_filename=None):
         build_package.update_state(state=FAILURE)
         raise Ignore()
 
-    builder_config = load_main_config()
-    if not builder_config:
+    upaas_config = load_main_config()
+    if not upaas_config:
         log.error(u"Missing uPaaS configuration")
         build_package.update_state(state=FAILURE)
         raise Ignore()
 
-    builder = Builder(builder_config, metadata_obj)
+    builder = Builder(upaas_config, metadata_obj)
     build_result = None
     try:
         for result in builder.build_package(system_filename=system_filename):
@@ -76,3 +83,65 @@ def build_package(metadata, app_id=None, system_filename=None):
             log.error(u"Application with id '%s' not found" % app_id)
 
     return pkg
+
+
+@celery.task
+def start_application(metadata, package_id):
+    def _cleanup(*args):
+        for directory in args:
+            if os.path.isdir(directory):
+                log.info(u"Removing directory '%s'" % directory)
+                shutil.rmtree(directory)
+
+    pkg = Package.objects(id=package_id).first()
+    if not pkg:
+        log.error(u"Package with id '%s' not found" % package_id)
+        start_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    upaas_config = load_main_config()
+    if not upaas_config:
+        log.error(u"Missing uPaaS configuration")
+        start_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    # directory is encoded into string to prevent unicode errors
+    directory = tempfile.mkdtemp(dir=upaas_config.paths.workdir,
+                                 prefix="upaas_package_").encode("utf-8")
+
+    storage = find_storage_handler(upaas_config)
+    if not storage:
+        log.error(u"Storage handler '%s' not "
+                  u"found" % upaas_config.storage.handler)
+
+    workdir = os.path.join(directory, "system")
+    pkg_path = os.path.join(directory, pkg.filename)
+    log.info(u"Fetching package '%s'" % pkg.filename)
+    try:
+        storage.get(pkg.filename, pkg_path)
+    except StorageError:
+        log.error(u"Storage error while fetching package '%s'" % pkg.filename)
+        start_application.update_state(state=FAILURE)
+        _cleanup(directory)
+        raise Ignore()
+
+    log.info(u"Unpacking package")
+    os.mkdir(workdir, 0755)
+    if not tar.unpack_tar(pkg_path, workdir):
+        log.error(u"Error while unpacking package to '%s'" % workdir)
+        start_application.update_state(state=FAILURE)
+        _cleanup(directory)
+        raise Ignore()
+
+    final_path = os.path.join(upaas_config.paths.apps, str(pkg.id))
+    log.info(u"Package unpacked, moving into '%s'" % final_path)
+    try:
+        shutil.move(workdir, final_path)
+    except shutil.Error, e:
+        log.error(u"Error while moving unpacked package to final "
+                  u"destination: %s" % e)
+        start_application.update_state(state=FAILURE)
+        _cleanup(directory, final_path)
+        raise Ignore()
+    log.info(u"Package moved")
+    _cleanup(directory)
