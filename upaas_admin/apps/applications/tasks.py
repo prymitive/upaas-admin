@@ -116,6 +116,13 @@ def start_application(metadata, package_id):
 
     workdir = os.path.join(directory, "system")
     pkg_path = os.path.join(directory, pkg.filename)
+    final_path = os.path.join(upaas_config.paths.apps, str(pkg.id))
+
+    if os.path.exists(final_path):
+        log.error(u"Package directory already exists: %s" % final_path)
+        start_application.update_state(state=FAILURE)
+        raise Ignore()
+
     log.info(u"Fetching package '%s'" % pkg.filename)
     try:
         storage.get(pkg.filename, pkg_path)
@@ -133,7 +140,6 @@ def start_application(metadata, package_id):
         _cleanup(directory)
         raise Ignore()
 
-    final_path = os.path.join(upaas_config.paths.apps, str(pkg.id))
     log.info(u"Package unpacked, moving into '%s'" % final_path)
     try:
         shutil.move(workdir, final_path)
