@@ -47,9 +47,9 @@ def build_package(metadata, app_id=None, system_filename=None):
         build_package.update_state(state=FAILURE)
         raise Ignore()
 
-    builder = Builder(upaas_config, metadata_obj)
     build_result = None
     try:
+        builder = Builder(upaas_config, metadata_obj)
         for result in builder.build_package(system_filename=system_filename):
             log.info("Build progress: %d%%" % result.progress)
             current_task.update_state(state='PROGRESS',
