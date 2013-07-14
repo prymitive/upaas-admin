@@ -72,3 +72,6 @@ class Application(Document):
             log.info("Start task for app '%s' queued with id '%s'" % (
                 self.name, task.task_id))
             return task.task_id
+
+    def generate_uwsgi_config(self, backend):
+        pass

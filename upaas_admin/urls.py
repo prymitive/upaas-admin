@@ -11,14 +11,16 @@ from django.views.generic import TemplateView
 
 from tastypie.api import Api
 
-from upaas_admin.apps.applications.api import ApplicationResource, \
-    PackageResource
+from upaas_admin.apps.applications.api import (ApplicationResource,
+                                               PackageResource)
+from upaas_admin.apps.servers.api import (BackendResource, RouterResource)
 
 
 v1_api = Api(api_name='v1')
 v1_api.register(ApplicationResource())
 v1_api.register(PackageResource())
-
+v1_api.register(BackendResource())
+v1_api.register(RouterResource())
 
 urlpatterns = patterns(
     '',

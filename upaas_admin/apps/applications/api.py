@@ -43,16 +43,8 @@ class ApplicationResource(MongoEngineResource):
     def obj_create(self, bundle, request=None, **kwargs):
         log.debug(u"Going to create new application for user "
                   u"'%s'" % bundle.request.user.username)
-        if Application.objects(owner=bundle.request.user,
-                               name=bundle.data['name']):
-            log.warning(u"Can't create new application, duplicated name '%s' "
-                        u"for user '%s'" % (bundle.data['name'],
-                                            bundle.request.user.username))
-            raise exceptions.ValidationError(
-                u"User '%s' already created application with name '%s'" % (
-                    bundle.request.user.username, bundle.data['name']))
         try:
-            ret = super(MongoEngineResource, self).obj_create(
+            return super(MongoEngineResource, self).obj_create(
                 bundle, request=request, owner=bundle.request.user, **kwargs)
         except mongoengine.ValidationError, e:
             log.warning(u"Can't create new application, invalid data payload: "
@@ -62,11 +54,6 @@ class ApplicationResource(MongoEngineResource):
             log.warning(u"Can't create new application, duplicated fields: "
                         "%s" % e.message)
             raise exceptions.ValidationError(e.message)
-        else:
-            ret.obj.save()
-            log.info(u"User %s created new application '%s' with id %s" % (
-                bundle.request.user.username, bundle.obj.name, bundle.obj.id))
-            return ret
 
     def apply_authorization_limits(self, request, object_list):
         log.debug(u"Limiting query to user owned apps "
