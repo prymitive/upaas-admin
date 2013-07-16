@@ -29,7 +29,7 @@
           %h1
             - trans "You need to login to access this page"
 
-        %form{'method':'post', 'action':'{% url django.contrib.auth.views.login %}', 'class':('form-horizontal', 'well')}
+        %form{'method':'post', 'action':'{% url "django.contrib.auth.views.login" %}', 'class':('form-horizontal', 'well')}
           - csrf_token
           = form|crispy
           %input{'type':'hidden', 'name':'next', 'value':'={ next }'}/

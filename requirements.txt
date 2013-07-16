@@ -3,11 +3,11 @@ pytest-cov
 pytest-pep8
 pytest-capturelog
 django>=1.5,<1.6
-mongoengine<0.7.999
+mongoengine>=0.8.3,<0.9
 blinker
 hamlpy>=0.82.2
 django-tastypie==0.9.15
-django-tastypie-mongoengine
+django-tastypie-mongoengine>=0.4.1,<0.5
 django-crispy-forms
 django-pipeline
 django-bootstrap-breadcrumbs>=0.5.1
