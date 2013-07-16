@@ -220,11 +220,7 @@ PIPELINE_JS = {
             'bootstrap/js/bootstrap.js',
         ),
         'output_filename': 'js/base.js',
-    }
-}
-
-
-PIPELINE_JS = {
+    },
     'html5shiv': {
         'source_filenames': (
             'bootstrap/js/html5shiv.js',

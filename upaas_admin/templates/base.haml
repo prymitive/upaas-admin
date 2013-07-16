@@ -1,6 +1,7 @@
 !!! 5
 
 
+- load i18n
 - load compressed
 - load django_bootstrap_breadcrumbs
 
@@ -25,10 +26,35 @@
 
   %body
 
+    #top-nav.navbar.navbar-inverse.navbar-static-top
+      %a.navbar-brand{'href':'#'}
+        uPaaS
+      .nav-collapse.collapse.navbar-responsive-collapse
+        %ul.nav.navbar-nav.pull-right
+          - if user.is_authenticated
+            %li.dropdown
+              %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
+                %strong
+                  = user.username
+                %span.caret
+              %ul.dropdown-menu{'role':'menu'}
+                %li
+                  %a{'href':'#'}
+                    - trans "My Profile"
+          %li
+            - if user.is_authenticated
+              %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
+                - trans "Log out"
+            - else
+              %a{'href':'{% url "django.contrib.auth.views.login" %}'}
+                - trans "Log in"
+
     .container
 
     - render_breadcrumbs
+
     - block content
 
     - compressed_js 'base'
+
     - block js_bottom
