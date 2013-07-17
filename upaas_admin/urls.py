@@ -5,9 +5,8 @@
 """
 
 
-from django.conf.urls import patterns, include
+from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.views.generic import TemplateView
 
 from tastypie.api import Api
 
@@ -24,10 +23,10 @@ v1_api.register(RouterResource())
 
 urlpatterns = patterns(
     '',
-    (r'^$', TemplateView.as_view(template_name="index.haml")),
-    (r'^login$', 'django.contrib.auth.views.login',
-     {'template_name': 'login.haml'}),
-    (r'^logout$', 'django.contrib.auth.views.logout_then_login'),
+    url(r'^$', 'upaas_admin.apps.site.views.index', name='site_index'),
+    url(r'^login$', 'django.contrib.auth.views.login',
+        {'template_name': 'login.haml'}),
+    url(r'^logout$', 'django.contrib.auth.views.logout_then_login'),
 
     (r'^api/', include(v1_api.urls)),
 

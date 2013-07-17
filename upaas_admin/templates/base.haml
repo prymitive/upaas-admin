@@ -7,7 +7,10 @@
 
 
 - block breadcrumbs
-  - breadcrumb "Home" "index"
+  - breadcrumb_for "site_index"
+    %i.icon-home
+    Home
+  - endbreadcrumb_for
 
 
 %html
@@ -26,34 +29,51 @@
 
   %body
 
-    #top-nav.navbar.navbar-inverse.navbar-static-top
-      %a.navbar-brand{'href':'#'}
-        uPaaS
-      .nav-collapse.collapse.navbar-responsive-collapse
-        %ul.nav.navbar-nav.pull-right
-          - if user.is_authenticated
-            %li.dropdown
-              %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
-                %strong
-                  = user.username
-                %span.caret
-              %ul.dropdown-menu{'role':'menu'}
-                %li
-                  %a{'href':'#'}
-                    - trans "My Profile"
-          %li
-            - if user.is_authenticated
-              %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
-                - trans "Log out"
-            - else
-              %a{'href':'{% url "django.contrib.auth.views.login" %}'}
-                - trans "Log in"
+    .navbar.navbar-static-top
+      .navbar-inner
+        .container
+          %a.brand{'href':'#'}
+            uPaaS
+          .nav-collapse.collapse
+            %ul.nav.pull-right
+              %li.dropdown
+                %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
+                  %strong
+                    - if user.first_name and user.last_name
+                      ={ user.first_name } ={ user.last_name }
+                    - else
+                      = user.username
+                  %span.caret
+                %ul.dropdown-menu{'role':'menu'}
+                  %li
+                    %a{'href':'#'}
+                      - trans "Account"
+              %li
+                %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
+                  %i.icon-off
+                  - trans "Log out"
 
     .container
+      .row
+        .span3
+          %ul.nav.nav-pills.nav-stacked
+            %li.nav-header
+            %li
+              %a{'href':'#'}
+                - trans "Applications"
+                %span.badge
+                  123
 
-    - render_breadcrumbs
-
-    - block content
+        .span9
+          - render_breadcrumbs
+          - if messages
+            - for message in messages
+              .alert{'class':'alert-={message.tags}'}
+                %button.close{'type':'button', 'data-dismiss':'alert'}×
+                = message
+          .row
+            .upaas-content
+              - block content
 
     - compressed_js 'base'
 
