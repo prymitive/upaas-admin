@@ -39,6 +39,9 @@
                   %li
                     %a{'href':'{% url "users_profile" %}'}
                       - trans "Account"
+                  %li
+                    %a{'href':'{% url "password" %}'}
+                      - trans "Change password"
               %li
                 %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
                   %i.icon-off
