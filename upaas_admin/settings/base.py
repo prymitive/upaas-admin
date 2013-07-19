@@ -216,7 +216,7 @@ PIPELINE_CSS = {
 PIPELINE_JS = {
     'base': {
         'source_filenames': (
-            'jquery/jquery-1.9.1.js',
+            'jquery/jquery-1.10.1.js',
             'bootstrap/js/bootstrap.js',
         ),
         'output_filename': 'js/base.js',
