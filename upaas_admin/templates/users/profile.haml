@@ -11,6 +11,29 @@
 
 
 - block content
-  %h1
-    - trans "Welcome"
-    = object.username
+
+  %dl.dl-horizontal
+
+    %dt
+      {% trans "First name" %}:
+    %dd
+      = user.first_name
+
+    %dt
+      {% trans "Last name" %}:
+    %dd
+      = user.last_name
+
+    %dt
+      {% trans "Login" %}:
+    %dd
+      = user.username
+
+    %dt
+      {% trans "Administrator" %}:
+    %dd
+      - if user.is_superuser
+        %i.icon-thumbs-up-alt
+      - else
+        %i.icon-thumbs-down-alt
+
