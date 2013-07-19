@@ -5,12 +5,12 @@
 """
 
 
-from django.conf.urls import patterns
+from django.conf.urls import patterns, url
 
 from upaas_admin.apps.users.views import *
 
 
 urlpatterns = patterns(
     'upaas_admin.apps.users.views',
-    (r'^profile/my$', UserProfileView.as_view()),
+    url(r'^profile$', UserProfileView.as_view(), name='users_profile'),
 )

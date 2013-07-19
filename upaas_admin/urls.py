@@ -5,8 +5,10 @@
 """
 
 
+from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.views.generic import RedirectView
 
 from tastypie.api import Api
 
@@ -36,3 +38,10 @@ urlpatterns = patterns(
 
 
 urlpatterns += staticfiles_urlpatterns()
+
+
+if settings.DEBUG:
+    urlpatterns += patterns(
+        '',
+        (r'^favicon\.ico$', RedirectView.as_view(url='/static/favicon.ico')),
+    )

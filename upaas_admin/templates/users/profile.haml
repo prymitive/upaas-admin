@@ -2,6 +2,12 @@
 
 
 - load i18n
+- load django_bootstrap_breadcrumbs
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb user.get_full_name_or_login "users_profile"
 
 
 - block content

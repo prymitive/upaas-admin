@@ -47,5 +47,8 @@ class User(MongoUser):
         ]
     }
 
+    def get_full_name_or_login(self):
+        return self.get_full_name() or self.username
+
 
 signals.pre_save.connect(User.pre_save, sender=User)
