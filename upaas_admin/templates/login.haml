@@ -29,11 +29,11 @@
           %h1
             - trans "You need to login to access this page"
 
-        %form{'method':'post', 'action':'{% url "django.contrib.auth.views.login" %}', 'class':('form-horizontal', 'well')}
+        %form.form-horizontal.well{'method':'post', 'action':'{% url "django.contrib.auth.views.login" %}'}
           - csrf_token
           = form|crispy
           %input{'type':'hidden', 'name':'next', 'value':'={ next }'}/
           .controls
-            %input{'type':'submit', 'value':'{% trans "Login" %}', 'class':('btn', 'btn-primary')}/
+            %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Login" %}'}/
 
     - compressed_js 'base'
