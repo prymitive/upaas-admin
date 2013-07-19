@@ -1,0 +1,26 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb user.get_full_name_or_login "users_profile"
+  - breadcrumb "Reset API key" "users_apikey_reset"
+
+
+- block content
+
+  .text-center
+
+    .lead.text-warning
+      - trans "Are you sure you want to reset API key? Old key will be lost."
+
+    %form.form-horizontal{'method':'post', 'action':'{% url "users_apikey_reset" %}'}
+      - csrf_token
+      = form|crispy
+      .controls
+        %input.btn.btn-primary.btn-danger{'type':'submit', 'value':'{% trans "Reset" %}'}/

@@ -20,7 +20,7 @@
           - trans "Details"
       %li
         %a{'href':'#apikey', 'data-toggle':'tab'}
-          - trans "Api key"
+          - trans "API key"
 
     .tab-content
 
@@ -60,3 +60,7 @@
             {% trans "Api key" %}:
           %dd
             = user.apikey
+
+        .text-center
+          %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
+            - trans "Reset API key"

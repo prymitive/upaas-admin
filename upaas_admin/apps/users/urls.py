@@ -13,4 +13,6 @@ from upaas_admin.apps.users.views import *
 urlpatterns = patterns(
     'upaas_admin.apps.users.views',
     url(r'^profile$', UserProfileView.as_view(), name='users_profile'),
+    url(r'^apikey/reset$', ResetApiKeyView.as_view(),
+        name='users_apikey_reset'),
 )
