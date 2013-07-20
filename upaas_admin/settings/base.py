@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'tastypie_mongoengine',
     #'mongoengine.django.mongo_auth',
     'djcelery',
+    'django_gravatar',
     'upaas_admin.apps.users',
     'upaas_admin.apps.applications',
 )
