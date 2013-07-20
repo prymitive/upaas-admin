@@ -1,0 +1,11 @@
+- load compressed
+- load staticfiles
+
+
+- compressed_js 'zeroclipboard'
+- compressed_css 'zeroclipboard'
+
+:javascript
+  ZeroClipboard.setDefaults({
+    moviePath: '{% static "zeroclipboard/ZeroClipboard.swf" %}',
+  });

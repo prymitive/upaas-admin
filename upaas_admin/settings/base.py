@@ -211,7 +211,13 @@ PIPELINE_CSS = {
             'bootstrap/css/bootstrap.css',
         ),
         'output_filename': 'css/bootstrap.css',
-    }
+    },
+    'zeroclipboard': {
+        'source_filenames': (
+            'zeroclipboard/zeroclipboard.css',
+        ),
+        'output_filename': 'css/zeroclipboard.css',
+    },
 }
 
 PIPELINE_JS = {
@@ -227,7 +233,13 @@ PIPELINE_JS = {
             'bootstrap/js/html5shiv.js',
         ),
         'output_filename': 'js/html5shiv.js',
-    }
+    },
+    'zeroclipboard': {
+        'source_filenames': (
+            'zeroclipboard/ZeroClipboard.js',
+        ),
+        'output_filename': 'js/zeroclipboard.js',
+    },
 }
 
 
