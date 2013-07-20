@@ -1,0 +1,29 @@
+- extends 'base.haml'
+
+
+- load i18n
+
+
+- block content
+
+  %table.table.table-striped
+
+    %thead
+      %tr
+        %th
+          - trans "Name"
+        %th
+          - trans "Packages"
+
+    %tbody
+      - for application in applications
+        %tr
+          %td
+            = application.name
+          %td
+            = application.packages|length
+      - empty
+        %tr
+          %td{'colspan':'2'}
+            .text-center
+              - trans "No applications registered yet"

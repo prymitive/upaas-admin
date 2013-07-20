@@ -16,6 +16,8 @@ from upaas_admin.apps.applications.api import (ApplicationResource,
                                                PackageResource)
 from upaas_admin.apps.servers.api import (BackendResource, RouterResource)
 
+from upaas_admin.apps.applications.views import IndexView
+
 
 v1_api = Api(api_name='v1')
 v1_api.register(ApplicationResource())
@@ -23,9 +25,10 @@ v1_api.register(PackageResource())
 v1_api.register(BackendResource())
 v1_api.register(RouterResource())
 
+
 urlpatterns = patterns(
     '',
-    url(r'^$', 'upaas_admin.apps.site.views.index', name='site_index'),
+    url(r'^$', IndexView.as_view(), name='site_index'),
 
     url(r'^login$', 'django.contrib.auth.views.login',
         {'template_name': 'users/login.haml'}),
