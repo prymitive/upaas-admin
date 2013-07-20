@@ -19,8 +19,9 @@
     .lead.text-warning
       - trans "Are you sure you want to reset API key? Old key will be lost."
 
-    %form.form-horizontal{'method':'post', 'action':'{% url "users_apikey_reset" %}'}
+    %form.form{'method':'post', 'action':'{% url "users_apikey_reset" %}'}
       - csrf_token
       = form|crispy
       .controls
+        %input.btn{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
         %input.btn.btn-primary.btn-danger{'type':'submit', 'value':'{% trans "Reset" %}'}/

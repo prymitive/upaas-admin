@@ -10,6 +10,8 @@ from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 
+from dajaxice.core import dajaxice_autodiscover, dajaxice_config
+
 from tastypie.api import Api
 
 from upaas_admin.apps.applications.api import (ApplicationResource,
@@ -26,6 +28,9 @@ v1_api.register(BackendResource())
 v1_api.register(RouterResource())
 
 
+dajaxice_autodiscover()
+
+
 urlpatterns = patterns(
     '',
     url(r'^$', IndexView.as_view(), name='site_index'),
@@ -40,6 +45,8 @@ urlpatterns = patterns(
         'django.contrib.auth.views.password_change_done',
         {'template_name': 'users/password_changed.haml'},
         name='password_changed'),
+
+    url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 
     (r'^api/', include(v1_api.urls)),
 

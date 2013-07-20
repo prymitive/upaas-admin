@@ -52,6 +52,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'dajaxice',
     'pipeline',
     'crispy_forms',
     'django_bootstrap_breadcrumbs',
@@ -62,6 +63,7 @@ INSTALLED_APPS = (
     'django_gravatar',
     'upaas_admin.apps.users',
     'upaas_admin.apps.applications',
+    'upaas_admin.apps.servers',
 )
 
 
@@ -101,6 +103,15 @@ STATICFILES_DIRS = (
 
 
 #==============================================================================
+# Static files
+#==============================================================================
+
+STATICFILES_FINDERS += (
+    'dajaxice.finders.DajaxiceFinder',
+)
+
+
+#==============================================================================
 # Templates
 #==============================================================================
 
@@ -118,6 +129,7 @@ TEMPLATE_LOADERS = (
     'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.eggs.Loader',
 )
 
 
@@ -225,6 +237,7 @@ PIPELINE_JS = {
         'source_filenames': (
             'jquery/jquery-1.10.1.js',
             'bootstrap/js/bootstrap.js',
+            'upaas/csrf.js',
         ),
         'output_filename': 'js/base.js',
     },

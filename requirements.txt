@@ -16,3 +16,5 @@ celery-with-mongodb>=3.0,<4.0
 django-celery>=3.0,<4.0
 IPy
 django-gravatar2
+django-dajaxice>=0.5.5
+django-mongoforms>=0.3.1

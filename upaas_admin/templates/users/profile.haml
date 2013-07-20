@@ -27,9 +27,8 @@
 
       #details.tab-pane.active
         .row-fluid
-          .span2
-            %img{'src':'{% gravatar_url user.email 120 %}', 'class':'img-rounded', 'height':'120px', 'width':'120px'}
-            .text-center
+          .span2.text-center
+            %img.img-rounded{'src':'{% gravatar_url user.email 120 %}', 'height':'120', 'width':'120'}
               %a{'href':'https://gravatar.com', 'target':'_blank'}
                 - trans "Change"
           .span10
@@ -79,7 +78,7 @@
   - block js_bottom
     = block.super
 
-    - include "partials/zeroclipboard/load.haml"
+    - include "partials/load_zeroclipboard.haml"
 
     :javascript
       $(document).ready(function(){
