@@ -9,7 +9,7 @@ hamlpy>=0.82.2
 django-tastypie==0.9.15
 django-tastypie-mongoengine>=0.4.1,<0.5
 django-crispy-forms
-django-pipeline
+django-pipeline>=1.3.13
 django-bootstrap-breadcrumbs>=0.5.1
 upaas-tasks
 celery-with-mongodb>=3.0,<4.0

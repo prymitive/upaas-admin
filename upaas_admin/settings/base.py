@@ -141,6 +141,8 @@ TEMPLATE_LOADERS = (
 #==============================================================================
 
 MIDDLEWARE_CLASSES += (
+    'django.middleware.gzip.GZipMiddleware',
+    'pipeline.middleware.MinifyHTMLMiddleware',
 )
 
 
@@ -220,10 +222,14 @@ CELERY_TRACK_STARTED = True
 
 STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
 
+PIPELINE_COMPILERS = (
+  'pipeline.compilers.less.LessCompiler',
+)
+
 PIPELINE_CSS = {
     'base': {
         'source_filenames': (
-            'bootstrap/css/bootstrap.css',
+            'bootstrap/less/bootstrap.less',
         ),
         'output_filename': 'css/bootstrap.css',
     },
