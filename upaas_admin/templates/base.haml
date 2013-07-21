@@ -4,6 +4,7 @@
 - load i18n
 - load compressed
 - load django_bootstrap_breadcrumbs
+- load gravatar
 
 
 - block breadcrumbs
@@ -19,33 +20,42 @@
 
   %body
 
-    .navbar.navbar-static-top
+    .navbar.navbar-fixed-top
       .navbar-inner
         .container
           %a.brand{'href':'#'}
             %i.icon-cogs
             uPaaS
-          .nav-collapse.collapse
-            %ul.nav.pull-right
-              %li.dropdown
-                %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
-                  %strong
-                    - if user.first_name and user.last_name
-                      ={ user.first_name } ={ user.last_name }
-                    - else
-                      = user.username
-                  %span.caret
-                %ul.dropdown-menu{'role':'menu'}
-                  %li
-                    %a{'href':'{% url "users_profile" %}'}
-                      - trans "Account"
-                  %li
-                    %a{'href':'{% url "password" %}'}
-                      - trans "Change password"
+          %ul.nav.pull-right
+            - if user.is_superuser
               %li
-                %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
-                  %i.icon-off
-                  - trans "Log out"
+                %a{'href':'#'}
+                  %strong
+                    %i.icon-wrench
+                    - trans "Admin"
+            %li.divider-vertical
+            %li
+              .navbar-search
+                %img.img-rounded{'src':'{% gravatar_url user.email 30 %}', 'height':'30', 'width':'30'}
+            %li.dropdown
+              %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
+                %strong
+                  - if user.first_name and user.last_name
+                    ={ user.first_name } ={ user.last_name }
+                  - else
+                    = user.username
+                %span.caret
+              %ul.dropdown-menu{'role':'menu'}
+                %li
+                  %a{'href':'{% url "users_profile" %}'}
+                    - trans "Account"
+                %li
+                  %a{'href':'{% url "password" %}'}
+                    - trans "Change password"
+            %li
+              %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
+                %i.icon-off
+                - trans "Log out"
 
     .container
 
