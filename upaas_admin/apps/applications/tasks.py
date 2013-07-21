@@ -68,6 +68,7 @@ def build_package(metadata, app_id=None, system_filename=None):
                   bytes=build_result.bytes,
                   filename=build_result.filename,
                   checksum=build_result.checksum,
+                  parent=build_result.parent,
                   distro_name=build_result.distro_name,
                   distro_version=build_result.distro_version,
                   distro_arch=build_result.distro_arch)

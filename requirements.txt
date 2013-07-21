@@ -18,3 +18,4 @@ IPy
 django-gravatar2
 django-dajaxice>=0.5.5
 django-mongoforms>=0.3.1
+tzlocal>=1.0

@@ -9,6 +9,8 @@ import os
 import sys
 import logging
 
+from tzlocal import get_localzone
+
 from upaas.config.main import load_main_config
 
 from django.conf.global_settings import *   # pylint: disable=W0614,W0401
@@ -32,10 +34,11 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 
 SITE_ID = 1
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-TIME_ZONE = 'UTC'
+
+# set local time zone
+TIME_ZONE = get_localzone().zone
 USE_TZ = True
+
 USE_I18N = True
 USE_L10N = True
 LANGUAGE_CODE = 'en'

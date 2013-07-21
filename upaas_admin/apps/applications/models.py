@@ -31,6 +31,7 @@ class Package(Document):
     interpreter_name = StringField(required=True)
     interpreter_version = StringField(required=True)
 
+    parent = StringField()
     filename = StringField(required=True)
     bytes = LongField(required=True)
     checksum = StringField(required=True)
