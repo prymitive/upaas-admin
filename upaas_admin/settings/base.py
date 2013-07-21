@@ -223,7 +223,7 @@ CELERY_TRACK_STARTED = True
 STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
 
 PIPELINE_COMPILERS = (
-  'pipeline.compilers.less.LessCompiler',
+    'pipeline.compilers.less.LessCompiler',
 )
 
 PIPELINE_CSS = {
