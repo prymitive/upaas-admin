@@ -13,6 +13,10 @@
         %th
           - trans "Name"
         %th
+          - trans "Interpreter name"
+        %th
+          - trans "Interpreter version"
+        %th
           - trans "Packages"
 
     %tbody
@@ -20,6 +24,10 @@
         %tr
           %td
             = application.name
+          %td
+            = application.interpreter_name
+          %td
+            = application.interpreter_version
           %td
             = application.packages|length
       - empty

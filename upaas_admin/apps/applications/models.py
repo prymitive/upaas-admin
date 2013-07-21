@@ -14,6 +14,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from celery.execute import send_task
 
+from upaas import utils
+from upaas.config.main import load_main_config
+from upaas.config.metadata import MetadataConfig
+
 from upaas_admin.apps.users.models import User
 
 
@@ -23,6 +27,9 @@ log = logging.getLogger(__name__)
 class Package(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     metadata = StringField(help_text=_('Application metadata'))
+
+    interpreter_name = StringField(required=True)
+    interpreter_version = StringField(required=True)
 
     filename = StringField(required=True)
     bytes = LongField(required=True)
@@ -50,6 +57,41 @@ class Application(Document):
             {'fields': ['name', 'owner']}
         ]
     }
+
+    @property
+    def metadata_config(self):
+        if self.metadata:
+            return MetadataConfig.from_string(self.metadata)
+        return {}
+
+    @property
+    def interpreter_name(self):
+        """
+        Will return interpreter from current package metadata.
+        If no package was built interpreter will be fetched from app metadata.
+        If app has no metadata it will return None.
+        """
+        if self.current_package:
+            return self.current_package.interpreter_name
+        else:
+            try:
+                return self.metadata_config.interpreter.type
+            except KeyError:
+                return None
+
+    @property
+    def interpreter_version(self):
+        """
+        Will return interpreter version from current package metadata.
+        If no package was built interpreter will be fetched from app metadata.
+        If app has no metadata it will return None.
+        """
+        if self.current_package:
+            return self.current_package.interpreter_version
+        elif self.metadata:
+            #FIXME maybe its better to load main config at startup?
+            config = load_main_config()
+            return utils.select_best_version(config, self.metadata_config)
 
     def build_package(self, force_fresh=False):
         system_filename = None

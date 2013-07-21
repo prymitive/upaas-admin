@@ -62,7 +62,10 @@ def build_package(metadata, app_id=None, system_filename=None):
         raise Ignore()
 
     log.info(u"Build completed")
-    pkg = Package(metadata=metadata, bytes=build_result.bytes,
+    pkg = Package(metadata=metadata,
+                  interpreter_name=metadata_obj.interpreter.type,
+                  interpreter_version=build_result.interpreter_version,
+                  bytes=build_result.bytes,
                   filename=build_result.filename,
                   checksum=build_result.checksum,
                   distro_name=build_result.distro_name,
