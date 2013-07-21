@@ -230,6 +230,7 @@ PIPELINE_CSS = {
     'base': {
         'source_filenames': (
             'bootstrap/less/bootstrap.less',
+            'upaas/site.less',
         ),
         'output_filename': 'css/bootstrap.css',
     },
