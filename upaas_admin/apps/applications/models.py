@@ -40,6 +40,13 @@ class Package(Document):
     distro_version = StringField(required=True)
     distro_arch = StringField(required=True)
 
+    meta = {
+        'indexes': [
+            {'fields': ['filename']}
+        ],
+        'ordering': ['date_created'],
+    }
+
 
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -56,7 +63,8 @@ class Application(Document):
     meta = {
         'indexes': [
             {'fields': ['name', 'owner']}
-        ]
+        ],
+        'ordering': ['name'],
     }
 
     @property
