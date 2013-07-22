@@ -237,7 +237,7 @@ PIPELINE_CSS = {
     },
     'zeroclipboard': {
         'source_filenames': (
-            'zeroclipboard/zeroclipboard.css',
+            'zeroclipboard/zeroclipboard.less',
         ),
         'output_filename': 'css/zeroclipboard.css',
     },
