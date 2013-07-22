@@ -50,7 +50,8 @@ urlpatterns = patterns(
 
     (r'^api/', include(v1_api.urls)),
 
-    (r'^', include('upaas_admin.apps.users.urls')),
+    ('applications/', include('upaas_admin.apps.applications.urls')),
+    ('', include('upaas_admin.apps.users.urls')),
 
 )
 

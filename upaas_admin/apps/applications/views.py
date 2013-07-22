@@ -5,19 +5,26 @@
 """
 
 
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 
 from pure_pagination.mixins import PaginationMixin
 
 from upaas_admin.mixin import LoginRequiredMixin, MongoEngineViewMixin
+from upaas_admin.apps.applications.mixin import OwnedAppsMixin
 from upaas_admin.apps.applications.models import Application
 
 
 class IndexView(LoginRequiredMixin, MongoEngineViewMixin, PaginationMixin,
-                ListView):
+                OwnedAppsMixin, ListView):
 
     template_name = 'index.haml'
     paginate_by = 10
 
-    def get_queryset(self):
-        return Application.objects.filter(owner=self.request.user)
+
+class ApplicationDetailView(LoginRequiredMixin, MongoEngineViewMixin,
+                            OwnedAppsMixin, DetailView):
+
+    template_name = 'details.haml'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'

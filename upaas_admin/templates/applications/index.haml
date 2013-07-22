@@ -23,7 +23,8 @@
       - for application in object_list
         %tr
           %td
-            = application.name
+            %a{'href':'{% url "app_details" application.id %}'}
+              = application.name
           %td
             = application.interpreter_name
           %td
