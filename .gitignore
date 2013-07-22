@@ -40,3 +40,8 @@ upaas_admin/var/*
 upaas_admin/settings/local.py
 upaas_admin/settings/local/*
 docs/_build
+
+# less compiled to css
+upaas_admin/static/bootstrap/less/bootstrap.css
+upaas_admin/static/upaas/site.css
+upaas_admin/static/zeroclipboard/zeroclipboard.css
