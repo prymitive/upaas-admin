@@ -61,6 +61,7 @@ INSTALLED_APPS = (
     'django_bootstrap_breadcrumbs',
     'tastypie',
     'tastypie_mongoengine',
+    'pure_pagination',
     #'mongoengine.django.mongo_auth',
     'djcelery',
     'django_gravatar',
@@ -315,3 +316,13 @@ LOGGING = {
 #==============================================================================
 
 GRAVATAR_DEFAULT_IMAGE = 'wavatar'
+
+
+#==============================================================================
+# django-pure-pagination
+#==============================================================================
+
+PAGINATION_SETTINGS = {
+    'PAGE_RANGE_DISPLAYED': 6,
+    'MARGIN_PAGES_DISPLAYED': 2,
+}

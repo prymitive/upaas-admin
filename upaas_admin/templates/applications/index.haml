@@ -20,7 +20,7 @@
           - trans "Packages"
 
     %tbody
-      - for application in applications
+      - for application in object_list
         %tr
           %td
             = application.name
@@ -32,6 +32,8 @@
             = application.packages|length
       - empty
         %tr
-          %td{'colspan':'2'}
+          %td{'colspan':'4'}
             .text-center
               - trans "No applications registered yet"
+
+  - include "partials/pagination_footer.haml"
