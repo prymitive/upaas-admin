@@ -20,7 +20,7 @@ class LoginRequiredMixin(object):
                                                         **kwargs)
 
 
-class MongoEngineViewMixin(object):
+class AppTemplatesDirMixin(object):
 
     def get_template_names(self):
         app_name = os.path.basename(

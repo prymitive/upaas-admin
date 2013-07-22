@@ -9,20 +9,20 @@ from django.views.generic import ListView, DetailView
 
 from pure_pagination.mixins import PaginationMixin
 
-from upaas_admin.mixin import LoginRequiredMixin, MongoEngineViewMixin
+from upaas_admin.mixin import LoginRequiredMixin, AppTemplatesDirMixin
 from upaas_admin.apps.applications.mixin import OwnedAppsMixin
 from upaas_admin.apps.applications.models import Application
 
 
-class IndexView(LoginRequiredMixin, MongoEngineViewMixin, PaginationMixin,
-                OwnedAppsMixin, ListView):
+class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
+                PaginationMixin, ListView):
 
     template_name = 'index.haml'
     paginate_by = 10
 
 
-class ApplicationDetailView(LoginRequiredMixin, MongoEngineViewMixin,
-                            OwnedAppsMixin, DetailView):
+class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
+                            AppTemplatesDirMixin, DetailView):
 
     template_name = 'details.haml'
     model = Application

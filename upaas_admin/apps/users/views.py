@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_admin.mixin import LoginRequiredMixin, MongoEngineViewMixin
+from upaas_admin.mixin import LoginRequiredMixin, AppTemplatesDirMixin
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.users.forms import ResetApiKeyForm
 
@@ -20,11 +20,11 @@ from upaas_admin.apps.users.forms import ResetApiKeyForm
 log = logging.getLogger(__name__)
 
 
-class UserProfileView(LoginRequiredMixin, MongoEngineViewMixin, TemplateView):
+class UserProfileView(LoginRequiredMixin, AppTemplatesDirMixin, TemplateView):
     template_name = "profile.html"
 
 
-class ResetApiKeyView(LoginRequiredMixin, MongoEngineViewMixin, FormView):
+class ResetApiKeyView(LoginRequiredMixin, AppTemplatesDirMixin, FormView):
     template_name = 'apikey_reset.haml'
     form_class = ResetApiKeyForm
     success_url = reverse_lazy('users_profile')
