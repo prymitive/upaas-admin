@@ -8,7 +8,7 @@
 from upaas_admin.apps.applications.models import Application
 
 
-class OwnedAppsMixin:
+class OwnedAppsMixin(object):
 
     def get_queryset(self):
         return Application.objects.filter(owner=self.request.user)

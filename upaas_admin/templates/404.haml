@@ -1,0 +1,19 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "404" ""
+
+
+- block content
+
+  .hero-unit.text-center
+    %h1
+      404
+    %p.text-warning
+      - trans "Page not found"

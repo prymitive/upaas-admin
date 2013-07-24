@@ -1,0 +1,69 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "Users" "admin_users_list"
+
+
+- block content
+
+  .nav.nav-tabs
+    %li.active
+      %a{'href':'{% url "admin_users_list" %}'}
+        - trans "Users"
+    %li
+      %a{'href':'#'}
+        - trans "Applications"
+    %li
+      %a{'href':'#'}
+        - trans "Routers"
+    %li
+      %a{'href':'#'}
+        - trans "Backends"
+
+  %p
+    %a.btn{'href':'{% url "admin_user_create" %}'}
+      - trans "Create new user"
+
+  %table.table.table-striped
+
+    %thead
+      %tr
+        %th
+          - trans "Login"
+        %th
+          - trans "First name"
+        %th
+          - trans "Last name"
+        %th
+          - trans "Email"
+        %th
+          - trans "Active"
+        %th
+          - trans "Administrator"
+
+    %tbody
+      - for user_object in object_list
+        %tr
+          %td
+            %a{'href':'{% url "admin_user_edit" user_object.username %}'}
+              = user_object.username
+          %td
+            = user_object.first_name
+          %td
+            = user_object.last_name
+          %td
+            = user_object.email
+          %td
+            - if user_object.is_active
+              %i.icon-thumbs-up-alt
+          %td
+            - if user_object.is_superuser
+              %i.icon-thumbs-up-alt
+
+  - include "partials/pagination_footer.haml"
