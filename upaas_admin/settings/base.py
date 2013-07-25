@@ -55,6 +55,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'mongoengine.django.mongo_auth',
     'dajaxice',
     'pipeline',
     'crispy_forms',
@@ -62,7 +63,6 @@ INSTALLED_APPS = (
     'tastypie',
     'tastypie_mongoengine',
     'pure_pagination',
-    #'mongoengine.django.mongo_auth',
     'djcelery',
     'django_gravatar',
     'upaas_admin.apps.users',
@@ -151,7 +151,7 @@ MIDDLEWARE_CLASSES += (
 # Auth / security
 #==============================================================================
 
-#AUTH_USER_MODEL = 'mongo_auth.MongoUser'
+AUTH_USER_MODEL = 'mongo_auth.MongoUser'
 
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
@@ -161,9 +161,9 @@ LOGIN_REDIRECT_URL = '/'
 # MongoEngine
 #==============================================================================
 
-AUTHENTICATION_BACKENDS = ('mongoengine.django.auth.MongoEngineBackend',)
-
 SESSION_ENGINE = 'mongoengine.django.sessions'
+
+MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 
 upaas_config = load_main_config()
 
@@ -178,6 +178,8 @@ if upaas_config.mongodb.get('username'):
     if upaas_config.mongodb.get('password'):
         mongo_opts['password'] = upaas_config.mongodb.password
 
+print("Connecting to db '%s', options: %s" % (upaas_config.mongodb.database,
+                                              mongo_opts))
 connect(upaas_config.mongodb.database, **mongo_opts)
 
 #==============================================================================
