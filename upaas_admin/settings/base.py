@@ -178,8 +178,6 @@ if upaas_config.mongodb.get('username'):
     if upaas_config.mongodb.get('password'):
         mongo_opts['password'] = upaas_config.mongodb.password
 
-print("Connecting to db '%s', options: %s" % (upaas_config.mongodb.database,
-                                              mongo_opts))
 connect(upaas_config.mongodb.database, **mongo_opts)
 
 #==============================================================================
