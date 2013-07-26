@@ -1,0 +1,22 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "Routers" "admin_routers_list"
+  - breadcrumb object.name object.name
+
+
+- block content
+
+  %form.form-horizontal.well{'method':'post', 'action':'{% url "admin_router_edit" object.name %}'}
+    - csrf_token
+    = form|crispy
+    .controls
+      %input.btn{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
+      %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Save" %}'}/

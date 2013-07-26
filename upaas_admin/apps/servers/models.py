@@ -11,7 +11,7 @@ from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_admin.contrib.fields import IPField
+from upaas_admin.contrib.fields import IPv4Field
 
 
 class BackendServer(Document):
@@ -19,9 +19,18 @@ class BackendServer(Document):
     Backend server - used for running applications.
     """
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
-    name = StringField(required=True, help_text=_('Backend name'))
-    enabled = BooleanField(default=True, help_text=_('Enabled'))
-    ip = IPField(required=True, unique=True, help_text=_('Backend IP address'))
+    name = StringField(required=True, max_length=60, verbose_name=_('name'))
+    ip = IPv4Field(required=True, unique=True, verbose_name=_('IP address'))
+    is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
+
+    _default_manager = QuerySetManager()
+
+    meta = {
+        'indexes': [
+            {'fields': ['name', 'ip'], 'unique': True}
+        ],
+        'ordering': ['name'],
+    }
 
 
 class RouterServer(Document):
@@ -29,9 +38,18 @@ class RouterServer(Document):
     Router server - used for load balancing.
     """
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
-    enabled = BooleanField(default=True, help_text=_('Enabled'))
-    name = StringField(required=True, help_text=_('Router name'))
-    private_ip = IPField(required=True, unique=True,
-                         help_text=_('IP address for private services'))
-    public_ip = IPField(required=True, unique=True,
-                        help_text=_('IP address for public services'))
+    name = StringField(required=True, max_length=60, verbose_name=_('name'))
+    private_ip = IPv4Field(required=True, unique=True,
+                           verbose_name=_('private IP address'))
+    public_ip = IPv4Field(required=True, unique=True,
+                          verbose_name=_('public IP address'))
+    is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
+
+    _default_manager = QuerySetManager()
+
+    meta = {
+        'indexes': [
+            {'fields': ['name', 'private_ip', 'public_ip'], 'unique': True}
+        ],
+        'ordering': ['name'],
+    }

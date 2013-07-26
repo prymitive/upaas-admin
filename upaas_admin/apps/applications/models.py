@@ -51,10 +51,10 @@ class Package(Document):
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, max_length=100, unique_with='owner',
-                       verbose_name=_('name'), help_text=_('Application name'))
+                       verbose_name=_('name'))
     owner = ReferenceField(User, reverse_delete_rule=DENY, dbref=False,
                            required=True)
-    metadata = StringField(help_text=_('Application metadata'))
+    metadata = StringField(verbose_name=_('Application metadata'))
     current_package = ReferenceField(Package, reverse_delete_rule=CASCADE,
                                      dbref=False)
     packages = ListField(

@@ -21,9 +21,18 @@ log = logging.getLogger(__name__)
 
 class User(MongoUser):
 
+    apikey = StringField(required=True)
+
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'email']
+
     _default_manager = QuerySetManager()
 
-    apikey = StringField(required=True)
+    meta = {
+        'allow_inheritance': True,
+        'indexes': [
+            {'fields': ['username', 'apikey'], 'unique': True}
+        ]
+    }
 
     @classmethod
     def generate_apikey(cls):
@@ -39,13 +48,6 @@ class User(MongoUser):
         if not document.apikey:
             log.info("Generating API key for '%s'" % document.username)
             document.apikey = User.generate_apikey()
-
-    meta = {
-        'allow_inheritance': True,
-        'indexes': [
-            {'fields': ['username', 'apikey'], 'unique': True}
-        ]
-    }
 
     def get_full_name_or_login(self):
         return self.get_full_name() or self.username

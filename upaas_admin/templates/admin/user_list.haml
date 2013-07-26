@@ -17,13 +17,10 @@
       %a{'href':'{% url "admin_users_list" %}'}
         - trans "Users"
     %li
-      %a{'href':'#'}
-        - trans "Applications"
-    %li
-      %a{'href':'#'}
+      %a{'href':'{% url "admin_routers_list" %}'}
         - trans "Routers"
     %li
-      %a{'href':'#'}
+      %a{'href':'{% url "admin_backends_list" %}'}
         - trans "Backends"
 
   %p

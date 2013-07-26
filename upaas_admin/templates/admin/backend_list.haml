@@ -1,0 +1,53 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "Backends" "admin_routers_list"
+
+
+- block content
+
+  .nav.nav-tabs
+    %li
+      %a{'href':'{% url "admin_users_list" %}'}
+        - trans "Users"
+    %li
+      %a{'href':'{% url "admin_routers_list" %}'}
+        - trans "Routers"
+    %li.active
+      %a{'href':'{% url "admin_backends_list" %}'}
+        - trans "Backends"
+
+  %p
+    %a.btn{'href':'{% url "admin_backend_create" %}'}
+      - trans "Create new backend"
+
+  %table.table.table-striped
+
+    %thead
+      %tr
+        %th
+          - trans "Name"
+        %th
+          - trans "IP address"
+        %th
+          - trans "Enabled"
+
+    %tbody
+      - for backend_object in object_list
+        %tr
+          %td
+            %a{'href':'{% url "admin_backend_edit" backend_object.name %}'}
+              = backend_object.name
+          %td
+            = backend_object.ip
+          %td
+            - if backend_object.is_enabled
+              %i.icon-thumbs-up-alt
+
+  - include "partials/pagination_footer.haml"
