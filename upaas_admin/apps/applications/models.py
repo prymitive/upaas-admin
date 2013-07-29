@@ -63,6 +63,7 @@ class Package(Document):
         routers = RouterServer.objects(is_enabled=True)
         config = load_main_config()
 
+        #FIXME this is broken
         options = {}
 
         try:
