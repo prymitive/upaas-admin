@@ -5,6 +5,7 @@
 """
 
 
+import os
 import datetime
 import logging
 
@@ -19,6 +20,7 @@ from upaas.config.main import load_main_config
 from upaas.config.metadata import MetadataConfig
 
 from upaas_admin.apps.users.models import User
+from upaas_admin.apps.servers.models import RouterServer
 
 
 log = logging.getLogger(__name__)
@@ -47,6 +49,52 @@ class Package(Document):
         'ordering': ['date_created'],
     }
 
+    @property
+    def metadata_config(self):
+        if self.metadata:
+            return MetadataConfig.from_string(self.metadata)
+        return {}
+
+    @property
+    def application(self):
+        return Application.objects(packages=self.id).first()
+
+    def generate_uwsgi_config(self, backend):
+        routers = RouterServer.objects(is_enabled=True)
+        config = load_main_config()
+
+        options = {}
+
+        try:
+            options.update(config.uwsgi.options)
+        except (AttributeError, KeyError):
+            pass
+
+        try:
+            options.update(config.interpreters[self.interpreter_name][
+                'any']['uwsgi']['options'])
+        except (AttributeError, KeyError):
+            pass
+
+        try:
+            options.update(config.interpreters[self.interpreter_name][
+                self.interpreter_version]['uwsgi']['options'])
+        except (AttributeError, KeyError):
+            pass
+
+        options['socket'] = '%s:0' % backend.ip
+        options['uid'] = config.apps.uid
+        options['gid'] = config.apps.gid
+        options['chdir'] = config.apps.home
+        options['namespace'] = os.path.join(config.paths.apps, str(self.id))
+
+        domain = '%s.%s' % (self.application.id, config.apps.domain)
+        for router in routers:
+            options['subscribe2'] = 'server=%s:2626,key=%s' % (
+                router.private_ip, domain)
+
+        return {'uwsgi': options}
+
 
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -59,6 +107,7 @@ class Application(Document):
                                      dbref=False)
     packages = ListField(
         ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
+    domains = ListField(StringField)
 
     meta = {
         'indexes': [
@@ -123,6 +172,3 @@ class Application(Document):
             log.info("Start task for app '%s' queued with id '%s'" % (
                 self.name, task.task_id))
             return task.task_id
-
-    def generate_uwsgi_config(self, backend):
-        pass
