@@ -74,7 +74,6 @@ class Package(Document):
                     f.close()
                     return ret
 
-        routers = RouterServer.objects(is_enabled=True)
         config = load_main_config()
 
         base_template = config.interpreters['uwsgi']['template']
@@ -139,9 +138,9 @@ class Package(Document):
 
         options.append('\n# starting subscriptions block')
         domain = '%s.%s' % (self.application.id, config.apps.domain)
-        for router in routers:
-            options.append('subscribe2 = server=%s:2626,key=%s' % (
-                router.private_ip, domain))
+        for router in RouterServer.objects(is_enabled=True):
+            options.append('subscribe2 = server=%s:%d,key=%s' % (
+                router.private_ip, router.subscription_port, domain))
 
         options.append('\n')
         return options

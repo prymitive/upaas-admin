@@ -22,7 +22,6 @@ log = get_task_logger(__name__)
 
 @worker_ready.connect
 def register_local_backend(sender=None, conf=None, **kwargs):
-    print((sender, conf, kwargs))
     log.debug("Celery started, registering local backend if needed")
 
     for local_ip in local_ipv4_addresses():

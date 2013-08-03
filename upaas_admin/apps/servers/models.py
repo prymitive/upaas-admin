@@ -52,6 +52,9 @@ class RouterServer(Document):
                            verbose_name=_('private IP address'))
     public_ip = IPv4Field(required=True, unique=True,
                           verbose_name=_('public IP address'))
+    subscription_port = IntField(required=True, default=2626, min_value=1,
+                                 max_value=65535,
+                                 verbose_name=_('subscription port'))
     is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
 
     _default_manager = QuerySetManager()
