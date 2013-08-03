@@ -68,6 +68,7 @@ INSTALLED_APPS = (
     'upaas_admin.apps.users',
     'upaas_admin.apps.applications',
     'upaas_admin.apps.servers',
+    'upaas_admin.apps.admin',
 )
 
 

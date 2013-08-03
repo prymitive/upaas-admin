@@ -16,6 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 from celery.execute import send_task
 
 from upaas import utils
+from upaas.config.base import UPAAS_CONFIG_DIRS
 from upaas.config.main import load_main_config
 from upaas.config.metadata import MetadataConfig
 
@@ -60,41 +61,90 @@ class Package(Document):
         return Application.objects(packages=self.id).first()
 
     def generate_uwsgi_config(self, backend):
+        """
+        :param backend: BackendServer instance for which we generate config
+        """
+
+        def _load_template(path):
+            for search_path in UPAAS_CONFIG_DIRS:
+                template_path = os.path.join(search_path, path)
+                if os.path.exists(template_path):
+                    f = open(template_path)
+                    ret = f.read().splitlines()
+                    f.close()
+                    return ret
+
         routers = RouterServer.objects(is_enabled=True)
         config = load_main_config()
 
-        #FIXME this is broken
-        options = {}
+        base_template = config.interpreters['uwsgi']['template']
 
+        template = None
         try:
-            options.update(config.uwsgi.options)
+            template = config.interpreters[self.interpreter_name]['any'][
+                'uwsgi']['template']
+        except (AttributeError, KeyError):
+            pass
+        try:
+            template = config.interpreters[self.interpreter_name][
+                self.interpreter_version]['uwsgi']['template']
         except (AttributeError, KeyError):
             pass
 
+        vars = {
+            'namespace': os.path.join(config.paths.apps, str(self.id)),
+            'chdir': config.apps.home,
+            'socket': '%s:0' % backend.ip,
+            'uid': config.apps.uid,
+            'gid': config.apps.gid,
+        }
         try:
-            options.update(config.interpreters[self.interpreter_name][
-                'any']['uwsgi']['options'])
+            vars.update(config.interpreters[self.interpreter_name]['any'][
+                'uwsgi']['vars'])
+        except (AttributeError, KeyError):
+            pass
+        try:
+            vars.update(config.interpreters[self.interpreter_name][
+                self.interpreter_version]['uwsgi']['vars'])
         except (AttributeError, KeyError):
             pass
 
+        envs = {}
         try:
-            options.update(config.interpreters[self.interpreter_name][
-                self.interpreter_version]['uwsgi']['options'])
+            envs.update(config.interpreters[self.interpreter_name]['any'][
+                'env'])
+        except (AttributeError, KeyError):
+            pass
+        try:
+            envs.update(config.interpreters[self.interpreter_name][
+                self.interpreter_version]['env'])
         except (AttributeError, KeyError):
             pass
 
-        options['socket'] = '%s:0' % backend.ip
-        options['uid'] = config.apps.uid
-        options['gid'] = config.apps.gid
-        options['chdir'] = config.apps.home
-        options['namespace'] = os.path.join(config.paths.apps, str(self.id))
+        options = ['[uwsgi]']
 
+        options.append('\n# starting uWSGI config variables list')
+        for key, value in vars.items():
+            options.append('var_%s = %s' % (key, value))
+
+        options.append('\n# starting ENV variables list')
+        for key, value in envs.items():
+            options.append('env = %s=%s' % (key, value))
+
+        options.append('\n# starting base template')
+        options.extend(_load_template(base_template))
+
+        options.append('\n# starting interpreter template')
+        options.extend(_load_template(template))
+
+        options.append('\n# starting subscriptions block')
         domain = '%s.%s' % (self.application.id, config.apps.domain)
         for router in routers:
-            options['subscribe2'] = 'server=%s:2626,key=%s' % (
-                router.private_ip, domain)
+            options.append('subscribe2 = server=%s:2626,key=%s' % (
+                router.private_ip, domain))
 
-        return {'uwsgi': options}
+        options.append('\n')
+        return options
 
 
 class Application(Document):

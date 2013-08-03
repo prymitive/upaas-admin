@@ -11,7 +11,7 @@ import os
 import tempfile
 import shutil
 
-from celery import current_task
+from celery import task, current_task
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 from celery.states import FAILURE
@@ -24,15 +24,15 @@ from upaas.config.base import ConfigurationError
 from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import StorageError
 from upaas import tar
-from upaas_admin.apps.applications.models import Package, Application
 
-from upaas_tasks.celery import celery
+from upaas_admin.apps.applications.models import Package, Application
+from upaas_admin.apps.servers.models import BackendServer
 
 
 log = get_task_logger(__name__)
 
 
-@celery.task
+@task
 def build_package(metadata, app_id=None, system_filename=None):
     try:
         metadata_obj = MetadataConfig.from_string(metadata)
@@ -89,7 +89,7 @@ def build_package(metadata, app_id=None, system_filename=None):
     return pkg
 
 
-@celery.task
+@task
 def start_application(metadata, package_id):
     def _cleanup(*args):
         for directory in args:
@@ -155,3 +155,15 @@ def start_application(metadata, package_id):
         raise Ignore()
     log.info(u"Package moved")
     _cleanup(directory)
+
+    backend = BackendServer.get_local_backend()
+    log.info(u"Generating uWSGI vassal configuration")
+    options = pkg.generate_uwsgi_config(backend)
+
+    vassal_path = os.path.join(upaas_config.paths.vassals,
+                               '%s.ini' % pkg.application.id)
+    log.info(u"Saving vassal configuration to '%s'" % vassal_path)
+    with open(vassal_path, 'w') as vassal:
+        vassal.write('\n'.join(options))
+
+    log.info(u"Vassal saved")

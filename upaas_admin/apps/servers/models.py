@@ -11,6 +11,8 @@ from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
 
+from upaas.inet import local_ipv4_addresses
+
 from upaas_admin.contrib.fields import IPv4Field
 
 
@@ -31,6 +33,13 @@ class BackendServer(Document):
         ],
         'ordering': ['name'],
     }
+
+    @classmethod
+    def get_local_backend(cls):
+        for local_ip in local_ipv4_addresses():
+            backend = cls.objects(ip=local_ip).first()
+            if backend:
+                return backend
 
 
 class RouterServer(Document):

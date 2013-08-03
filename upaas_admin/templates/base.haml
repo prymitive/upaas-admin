@@ -53,7 +53,7 @@
                   %a{'href':'{% url "password" %}'}
                     - trans "Change password"
             %li
-              %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
+              %a#upaas-link-logout{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
                 %i.icon-off
                 - trans "Log out"
 
