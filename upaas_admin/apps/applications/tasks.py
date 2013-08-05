@@ -86,7 +86,7 @@ def build_package(metadata, app_id=None, system_filename=None):
         else:
             log.error(u"Application with id '%s' not found" % app_id)
 
-    return pkg
+    return pkg.safe_id
 
 
 @task
@@ -120,7 +120,7 @@ def start_application(metadata, package_id):
 
     workdir = os.path.join(directory, "system")
     pkg_path = os.path.join(directory, pkg.filename)
-    final_path = os.path.join(upaas_config.paths.apps, str(pkg.id))
+    final_path = os.path.join(upaas_config.paths.apps, pkg.safe_id)
 
     if os.path.exists(final_path):
         log.error(u"Package directory already exists: %s" % final_path)

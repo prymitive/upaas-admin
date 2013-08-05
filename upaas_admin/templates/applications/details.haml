@@ -19,3 +19,22 @@
       {% trans "Name" %}:
     %dd
       = app.name
+
+  - for task in tasks
+    = task.task_id
+    = task.title
+
+- block js_bottom
+  = block.super
+
+  :javascript
+    $(document).ready(function(){
+      function my_callback(data) {
+        console.info(data);
+      }
+      {% for task in tasks %}
+        Dajaxice.upaas_admin.apps.tasks.task_status(my_callback, {
+          'task_id': '{{ task.task_id }}'
+        });
+      {% endfor %}
+    });

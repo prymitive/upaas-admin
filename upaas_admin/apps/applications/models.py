@@ -22,6 +22,7 @@ from upaas.config.metadata import MetadataConfig
 
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer
+from upaas_admin.apps.tasks.models import Task
 
 
 log = logging.getLogger(__name__)
@@ -49,6 +50,10 @@ class Package(Document):
         ],
         'ordering': ['date_created'],
     }
+
+    @property
+    def safe_id(self):
+        return str(self.id)
 
     @property
     def metadata_config(self):
@@ -91,7 +96,7 @@ class Package(Document):
             pass
 
         vars = {
-            'namespace': os.path.join(config.paths.apps, str(self.id)),
+            'namespace': os.path.join(config.paths.apps, self.safe_id),
             'chdir': config.apps.home,
             'socket': '%s:0' % backend.ip,
             'uid': config.apps.uid,
@@ -167,6 +172,10 @@ class Application(Document):
     }
 
     @property
+    def safe_id(self):
+        return str(self.id)
+
+    @property
     def metadata_config(self):
         if self.metadata:
             return MetadataConfig.from_string(self.metadata)
@@ -203,8 +212,10 @@ class Application(Document):
 
     def build_package(self, force_fresh=False):
         system_filename = None
+        title = _("Building new fresh package")
         if not force_fresh and self.current_package:
             system_filename = self.current_package.filename
+            title = _("Building new package")
         task = send_task('upaas_admin.apps.applications.tasks.build_package',
                          (self.metadata,),
                          {'app_id': self.id,
@@ -212,6 +223,8 @@ class Application(Document):
                          queue='builder')
         log.info("Build task for app '%s' queued with id '%s'" % (
             self.name, task.task_id))
+        task_link = Task(task_id=task.task_id, title=title, application=self)
+        task_link.save()
         return task.task_id
 
     def start_application(self):
