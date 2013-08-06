@@ -20,21 +20,20 @@
     %dd
       = app.name
 
-  - for task in tasks
-    = task.task_id
-    = task.title
+    %dt
+      {% trans "Interpreter" %}:
+    %dd
+      ={ app.interpreter_name } ={ app.interpreter_version }
 
-- block js_bottom
-  = block.super
+    %dt
+      {% trans "System domain" %}
+    %dd
+      %a{'href':'http://={ app.system_domain }'}
+        = app.system_domain
 
-  :javascript
-    $(document).ready(function(){
-      function my_callback(data) {
-        console.info(data);
-      }
-      {% for task in tasks %}
-        Dajaxice.upaas_admin.apps.tasks.task_status(my_callback, {
-          'task_id': '{{ task.task_id }}'
-        });
-      {% endfor %}
-    });
+    %dt
+      {% trans "Custom domains" %}
+    %dd
+      - for domain in app.domains
+        %a{'href':'={ domain }'}
+          = domain

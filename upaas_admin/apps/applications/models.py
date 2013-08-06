@@ -17,12 +17,12 @@ from celery.execute import send_task
 
 from upaas import utils
 from upaas.config.base import UPAAS_CONFIG_DIRS
-from upaas.config.main import load_main_config
 from upaas.config.metadata import MetadataConfig
 
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.config import cached_main_config
 
 
 log = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class Package(Document):
                     f.close()
                     return ret
 
-        config = load_main_config()
+        config = cached_main_config()
 
         base_template = config.interpreters['uwsgi']['template']
 
@@ -142,10 +142,13 @@ class Package(Document):
         options.extend(_load_template(template))
 
         options.append('\n# starting subscriptions block')
-        domain = '%s.%s' % (self.application.id, config.apps.domain)
         for router in RouterServer.objects(is_enabled=True):
             options.append('subscribe2 = server=%s:%d,key=%s' % (
-                router.private_ip, router.subscription_port, domain))
+                router.private_ip, router.subscription_port,
+                self.application.system_domain))
+            for domain in self.application.domains:
+                options.append('subscribe2 = server=%s:%d,key=%s' % (
+                    router.private_ip, router.subscription_port, domain))
 
         options.append('\n')
         return options
@@ -206,9 +209,16 @@ class Application(Document):
         if self.current_package:
             return self.current_package.interpreter_version
         elif self.metadata:
-            #FIXME maybe its better to load main config at startup?
-            config = load_main_config()
+            config = cached_main_config()
             return utils.select_best_version(config, self.metadata_config)
+
+    @property
+    def system_domain(self):
+        """
+        Returns automatic system domain for this application.
+        """
+        config = cached_main_config()
+        return '%s.%s' % (self.safe_id, config.apps.domain)
 
     def build_package(self, force_fresh=False):
         system_filename = None

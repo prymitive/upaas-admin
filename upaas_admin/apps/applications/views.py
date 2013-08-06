@@ -12,7 +12,6 @@ from pure_pagination.mixins import PaginationMixin
 from upaas_admin.mixin import LoginRequiredMixin, AppTemplatesDirMixin
 from upaas_admin.apps.applications.mixin import OwnedAppsMixin
 from upaas_admin.apps.applications.models import Application
-from upaas_admin.apps.tasks.models import Task
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
@@ -29,8 +28,3 @@ class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
-
-    def get_context_data(self, **kwargs):
-        context = super(ApplicationDetailView, self).get_context_data(**kwargs)
-        context['tasks'] = Task.objects(application=context['object'])
-        return context
