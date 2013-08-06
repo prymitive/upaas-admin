@@ -14,7 +14,6 @@ from dajaxice.decorators import dajaxice_register
 
 from celery.result import AsyncResult
 
-from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.tasks.models import Task
 
 
