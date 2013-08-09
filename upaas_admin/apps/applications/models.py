@@ -125,6 +125,18 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
+        plugin = None
+        try:
+            plugin = config.interpreters[self.interpreter_name]['any'][
+                'uwsgi']['plugin']
+        except (AttributeError, KeyError):
+            pass
+        try:
+            plugin = config.interpreters[self.interpreter_name][
+                self.interpreter_version]['uwsgi']['plugin']
+        except (AttributeError, KeyError):
+            pass
+
         options = ['[uwsgi]']
 
         options.append('\n# starting uWSGI config variables list')
@@ -137,6 +149,10 @@ class Package(Document):
 
         options.append('\n# starting base template')
         options.extend(_load_template(base_template))
+
+        options.append('\n# starting interpreter plugin')
+        if plugin:
+            options.append('plugin = %s' % plugin)
 
         options.append('\n# starting interpreter template')
         options.extend(_load_template(template))
