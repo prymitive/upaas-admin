@@ -97,6 +97,8 @@ def start_application(metadata, package_id):
                 log.info(u"Removing directory '%s'" % directory)
                 shutil.rmtree(directory)
 
+    #FIXME move essential stuff into Package.unpack()
+
     pkg = Package.objects(id=package_id).first()
     if not pkg:
         log.error(u"Package with id '%s' not found" % package_id)

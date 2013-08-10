@@ -26,14 +26,17 @@
       ={ app.interpreter_name } ={ app.interpreter_version }
 
     %dt
-      {% trans "System domain" %}
+      {% trans "System domain" %}:
     %dd
-      %a{'href':'http://={ app.system_domain }'}
+      %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
         = app.system_domain
 
     %dt
-      {% trans "Custom domains" %}
+      {% trans "Custom domains" %}:
     %dd
       - for domain in app.domains
-        %a{'href':'={ domain }'}
+        %a{'href':'={ domain }', 'target':'_blank'}
           = domain
+      - empty
+        .muted
+          - trans "None"
