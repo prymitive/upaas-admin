@@ -101,6 +101,9 @@ class Package(Document):
             'socket': '%s:0' % backend.ip,
             'uid': config.apps.uid,
             'gid': config.apps.gid,
+            'app_name': self.application.name,
+            'app_id': self.application.safe_id,
+            'pkg_id': self.safe_id,
         }
         try:
             vars.update(config.interpreters[self.interpreter_name]['any'][
