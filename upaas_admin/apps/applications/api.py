@@ -31,7 +31,7 @@ class ApplicationResource(MongoEngineResource):
     class Meta:
         queryset = Application.objects.all()
         resource_name = 'application'
-        excludes = ['owner']
+        excludes = ['owner', 'current_package', 'packages']
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -39,6 +39,10 @@ class ApplicationResource(MongoEngineResource):
         }
         authentication = UpaasApiKeyAuthentication()
         authorization = Authorization()
+
+    def dehydrate(self, bundle):
+        bundle.data['packages'] = len(bundle.obj.packages)
+        return bundle
 
     def obj_create(self, bundle, request=None, **kwargs):
         log.debug(u"Going to create new application for user "

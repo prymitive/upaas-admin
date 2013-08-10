@@ -181,7 +181,7 @@ class Application(Document):
                            required=True)
     metadata = StringField(verbose_name=_('Application metadata'))
     current_package = ReferenceField(Package, reverse_delete_rule=CASCADE,
-                                     dbref=False)
+                                     dbref=False, required=False)
     packages = ListField(
         ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
     domains = ListField(StringField)
