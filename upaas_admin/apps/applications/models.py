@@ -8,6 +8,8 @@
 import os
 import datetime
 import logging
+import tempfile
+import shutil
 
 from mongoengine import *
 
@@ -16,12 +18,16 @@ from django.utils.translation import ugettext_lazy as _
 from celery.execute import send_task
 
 from upaas import utils
+from upaas import tar
 from upaas.config.base import UPAAS_CONFIG_DIRS
 from upaas.config.metadata import MetadataConfig
+from upaas.storage.utils import find_storage_handler
+from upaas.storage.exceptions import StorageError
 
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.config import cached_main_config
 
 
@@ -62,8 +68,19 @@ class Package(Document):
         return {}
 
     @property
+    def upaas_config(self):
+        return cached_main_config()
+
+    @property
     def application(self):
         return Application.objects(packages=self.id).first()
+
+    @property
+    def package_path(self):
+        """
+        Unpacked package directory path
+        """
+        return os.path.join(self.upaas_config.paths.apps, self.safe_id)
 
     def generate_uwsgi_config(self, backend):
         """
@@ -79,7 +96,8 @@ class Package(Document):
                     f.close()
                     return ret
 
-        config = cached_main_config()
+        # so it won't change while generating configuration
+        config = self.upaas_config
 
         base_template = config.interpreters['uwsgi']['template']
 
@@ -96,7 +114,7 @@ class Package(Document):
             pass
 
         vars = {
-            'namespace': os.path.join(config.paths.apps, self.safe_id),
+            'namespace': self.package_path,
             'chdir': config.apps.home,
             'socket': '%s:0' % backend.ip,
             'uid': config.apps.uid,
@@ -172,6 +190,55 @@ class Package(Document):
         options.append('\n')
         return options
 
+    def unpack(self):
+        upaas_config = self.upaas_config
+
+        # directory is encoded into string to prevent unicode errors
+        directory = tempfile.mkdtemp(dir=upaas_config.paths.workdir,
+                                     prefix="upaas_package_").encode("utf-8")
+
+        storage = find_storage_handler(upaas_config)
+        if not storage:
+            log.error(u"Storage handler '%s' not "
+                      u"found" % upaas_config.storage.handler)
+
+        workdir = os.path.join(directory, "system")
+        pkg_path = os.path.join(directory, self.filename)
+
+        if os.path.exists(self.package_path):
+            log.error(u"Package directory already exists: "
+                      u"%s" % self.package_path)
+            raise UnpackError(u"Package directory already exists")
+
+        log.info(u"Fetching package '%s'" % self.filename)
+        try:
+            storage.get(self.filename, pkg_path)
+        except StorageError:
+            log.error(u"Storage error while fetching package "
+                      u"'%s'" % self.filename)
+            utils.rmdirs(directory)
+            raise StorageError(u"Can't fetch package '%s' from "
+                               u"storage" % self.filename)
+
+        log.info(u"Unpacking package")
+        os.mkdir(workdir, 0755)
+        if not tar.unpack_tar(pkg_path, workdir):
+            log.error(u"Error while unpacking package to '%s'" % workdir)
+            utils.rmdirs(directory)
+            raise UnpackError(u"Error during package unpack")
+
+        log.info(u"Package unpacked, moving into '%s'" % self.package_path)
+        try:
+            shutil.move(workdir, self.package_path)
+        except shutil.Error, e:
+            log.error(u"Error while moving unpacked package to final "
+                      u"destination: %s" % e)
+            utils.rmdirs(directory, self.package_path)
+            raise UnpackError(u"Can't move to final directory "
+                              u"'%s'" % self.package_path)
+        log.info(u"Package moved")
+        utils.rmdirs(directory)
+
 
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -204,6 +271,18 @@ class Application(Document):
         return {}
 
     @property
+    def upaas_config(self):
+        return cached_main_config()
+
+    @property
+    def vassal_path(self):
+        """
+        Application vassal config file path.
+        """
+        return os.path.join(self.upaas_config.paths.vassals,
+                            '%s.ini' % self.safe_id)
+
+    @property
     def interpreter_name(self):
         """
         Will return interpreter from current package metadata.
@@ -228,16 +307,15 @@ class Application(Document):
         if self.current_package:
             return self.current_package.interpreter_version
         elif self.metadata:
-            config = cached_main_config()
-            return utils.select_best_version(config, self.metadata_config)
+            return utils.select_best_version(self.upaas_config,
+                                             self.metadata_config)
 
     @property
     def system_domain(self):
         """
         Returns automatic system domain for this application.
         """
-        config = cached_main_config()
-        return '%s.%s' % (self.safe_id, config.apps.domain)
+        return '%s.%s' % (self.safe_id, self.upaas_config.apps.domain)
 
     def build_package(self, force_fresh=False):
         system_filename = None
@@ -258,9 +336,20 @@ class Application(Document):
 
     def start_application(self):
         if self.current_package:
+            #FIXME use right queue
             task = send_task(
                 'upaas_admin.apps.applications.tasks.start_application',
                 (self.metadata, self.current_package.id), queue='builder')
             log.info("Start task for app '%s' queued with id '%s'" % (
+                self.name, task.task_id))
+            return task.task_id
+
+    def stop_application(self):
+        if self.current_package:
+            #FIXME use right queue
+            task = send_task(
+                'upaas_admin.apps.applications.tasks.stop_application',
+                (self.id, self.current_package.id), queue='builder')
+            log.info("Stop task for app '%s' queued with id '%s'" % (
                 self.name, task.task_id))
             return task.task_id

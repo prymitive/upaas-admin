@@ -8,8 +8,6 @@
 from __future__ import absolute_import
 
 import os
-import tempfile
-import shutil
 
 from celery import task, current_task
 from celery.utils.log import get_task_logger
@@ -21,11 +19,10 @@ from upaas.config.metadata import MetadataConfig
 from upaas.builder.builder import Builder
 from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
-from upaas.storage.utils import find_storage_handler
-from upaas.storage.exceptions import StorageError
-from upaas import tar
+from upaas import processes
 
 from upaas_admin.apps.applications.models import Package, Application
+from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.servers.models import BackendServer
 
 
@@ -91,81 +88,64 @@ def build_package(metadata, app_id=None, system_filename=None):
 
 @task
 def start_application(metadata, package_id):
-    def _cleanup(*args):
-        for directory in args:
-            if os.path.isdir(directory):
-                log.info(u"Removing directory '%s'" % directory)
-                shutil.rmtree(directory)
-
-    #FIXME move essential stuff into Package.unpack()
-
     pkg = Package.objects(id=package_id).first()
     if not pkg:
         log.error(u"Package with id '%s' not found" % package_id)
         start_application.update_state(state=FAILURE)
         raise Ignore()
 
-    upaas_config = load_main_config()
-    if not upaas_config:
-        log.error(u"Missing uPaaS configuration")
-        start_application.update_state(state=FAILURE)
-        raise Ignore()
-
-    # directory is encoded into string to prevent unicode errors
-    directory = tempfile.mkdtemp(dir=upaas_config.paths.workdir,
-                                 prefix="upaas_package_").encode("utf-8")
-
-    storage = find_storage_handler(upaas_config)
-    if not storage:
-        log.error(u"Storage handler '%s' not "
-                  u"found" % upaas_config.storage.handler)
-
-    workdir = os.path.join(directory, "system")
-    pkg_path = os.path.join(directory, pkg.filename)
-    final_path = os.path.join(upaas_config.paths.apps, pkg.safe_id)
-
-    if os.path.exists(final_path):
-        log.error(u"Package directory already exists: %s" % final_path)
-        start_application.update_state(state=FAILURE)
-        raise Ignore()
-
-    log.info(u"Fetching package '%s'" % pkg.filename)
     try:
-        storage.get(pkg.filename, pkg_path)
-    except StorageError:
-        log.error(u"Storage error while fetching package '%s'" % pkg.filename)
-        start_application.update_state(state=FAILURE)
-        _cleanup(directory)
+        pkg.unpack()
+    except UnpackError:
+        log.error(u"Unpacking failed")
         raise Ignore()
 
-    log.info(u"Unpacking package")
-    os.mkdir(workdir, 0755)
-    if not tar.unpack_tar(pkg_path, workdir):
-        log.error(u"Error while unpacking package to '%s'" % workdir)
-        start_application.update_state(state=FAILURE)
-        _cleanup(directory)
-        raise Ignore()
-
-    log.info(u"Package unpacked, moving into '%s'" % final_path)
-    try:
-        shutil.move(workdir, final_path)
-    except shutil.Error, e:
-        log.error(u"Error while moving unpacked package to final "
-                  u"destination: %s" % e)
-        start_application.update_state(state=FAILURE)
-        _cleanup(directory, final_path)
-        raise Ignore()
-    log.info(u"Package moved")
-    _cleanup(directory)
-
+    #FIXME hardcoded local backend
     backend = BackendServer.get_local_backend()
     log.info(u"Generating uWSGI vassal configuration")
     options = pkg.generate_uwsgi_config(backend)
 
-    vassal_path = os.path.join(upaas_config.paths.vassals,
-                               '%s.ini' % pkg.application.id)
-    log.info(u"Saving vassal configuration to '%s'" % vassal_path)
-    with open(vassal_path, 'w') as vassal:
+    log.info(u"Saving vassal configuration to "
+             u"'%s'" % pkg.application.vassal_path)
+    with open(pkg.application.vassal_path, 'w') as vassal:
         vassal.write('\n'.join(options))
 
     log.info(u"Vassal saved")
+
+
+@task
+def stop_application(app_id, pkg_id):
+    app = Application.objects(id=app_id).first()
+    if not app:
+        log.error(u"Application with id '%s' not found" % app_id)
+        stop_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    pkg = Package.objects(id=pkg_id).first()
+    if not pkg:
+        log.error(u"Package with id '%s' not found" % pkg_id)
+        stop_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    #FIXME hardcoded local backend
+    if not os.path.isfile(app.vassal_path):
+        log.error(u"Vassal config file for application '%s' not found at "
+                  u"'%s" % (app.safe_id, app.vassal_path))
+        stop_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    log.info(u"Removing vassal config file '%s'" % app.vassal_path)
+    try:
+        os.remove(app.vassal_path)
+    except OSError, e:
+        log.error(u"Can't remove vassal config file at '%s': %s" % (
+            app.vassal_path, e))
+        stop_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    log.info(u"Removing package directory '%s'" % pkg.package_path)
+    try:
+        processes.kill_and_remove_dir(pkg.package_path)
+    except OSError, e:
+        log.error(u"Exception during package directory cleanup: %s" % e)
+    log.info(u"Application stopped")

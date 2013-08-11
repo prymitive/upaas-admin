@@ -75,6 +75,9 @@ class ApplicationResource(MongoEngineResource):
             url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/start%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('start_application'), name="start"),
+            url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/stop%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('stop_application'), name="stop"),
         ]
 
     def build_package(self, request, **kwargs):
@@ -115,6 +118,21 @@ class ApplicationResource(MongoEngineResource):
             if app.metadata and app.current_package:
                 return self.create_response(
                     request, app.start_application())
+            else:
+                return HttpResponseBadRequest(
+                    "No package built or no metadata registered for app '%s' "
+                    "with id '%s'" % (app.name, app.id))
+        else:
+            return HttpResponseNotFound("No such application")
+
+    def stop_application(self, request, **kwargs):
+        self.method_check(request, allowed=['put'])
+        app = Application.objects(
+            **self.remove_api_resource_names(kwargs)).first()
+        if app:
+            if app.metadata and app.current_package:
+                return self.create_response(
+                    request, app.stop_application())
             else:
                 return HttpResponseBadRequest(
                     "No package built or no metadata registered for app '%s' "
