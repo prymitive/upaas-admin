@@ -115,6 +115,13 @@ def start_application(metadata, package_id):
 
 @task
 def stop_application(app_id, pkg_id):
+    def _remove_pkg_dir(directory):
+        log.info(u"Removing package directory '%s'" % directory)
+        try:
+            processes.kill_and_remove_dir(directory)
+        except OSError, e:
+            log.error(u"Exception during package directory cleanup: %s" % e)
+
     app = Application.objects(id=app_id).first()
     if not app:
         log.error(u"Application with id '%s' not found" % app_id)
@@ -143,9 +150,11 @@ def stop_application(app_id, pkg_id):
         stop_application.update_state(state=FAILURE)
         raise Ignore()
 
-    log.info(u"Removing package directory '%s'" % pkg.package_path)
-    try:
-        processes.kill_and_remove_dir(pkg.package_path)
-    except OSError, e:
-        log.error(u"Exception during package directory cleanup: %s" % e)
+    _remove_pkg_dir(pkg.package_path)
+
+    log.info(u"Checking for old application packages")
+    for oldpkg in app.packages:
+        if os.path.isdir(oldpkg.package_path):
+            _remove_pkg_dir(oldpkg.package_path)
+
     log.info(u"Application stopped")
