@@ -135,22 +135,25 @@ def stop_application(app_id, pkg_id):
         raise Ignore()
 
     #FIXME hardcoded local backend
-    if not os.path.isfile(app.vassal_path):
+    # maybe this should stop app on every backend that runs this task?
+
+    if os.path.isfile(app.vassal_path):
+        log.info(u"Removing vassal config file '%s'" % app.vassal_path)
+        try:
+            os.remove(app.vassal_path)
+        except OSError, e:
+            log.error(u"Can't remove vassal config file at '%s': %s" % (
+                app.vassal_path, e))
+            stop_application.update_state(state=FAILURE)
+            raise Ignore()
+    else:
         log.error(u"Vassal config file for application '%s' not found at "
                   u"'%s" % (app.safe_id, app.vassal_path))
-        stop_application.update_state(state=FAILURE)
-        raise Ignore()
 
-    log.info(u"Removing vassal config file '%s'" % app.vassal_path)
-    try:
-        os.remove(app.vassal_path)
-    except OSError, e:
-        log.error(u"Can't remove vassal config file at '%s': %s" % (
-            app.vassal_path, e))
-        stop_application.update_state(state=FAILURE)
-        raise Ignore()
-
-    _remove_pkg_dir(pkg.package_path)
+    if os.path.isdir(pkg.package_path):
+        _remove_pkg_dir(pkg.package_path)
+    else:
+        log.info(u"Package directory not found at '%s'" % pkg.package_path)
 
     log.info(u"Checking for old application packages")
     for oldpkg in app.packages:
