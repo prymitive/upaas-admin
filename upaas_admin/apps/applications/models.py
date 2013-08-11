@@ -11,7 +11,8 @@ import logging
 import tempfile
 import shutil
 
-from mongoengine import *
+from mongoengine import (signals, Document, DateTimeField, StringField,
+                         LongField, ReferenceField, ListField, CASCADE, DENY)
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -56,6 +57,15 @@ class Package(Document):
         ],
         'ordering': ['date_created'],
     }
+
+    @classmethod
+    def post_save(cls, sender, document, **kwargs):
+        #FIXME only if application is running
+        log.info(u"Adding update task to queue")
+        #FIXME use right queue
+        send_task(
+            'upaas_admin.apps.applications.tasks.update_application',
+            (document.safe_id,), queue='builder')
 
     @property
     def safe_id(self):
@@ -339,7 +349,7 @@ class Application(Document):
             #FIXME use right queue
             task = send_task(
                 'upaas_admin.apps.applications.tasks.start_application',
-                (self.metadata, self.current_package.id), queue='builder')
+                (self.current_package.id,), queue='builder')
             log.info("Start task for app '%s' queued with id '%s'" % (
                 self.name, task.task_id))
             return task.task_id
@@ -349,7 +359,19 @@ class Application(Document):
             #FIXME use right queue
             task = send_task(
                 'upaas_admin.apps.applications.tasks.stop_application',
-                (self.id, self.current_package.id), queue='builder')
+                (self.current_package.id,), queue='builder')
             log.info("Stop task for app '%s' queued with id '%s'" % (
                 self.name, task.task_id))
             return task.task_id
+
+    def update_application(self):
+        #FIXME use right queue
+        task = send_task(
+            'upaas_admin.apps.applications.tasks.start_application',
+            (self.current_package.id,), queue='builder')
+        log.info("Start task for app '%s' queued with id '%s'" % (
+            self.name, task.task_id))
+        return task.task_id
+
+
+signals.post_save.connect(Package.post_save, sender=Package)

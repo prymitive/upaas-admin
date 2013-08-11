@@ -87,7 +87,7 @@ def build_package(metadata, app_id=None, system_filename=None):
 
 
 @task
-def start_application(metadata, package_id):
+def start_application(package_id):
     pkg = Package.objects(id=package_id).first()
     if not pkg:
         log.error(u"Package with id '%s' not found" % package_id)
@@ -100,7 +100,6 @@ def start_application(metadata, package_id):
         log.error(u"Unpacking failed")
         raise Ignore()
 
-    #FIXME hardcoded local backend
     backend = BackendServer.get_local_backend()
     log.info(u"Generating uWSGI vassal configuration")
     options = pkg.generate_uwsgi_config(backend)
@@ -114,7 +113,7 @@ def start_application(metadata, package_id):
 
 
 @task
-def stop_application(app_id, pkg_id):
+def stop_application(package_id):
     def _remove_pkg_dir(directory):
         log.info(u"Removing package directory '%s'" % directory)
         try:
@@ -122,33 +121,26 @@ def stop_application(app_id, pkg_id):
         except OSError, e:
             log.error(u"Exception during package directory cleanup: %s" % e)
 
-    app = Application.objects(id=app_id).first()
-    if not app:
-        log.error(u"Application with id '%s' not found" % app_id)
-        stop_application.update_state(state=FAILURE)
-        raise Ignore()
-
-    pkg = Package.objects(id=pkg_id).first()
+    pkg = Package.objects(id=package_id).first()
     if not pkg:
-        log.error(u"Package with id '%s' not found" % pkg_id)
+        log.error(u"Package with id '%s' not found" % package_id)
         stop_application.update_state(state=FAILURE)
         raise Ignore()
 
-    #FIXME hardcoded local backend
-    # maybe this should stop app on every backend that runs this task?
-
-    if os.path.isfile(app.vassal_path):
-        log.info(u"Removing vassal config file '%s'" % app.vassal_path)
+    if os.path.isfile(pkg.application.vassal_path):
+        log.info(u"Removing vassal config file "
+                 u"'%s'" % pkg.application.vassal_path)
         try:
-            os.remove(app.vassal_path)
+            os.remove(pkg.application.vassal_path)
         except OSError, e:
             log.error(u"Can't remove vassal config file at '%s': %s" % (
-                app.vassal_path, e))
+                pkg.application.vassal_path, e))
             stop_application.update_state(state=FAILURE)
             raise Ignore()
     else:
         log.error(u"Vassal config file for application '%s' not found at "
-                  u"'%s" % (app.safe_id, app.vassal_path))
+                  u"'%s" % (pkg.application.safe_id,
+                            pkg.application.vassal_path))
 
     if os.path.isdir(pkg.package_path):
         _remove_pkg_dir(pkg.package_path)
@@ -156,8 +148,52 @@ def stop_application(app_id, pkg_id):
         log.info(u"Package directory not found at '%s'" % pkg.package_path)
 
     log.info(u"Checking for old application packages")
-    for oldpkg in app.packages:
+    for oldpkg in pkg.application.packages:
         if os.path.isdir(oldpkg.package_path):
             _remove_pkg_dir(oldpkg.package_path)
 
     log.info(u"Application stopped")
+
+
+@task
+def update_application(package_id):
+    #FIXME refactor it to be more DRY
+
+    pkg = Package.objects(id=package_id).first()
+    if not pkg:
+        log.error(u"Package with id '%s' not found" % package_id)
+        start_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    try:
+        pkg.unpack()
+    except UnpackError:
+        log.error(u"Unpacking failed")
+        raise Ignore()
+
+    backend = BackendServer.get_local_backend()
+    log.info(u"Generating uWSGI vassal configuration")
+    options = pkg.generate_uwsgi_config(backend)
+
+    log.info(u"Saving vassal configuration to "
+             u"'%s'" % pkg.application.vassal_path)
+    with open(pkg.application.vassal_path, 'w') as vassal:
+        vassal.write('\n'.join(options))
+
+    log.info(u"Vassal saved")
+
+    #FIXME ugly hack, we should wait for app to reload (check subscriptions?)
+    import time
+    time.sleep(10)
+
+    log.info(u"Checking for old application packages")
+    for oldpkg in pkg.application.packages:
+        if oldpkg.id == pkg.id:
+            # skip current package!
+            continue
+        if os.path.isdir(oldpkg.package_path):
+            log.info(u"Removing package directory '%s'" % oldpkg.package_path)
+            try:
+                processes.kill_and_remove_dir(oldpkg.package_path)
+            except OSError, e:
+                log.error(u"Exception during package directory cleanup: %s" % e)
