@@ -196,4 +196,5 @@ def update_application(package_id):
             try:
                 processes.kill_and_remove_dir(oldpkg.package_path)
             except OSError, e:
-                log.error(u"Exception during package directory cleanup: %s" % e)
+                log.error(u"Exception during package directory cleanup: "
+                          u"%s" % e)
