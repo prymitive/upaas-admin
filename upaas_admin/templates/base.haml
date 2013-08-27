@@ -9,7 +9,7 @@
 
 - block breadcrumbs
   - breadcrumb_for "site_index"
-    %i.icon-home
+    %i.glyphicon.glyphicon-home
     Home
   - endbreadcrumb_for
 
@@ -20,25 +20,24 @@
 
   %body
 
-    .navbar.navbar-fixed-top
-      .navbar-inner
-        .container
-          %a.brand{'href':'#'}
-            %i.icon-cogs
+    .navbar.navbar-default.navbar-fixed-top
+      .container
+        .navbar-header
+          %a.navbar-brand{'href':'#'}
+            %i.glyphicon.glyphicon-cog
             uPaaS
-          %ul.nav.pull-right
+        .navbar-collapse.collapse
+          %ul.nav.navbar-nav.navbar-right
             - if user.is_superuser
               %li
                 %a{'href':'{% url "admin_users_list" %}'}
                   %strong
-                    %i.icon-wrench
+                    %i.glyphicon.glyphicon-wrench
                     - trans "Admin"
             %li.divider-vertical
-            %li
-              .navbar-search
-                %img.img-rounded{'src':'{% gravatar_url user.email 30 %}', 'height':'30', 'width':'30'}
             %li.dropdown
               %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
+                %img.img-rounded{'src':'{% gravatar_url user.email 24 %}', 'height':'24', 'width':'24'}
                 %strong
                   - if user.first_name and user.last_name
                     ={ user.first_name } ={ user.last_name }
@@ -54,12 +53,12 @@
                     - trans "Change password"
             %li
               %a#upaas-link-logout{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
-                %i.icon-off
+                %i.glyphicon.glyphicon-log-out
                 - trans "Log out"
 
     .container
 
-      - render_breadcrumbs
+      - render_breadcrumbs "django_bootstrap_breadcrumbs/bootstrap3.html"
 
       - if messages
         - for message in messages

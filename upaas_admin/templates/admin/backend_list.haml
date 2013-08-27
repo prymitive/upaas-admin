@@ -24,7 +24,7 @@
         - trans "Backends"
 
   %p
-    %a.btn{'href':'{% url "admin_backend_create" %}'}
+    %a.btn.btn-default{'href':'{% url "admin_backend_create" %}'}
       - trans "Create new backend"
 
   %table.table.table-striped
@@ -48,6 +48,6 @@
             = backend_object.ip
           %td
             - if backend_object.is_enabled
-              %i.icon-thumbs-up-alt
+              %i.glyphicon.glyphicon-thumbs-up
 
   - include "partials/pagination_footer.haml"

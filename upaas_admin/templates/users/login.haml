@@ -16,12 +16,13 @@
 
       .row
         .page-header
-          %h1
+          %h1.text-center
             - trans "You need to login to access this page"
 
-        %form.form-horizontal.well{'method':'post', 'action':'{% url "django.contrib.auth.views.login" %}'}
-          - csrf_token
-          = form|crispy
-          %input{'type':'hidden', 'name':'next', 'value':'={ next }'}/
-          .controls
-            %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Login" %}'}/
+        .col-md-6.col-md-offset-3
+          %form.well{'method':'post', 'action':'{% url "django.contrib.auth.views.login" %}'}
+            - csrf_token
+            = form|crispy
+            %input{'type':'hidden', 'name':'next', 'value':'={ next }'}/
+            .controls
+              %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Login" %}'}/

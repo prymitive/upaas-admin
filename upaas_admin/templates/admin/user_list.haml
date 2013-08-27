@@ -24,7 +24,7 @@
         - trans "Backends"
 
   %p
-    %a.btn{'href':'{% url "admin_user_create" %}'}
+    %a.btn.btn-default{'href':'{% url "admin_user_create" %}'}
       - trans "Create new user"
 
   %table.table.table-striped
@@ -58,9 +58,9 @@
             = user_object.email
           %td
             - if user_object.is_active
-              %i.icon-thumbs-up-alt
+              %i.glyphicon.glyphicon-thumbs-up
           %td
             - if user_object.is_superuser
-              %i.icon-thumbs-up-alt
+              %i.glyphicon.glyphicon-thumbs-up
 
   - include "partials/pagination_footer.haml"

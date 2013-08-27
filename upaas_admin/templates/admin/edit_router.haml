@@ -14,9 +14,9 @@
 
 - block content
 
-  %form.form-horizontal.well{'method':'post', 'action':'{% url "admin_router_edit" object.name %}'}
+  %form.well{'method':'post', 'action':'{% url "admin_router_edit" object.name %}'}
     - csrf_token
     = form|crispy
     .controls
-      %input.btn{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
+      %input.btn.btn-default{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
       %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Save" %}'}/

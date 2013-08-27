@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'upaas_admin.apps.servers',
     'upaas_admin.apps.admin',
     'upaas_admin.apps.tasks',
+    'upaas_admin.apps.scheduler',
 )
 
 
@@ -233,6 +234,7 @@ PIPELINE_CSS = {
     'base': {
         'source_filenames': (
             'bootstrap/less/bootstrap.less',
+            'bootstrap/less/theme.less',
             'upaas/site.less',
         ),
         'output_filename': 'css/bootstrap.css',
@@ -328,3 +330,10 @@ PAGINATION_SETTINGS = {
     'PAGE_RANGE_DISPLAYED': 6,
     'MARGIN_PAGES_DISPLAYED': 2,
 }
+
+
+#==============================================================================
+# django-crispy-forms
+#==============================================================================
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

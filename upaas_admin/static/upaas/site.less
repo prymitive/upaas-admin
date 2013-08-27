@@ -2,10 +2,22 @@
 
 body {
   // needed by navbar fixed to the top of the page
-  padding-top: 50px;
+  padding-top: 70px;
 }
 
 
 #upaas-link-logout:hover {
-  color: @btnDangerBackground;
+  color: @btn-danger-bg;
+}
+
+
+.nav-tabs {
+  // add margin to all tabs bottom, before tab content
+  margin-bottom: 15px;
+}
+
+
+.btn-default {
+  // reset text shadow on default buttons, it looks ugly
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
 }

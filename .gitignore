@@ -42,6 +42,6 @@ upaas_admin/settings/local/*
 docs/_build
 
 # less compiled to css
-upaas_admin/static/bootstrap/less/bootstrap.css
-upaas_admin/static/upaas/site.css
-upaas_admin/static/zeroclipboard/zeroclipboard.css
+upaas_admin/static/bootstrap/less/*.css
+upaas_admin/static/upaas/*.css
+upaas_admin/static/zeroclipboard/*.css

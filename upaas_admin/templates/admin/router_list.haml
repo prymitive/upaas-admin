@@ -24,7 +24,7 @@
         - trans "Backends"
 
   %p
-    %a.btn{'href':'{% url "admin_router_create" %}'}
+    %a.btn.btn-default{'href':'{% url "admin_router_create" %}'}
       - trans "Create new router"
 
   %table.table.table-striped
@@ -52,6 +52,6 @@
             = router_object.private_ip
           %td
             - if router_object.is_enabled
-              %i.icon-thumbs-up-alt
+              %i.glyphicon.glyphicon-thumbs-up
 
   - include "partials/pagination_footer.haml"

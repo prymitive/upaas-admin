@@ -26,12 +26,12 @@
     .tab-content
 
       #details.tab-pane.active
-        .row-fluid
-          .span2.text-center
+        .row
+          .col-md-2.text-center
             %img.img-rounded{'src':'{% gravatar_url user.email 120 %}', 'height':'120', 'width':'120'}
               %a{'href':'https://gravatar.com', 'target':'_blank'}
                 - trans "Change"
-          .span10
+          .col-md-10
             %dl.dl-horizontal
               %dt
                 {% trans "First name" %}:
@@ -57,19 +57,19 @@
                 {% trans "Administrator" %}:
               %dd
                 - if user.is_superuser
-                  %i.icon-thumbs-up-alt
+                  %i.glyphicon.glyphicon-thumbs-up
                 - else
-                  %i.icon-thumbs-down-alt
+                  %i.glyphicon.glyphicon-thumbs-down
 
       #apikey.tab-pane
-        %dl.dl-horizontal
-          %dt
-            {% trans "Api key" %}:
-          %dd
-            .input-append
-              %input.input-xxlarge{'type':'text', 'readonly':'readonly', 'value': '={ user.apikey }'}
-              %button.btn{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
-                %i.icon-copy
+        .form-horizontal{'role':'form'}
+          .form-group
+            %label.col-lg-2.control-label{'for':'apikey-input'}
+              - trans "Api key"
+            .col-lg-8
+              %input.form-control{'id':'apikey-input','type':'text', 'readonly':'readonly', 'value': '={ user.apikey }'}
+            %button.btn.btn-default{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
+              %i.glyphicon.glyphicon-file
 
         .text-center
           %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
