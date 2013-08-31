@@ -14,4 +14,6 @@ urlpatterns = patterns(
     'upaas_admin.apps.applications.views',
     url(r'^show/(?P<slug>[-_\w]+)$', ApplicationDetailView.as_view(),
         name='app_details'),
+    url(r'^register$', RegisterApplicationView.as_view(),
+        name='app_register'),
 )

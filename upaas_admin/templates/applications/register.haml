@@ -1,0 +1,21 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "Register new application" "app_register"
+
+
+- block content
+
+  %form.well{'method':'post', 'action':'{% url "app_register" %}', 'enctype':'multipart/form-data'}
+    - csrf_token
+    = form|crispy
+    .controls
+      %input.btn.btn-default{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
+      %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Register" %}'}/

@@ -6,6 +6,10 @@
 
 - block content
 
+  %p
+    %a.btn.btn-default{'href':'{% url "app_register" %}'}
+      - trans "Register new application"
+
   %table.table.table-striped
 
     %thead

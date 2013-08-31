@@ -15,6 +15,7 @@ from mongoengine import (signals, Document, DateTimeField, StringField,
                          LongField, ReferenceField, ListField, CASCADE, DENY)
 
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
 
 from celery.execute import send_task
 
@@ -261,7 +262,7 @@ class Application(Document):
                                      dbref=False, required=False)
     packages = ListField(
         ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
-    domains = ListField(StringField)
+    domains = ListField(StringField) #FIXME uniqness
 
     meta = {
         'indexes': [
@@ -326,6 +327,9 @@ class Application(Document):
         Returns automatic system domain for this application.
         """
         return '%s.%s' % (self.safe_id, self.upaas_config.apps.domain)
+
+    def get_absolute_url(self):
+        return reverse('app_details', args=[self.safe_id])
 
     def build_package(self, force_fresh=False):
         system_filename = None
