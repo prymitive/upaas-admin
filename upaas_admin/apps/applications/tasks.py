@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 
 import os
+import time
 
 from celery import task, current_task
 from celery.utils.log import get_task_logger
@@ -182,10 +183,6 @@ def update_application(package_id):
 
     log.info(u"Vassal saved")
 
-    #FIXME ugly hack, we should wait for app to reload (check subscriptions?)
-    import time
-    time.sleep(10)
-
     log.info(u"Checking for old application packages")
     for oldpkg in pkg.application.packages:
         if oldpkg.id == pkg.id:
@@ -193,6 +190,17 @@ def update_application(package_id):
             continue
         if os.path.isdir(oldpkg.package_path):
             log.info(u"Removing package directory '%s'" % oldpkg.package_path)
+
+            # if there are running pids inside package dir we will need to wait
+            # this should only happen during upgrade, when we need to wait
+            # for app to reload into new package dir
+            pids = processes.directory_pids(oldpkg.package_path)
+            while pids:
+                log.info(u"Waiting for %d pid(s) in %s to terminate" % (
+                    len(pids), oldpkg.package_path))
+                time.sleep(2)
+                pids = processes.directory_pids(oldpkg.package_path)
+
             try:
                 processes.kill_and_remove_dir(oldpkg.package_path)
             except OSError, e:
