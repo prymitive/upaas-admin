@@ -262,7 +262,7 @@ class Application(Document):
                                      dbref=False, required=False)
     packages = ListField(
         ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
-    domains = ListField(StringField) #FIXME uniqness
+    domains = ListField(StringField)  # FIXME uniqness
 
     meta = {
         'indexes': [
