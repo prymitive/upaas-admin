@@ -3,6 +3,7 @@
 
 - load i18n
 - load django_bootstrap_breadcrumbs
+- load gravatar
 
 
 - block breadcrumbs
@@ -47,7 +48,7 @@
     %tbody
       - for user_object in object_list
         %tr
-          %td
+          %td{'style':'background: url("{% gravatar_url user_object.email 32 %}") left no-repeat; padding-left:40px;'}
             %a{'href':'{% url "admin_user_edit" user_object.username %}'}
               = user_object.username
           %td

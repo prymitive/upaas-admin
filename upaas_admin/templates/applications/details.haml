@@ -13,30 +13,44 @@
 
 - block content
 
-  %dl.dl-horizontal
+  .col-md-8
+    %dl.dl-horizontal
 
-    %dt
-      {% trans "Name" %}:
-    %dd
-      = app.name
+      %dt
+        {% trans "Name" %}:
+      %dd
+        = app.name
 
-    %dt
-      {% trans "Interpreter" %}:
-    %dd
-      ={ app.interpreter_name } ={ app.interpreter_version }
+      %dt
+        {% trans "Interpreter" %}:
+      %dd
+        ={ app.interpreter_name } ={ app.interpreter_version }
 
-    %dt
-      {% trans "System domain" %}:
-    %dd
-      %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
-        = app.system_domain
+      %dt
+        {% trans "System domain" %}:
+      %dd
+        %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
+          = app.system_domain
 
-    %dt
-      {% trans "Custom domains" %}:
-    %dd
-      - for domain in app.domains
-        %a{'href':'={ domain }', 'target':'_blank'}
-          = domain
-      - empty
-        .muted
-          - trans "None"
+      %dt
+        {% trans "Custom domains" %}:
+      %dd
+        - for domain in app.domains
+          %a{'href':'={ domain }', 'target':'_blank'}
+            = domain
+        - empty
+          .muted
+            - trans "None"
+
+  .col-md-4
+    .panel.panel-default
+      .panel-heading
+        - trans "Actions"
+      .panel-body
+        %ul.nav.nav-pills.nav-stacked
+          %li
+            %a{'href':'#'}
+              - trans "Build new package"
+          %li{'class':'{% if not app.packages %}disabled{% endif %}'}
+            %a{'href':'#'}
+              - trans "Start application"
