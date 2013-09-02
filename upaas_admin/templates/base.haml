@@ -9,7 +9,7 @@
 
 - block breadcrumbs
   - breadcrumb_for "site_index"
-    %i.glyphicon.glyphicon-home
+    %span.glyphicon.glyphicon-home
     Home
   - endbreadcrumb_for
 
@@ -24,7 +24,7 @@
       .container
         .navbar-header
           %a.navbar-brand{'href':'#'}
-            %i.glyphicon.glyphicon-cog
+            %span.glyphicon.glyphicon-cog
             uPaaS
         .navbar-collapse.collapse
           %ul.nav.navbar-nav.navbar-right
@@ -32,7 +32,7 @@
               %li
                 %a{'href':'{% url "admin_users_list" %}'}
                   %strong
-                    %i.glyphicon.glyphicon-wrench
+                    %span.glyphicon.glyphicon-wrench
                     - trans "Admin"
             %li.divider-vertical
             %li.dropdown
@@ -53,7 +53,7 @@
                     - trans "Change password"
             %li
               %a#upaas-link-logout{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
-                %i.glyphicon.glyphicon-log-out
+                %span.glyphicon.glyphicon-log-out
                 - trans "Log out"
 
     .container

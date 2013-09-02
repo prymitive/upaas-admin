@@ -49,8 +49,20 @@
       .panel-body
         %ul.nav.nav-pills.nav-stacked
           %li
-            %a{'href':'#'}
+            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.build_package(callback, {"app_id":"{{ app.safe_id }}"});'}
+              %span.glyphicon.glyphicon-cog
               - trans "Build new package"
           %li{'class':'{% if not app.packages %}disabled{% endif %}'}
-            %a{'href':'#'}
+            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.start_app(callback, {"app_id":"{{ app.safe_id }}"});'}
+              %span.glyphicon.glyphicon-play
               - trans "Start application"
+          %li{'class':'{% if not app.packages %}disabled{% endif %}'}
+            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.stop_app(callback, {"app_id":"{{ app.safe_id }}"});'}
+              %span.glyphicon.glyphicon-stop
+              - trans "Stop application"
+
+- block js_bottom
+  = block.super
+
+  :javascript
+    function callback(data) {}
