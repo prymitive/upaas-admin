@@ -6,7 +6,9 @@ python:
 
 install: "pip install -Ur requirements.txt --use-mirrors"
 
-script: "py.test -vs --pep8 --cov upaas_admin"
+script:
+  - py.test -vs --pep8
+  - ./manage.py test -v 0 users
 
 services:
   - mongodb

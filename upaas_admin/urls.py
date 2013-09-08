@@ -36,8 +36,9 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='site_index'),
 
     url(r'^login$', 'django.contrib.auth.views.login',
-        {'template_name': 'users/login.haml'}),
-    url(r'^logout$', 'django.contrib.auth.views.logout_then_login'),
+        {'template_name': 'users/login.haml'}, name='site_login'),
+    url(r'^logout$', 'django.contrib.auth.views.logout_then_login',
+        name='site_logout'),
 
     url(r'^password$', 'django.contrib.auth.views.password_change',
         {'template_name': 'users/password.haml'}, name='password'),

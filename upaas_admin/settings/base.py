@@ -94,10 +94,6 @@ if not os.path.exists(VAR_ROOT):
 
 ROOT_URLCONF = 'upaas_admin.urls'
 
-LOGIN_URL = '/login/'
-LOGOUT_URL = '/logout/'
-LOGIN_REDIRECT_URL = '/'
-
 STATIC_URL = '/static/'
 MEDIA_URL = '/uploads/'
 
@@ -337,3 +333,10 @@ PAGINATION_SETTINGS = {
 #==============================================================================
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+
+#==============================================================================
+# tests
+#==============================================================================
+
+TEST_RUNNER = 'upaas_admin.contrib.tests.MongoEngineTestRunner'
