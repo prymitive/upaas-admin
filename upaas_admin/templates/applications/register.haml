@@ -13,9 +13,5 @@
 
 - block content
 
-  %form.well{'method':'post', 'action':'{% url "app_register" %}', 'enctype':'multipart/form-data'}
-    - csrf_token
-    = form|crispy
-    .controls
-      %input.btn.btn-default{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
-      %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Register" %}'}/
+  .well
+    - crispy form

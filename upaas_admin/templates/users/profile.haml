@@ -64,9 +64,9 @@
       #apikey.tab-pane
         .form-horizontal{'role':'form'}
           .form-group
-            %label.col-lg-2.control-label{'for':'apikey-input'}
+            %label.col-md-2.control-label{'for':'apikey-input'}
               - trans "Api key"
-            .col-lg-8
+            .col-md-8
               %input.form-control{'id':'apikey-input','type':'text', 'readonly':'readonly', 'value': '={ user.apikey }'}
             %button.btn.btn-default{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
               %span.glyphicon.glyphicon-file
