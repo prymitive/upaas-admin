@@ -7,6 +7,10 @@
 
 
 from setuptools import setup, find_packages
+from pip.req import parse_requirements
+
+
+required = parse_requirements('requirements.txt')
 
 
 setup(
@@ -20,4 +24,5 @@ setup(
     packages=find_packages(),
     package_data={'upaas_admin': ['static/*.*', 'templates/*.*']},
     scripts=['upaas_admin/manage.py'],
+    install_requires=[str(r.req) for r in required],
 )
