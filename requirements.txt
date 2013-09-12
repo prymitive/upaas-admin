@@ -2,7 +2,7 @@ pytest>=2.3
 pytest-cov
 pytest-pep8
 pytest-capturelog
--e git+git@github.com:prymitive/upaas-common.git#egg=upaas-common
+-e git+https://github.com/prymitive/upaas-common.git#egg=upaas-common
 django>=1.5,<1.6
 mongoengine>=0.8.3,<0.9
 blinker
