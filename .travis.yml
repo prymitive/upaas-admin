@@ -8,6 +8,7 @@ install: "pip install -Ur requirements.txt --use-mirrors"
 
 script:
   - py.test -vs --pep8
+  - ./setup.py develop
   - UPAAS_CONFIG_DIR=tests ./upaas_admin/manage.py test -v 0 users
 
 services:
