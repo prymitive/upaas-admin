@@ -8,7 +8,7 @@ install: "pip install -Ur requirements.txt --use-mirrors"
 
 script:
   - py.test -vs --pep8
-  - cd upaas_admin && ./manage.py test -v 0 users
+  - cd upaas_admin && UPAAS_CONFIG_DIR=../tests/ ./manage.py test -v 0 users
 
 services:
   - mongodb
