@@ -4,7 +4,6 @@ pytest-pep8
 pytest-capturelog
 -e git+https://github.com/prymitive/upaas-common.git#egg=upaas-common
 django>=1.5,<1.6
-mongoengine>=0.8.3,<0.9
 blinker
 hamlpy>=0.82.2
 django-tastypie==0.9.15
