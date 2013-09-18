@@ -50,6 +50,9 @@ class User(MongoUser):
         if not document.apikey:
             log.info("Generating API key for '%s'" % document.username)
             document.apikey = User.generate_apikey()
+
+    @classmethod
+    def post_save(cls, sender, document, **kwargs):
         user_budget = UserBudget.objects(user=document).first()
         if not user_budget:
             log.info(u"Saving default user budget for "
@@ -68,3 +71,4 @@ class User(MongoUser):
 
 
 signals.pre_save.connect(User.pre_save, sender=User)
+signals.post_save.connect(User.post_save, sender=User)
