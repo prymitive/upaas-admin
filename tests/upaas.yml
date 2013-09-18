@@ -1,6 +1,12 @@
 # uPaaS configuration
 
 
+defaults:
+  budget:
+    apps_count: 0
+    memory_limit: 512
+
+
 apps:
   uid: www-data
   gid: www-data
