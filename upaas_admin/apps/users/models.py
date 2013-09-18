@@ -15,6 +15,8 @@ from mongoengine.django.auth import User as MongoUser
 from mongoengine.fields import StringField
 from mongoengine import signals
 
+from upaas_admin.apps.scheduler.models import UserBudget
+
 
 log = logging.getLogger(__name__)
 
@@ -48,9 +50,21 @@ class User(MongoUser):
         if not document.apikey:
             log.info("Generating API key for '%s'" % document.username)
             document.apikey = User.generate_apikey()
+        user_budget = UserBudget.objects(user=document).first()
+        if not user_budget:
+            log.info(u"Saving default user budget for "
+                     u"'%s'" % document.username)
+            user_budget = UserBudget(user=document,
+                                     **UserBudget.get_default_limits())
+            user_budget.save()
 
-    def get_full_name_or_login(self):
+    @property
+    def full_name_or_login(self):
         return self.get_full_name() or self.username
+
+    @property
+    def budget(self):
+        return UserBudget.objects(user=self).first()
 
 
 signals.pre_save.connect(User.pre_save, sender=User)

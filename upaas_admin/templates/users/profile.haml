@@ -8,7 +8,7 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb user.get_full_name_or_login "users_profile"
+  - breadcrumb user.full_name_or_login "users_profile"
 
 
 - block content
@@ -22,6 +22,9 @@
       %li
         %a{'href':'#apikey', 'data-toggle':'tab'}
           - trans "API key"
+      %li
+        %a{'href':'#budget', 'data-toggle':'tab'}
+          - trans "Budget"
 
     .tab-content
 
@@ -75,6 +78,23 @@
           %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
             - trans "Reset API key"
 
+      #budget.tab-pane
+        %dl.dl-horizontal
+          %dt
+            {% trans "Application limit" %}:
+          %dd
+            - if user.budget.apps_count
+              = user.budget.apps_count
+            - else
+              - trans "no limit"
+            %span#help-apps_count.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of running applications" %}'}
+
+          %dt
+            {% trans "Memory limit" %}:
+          %dd
+            ={ user.budget.memory_limit } MB
+            %span#help-memory_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum amount of memory that can be allocated to all running applications" %}'}
+
   - block js_bottom
     = block.super
 
@@ -95,4 +115,6 @@
             .tooltip('fixTitle')
             .tooltip('show');
         });
+        $('#help-apps_count').tooltip({container: '.upaas-content'});
+        $('#help-memory_limit').tooltip({container: '.upaas-content'});
       });

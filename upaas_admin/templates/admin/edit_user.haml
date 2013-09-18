@@ -9,7 +9,7 @@
 - block breadcrumbs
   = block.super
   - breadcrumb "Users" "admin_users_list"
-  - breadcrumb object.get_full_name_or_login "admin_user_edit" object.username
+  - breadcrumb object.full_name_or_login "admin_user_edit" object.username
 
 
 - block content
