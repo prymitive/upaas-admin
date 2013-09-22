@@ -53,6 +53,10 @@
               %span.glyphicon.glyphicon-cog
               - trans "Build new package"
           %li{'class':'{% if not app.packages %}disabled{% endif %}'}
+            %a{'href':'{% url "app_start" app.safe_id %}'}
+              %span.glyphicon.glyphicon-play
+              - trans "Run application"
+          %li{'class':'{% if not app.packages %}disabled{% endif %}'}
             %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.start_app(callback, {"app_id":"{{ app.safe_id }}"});'}
               %span.glyphicon.glyphicon-play
               - trans "Start application"

@@ -12,7 +12,8 @@ import tempfile
 import shutil
 
 from mongoengine import (signals, Document, DateTimeField, StringField,
-                         LongField, ReferenceField, ListField, CASCADE, DENY)
+                         LongField, ReferenceField, ListField, CASCADE, DENY,
+                         QuerySetManager)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -263,6 +264,8 @@ class Application(Document):
     packages = ListField(
         ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
     domains = ListField(StringField)  # FIXME uniqness
+
+    _default_manager = QuerySetManager()
 
     meta = {
         'indexes': [

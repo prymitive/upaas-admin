@@ -17,8 +17,10 @@ class UserBudget(Document):
     How much resources can user apps consume.
     """
     user = ReferenceField('User', dbref=False)
-    apps_count = LongField(required=True, verbose_name=_('application limit'))
-    memory_limit = LongField(required=True, verbose_name=_('memory limit'))
+    apps_count = LongField(required=True,
+                           verbose_name=_('application count limit'))
+    memory_limit = IntField(required=True,
+                            verbose_name=_('memory limit in MB'))
     #TODO add cgroup limits
 
     _default_manager = QuerySetManager()
@@ -41,7 +43,8 @@ class ApplicationRunPlan(Document):
     """
     application = ReferenceField('Application', dbref=False)
     backends = ListField(ReferenceField('BackendServer', dbref=False))
-    memory_limit = LongField(required=False, verbose_name=_('memory limit'))
+    memory_limit = IntField(required=False,
+                            verbose_name=_('memory limit in MB'))
     #TODO add cgroup limits
 
     _default_manager = QuerySetManager()

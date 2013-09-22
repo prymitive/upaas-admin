@@ -16,4 +16,6 @@ urlpatterns = patterns(
         name='app_details'),
     url(r'^register$', RegisterApplicationView.as_view(),
         name='app_register'),
+    url(r'^start/(?P<slug>[-_\w]+)$', StartApplicationView.as_view(),
+        name='app_start'),
 )

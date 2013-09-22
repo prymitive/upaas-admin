@@ -6,6 +6,10 @@
 
 
 from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic.detail import SingleObjectMixin
+from django.core.urlresolvers import reverse
+from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
 
 from pure_pagination.mixins import PaginationMixin
 
@@ -13,6 +17,7 @@ from upaas_admin.mixin import LoginRequiredMixin, AppTemplatesDirMixin
 from upaas_admin.apps.applications.mixin import OwnedAppsMixin
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.applications.forms import RegisterApplicationForm
+from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
@@ -41,3 +46,34 @@ class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
         form.instance.owner = self.request.user
         form.instance.metadata = form.cleaned_data['metadata']
         return super(RegisterApplicationView, self).form_valid(form)
+
+
+class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
+                           CreateView, SingleObjectMixin):
+    template_name = 'start.haml'
+    model = Application
+    form_class = ApplicationRunPlanForm
+    slug_field = 'id'
+    context_object_name = 'app'
+
+    def get_success_url(self):
+        return reverse('app_details', args=[self.app.safe_id])
+
+    def get_context_data(self, **kwargs):
+        context = super(StartApplicationView, self).get_context_data(**kwargs)
+        context['app'] = self.app
+        return context
+
+    def get_form(self, form_class):
+        #TODO disallow to start if app already has run plan
+        self.app = self.get_object()
+        form = super(StartApplicationView, self).get_form(form_class)
+        form.user = self.request.user
+        form.helper.form_action = reverse('app_start', args=[self.app.safe_id])
+        return form
+
+    def form_valid(self, form):
+        form.instance.application = self.app
+        messages.success(self.request, _(u"Application started successfully"))
+        #TODO actually start the app
+        return super(StartApplicationView, self).form_valid(form)
