@@ -69,6 +69,8 @@
           .form-group
             %label.col-md-2.control-label{'for':'apikey-input'}
               - trans "Api key"
+              %span#help-apikey.glyphicon.glyphicon-question-sign{'title':'{% trans "API key is used for accessing uPaaS using cli client" %}'}
+              :
             .col-md-8
               %input.form-control{'id':'apikey-input','type':'text', 'readonly':'readonly', 'value': '={ user.apikey }'}
             %button.btn.btn-default{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
@@ -81,19 +83,21 @@
       #budget.tab-pane
         %dl.dl-horizontal
           %dt
-            {% trans "Application limit" %}:
+            {% trans "Application limit" %}
+            %span#help-apps_count.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of running applications" %}'}
+            :
           %dd
             - if user.budget.apps_count
               = user.budget.apps_count
             - else
               - trans "no limit"
-            %span#help-apps_count.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of running applications" %}'}
 
           %dt
-            {% trans "Memory limit" %}:
+            {% trans "Memory limit" %}
+            %span#help-memory_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum amount of memory that can be allocated to all running applications" %}'}
+            :
           %dd
             ={ user.budget.memory_limit } MB
-            %span#help-memory_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum amount of memory that can be allocated to all running applications" %}'}
 
   - block js_bottom
     = block.super
@@ -115,6 +119,7 @@
             .tooltip('fixTitle')
             .tooltip('show');
         });
+        $('#help-apikey').tooltip({container:'.upaas-content'});
         $('#help-apps_count').tooltip({container: '.upaas-content'});
         $('#help-memory_limit').tooltip({container: '.upaas-content'});
       });
