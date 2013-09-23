@@ -20,7 +20,7 @@ class UserBudget(Document):
     apps_count = LongField(required=True,
                            verbose_name=_('application count limit'))
     memory_limit = IntField(required=True,
-                            verbose_name=_('memory limit in MB'))
+                            verbose_name=_('memory limit'))
     #TODO add cgroup limits
 
     _default_manager = QuerySetManager()
@@ -44,7 +44,7 @@ class ApplicationRunPlan(Document):
     application = ReferenceField('Application', dbref=False)
     backends = ListField(ReferenceField('BackendServer', dbref=False))
     memory_limit = IntField(required=False,
-                            verbose_name=_('memory limit in MB'))
+                            verbose_name=_('memory limit'))
     #TODO add cgroup limits
 
     _default_manager = QuerySetManager()

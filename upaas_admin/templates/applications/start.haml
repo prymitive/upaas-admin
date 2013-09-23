@@ -1,0 +1,18 @@
+- extends 'base.haml'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb app.name "app_details" app.safe_id
+  - breadcrumb "Start application" "app_start"
+
+
+- block content
+
+  .well
+    - crispy form
