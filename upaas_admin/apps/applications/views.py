@@ -74,6 +74,12 @@ class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
 
     def form_valid(self, form):
         form.instance.application = self.app
-        messages.success(self.request, _(u"Application started successfully"))
-        #TODO actually start the app
-        return super(StartApplicationView, self).form_valid(form)
+        ret = super(StartApplicationView, self).form_valid(form)
+        if not self.app.start_application():
+            messages.error(self.request, _(u"Couldn't start application, no "
+                                           u"backend available"))
+            self.app.run_plan.delete()
+        else:
+            messages.success(self.request, _(u"Application started "
+                                             u"successfully"))
+        return ret

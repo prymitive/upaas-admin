@@ -62,7 +62,7 @@
 
       - if messages
         - for message in messages
-          .alert{'class':'alert-={message.tags}'}
+          .alert{'class':'alert-{% if "error" in message.tags %}danger{% else %}{{ message.tags }}{% endif %}'}
             %button.close{'type':'button', 'data-dismiss':'alert'}×
             = message
 

@@ -30,8 +30,10 @@ from upaas.storage.exceptions import StorageError
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.config import cached_main_config
+from upaas_admin.apps.scheduler.base import select_best_backend
 
 
 log = logging.getLogger(__name__)
@@ -331,6 +333,20 @@ class Application(Document):
         """
         return '%s.%s' % (self.safe_id, self.upaas_config.apps.domain)
 
+    @property
+    def run_plan(self):
+        """
+        Application run plan if it is present, None otherwise.
+        """
+        return ApplicationRunPlan.objects(application=self).first()
+
+    @property
+    def can_start(self):
+        """
+        Returns True only if package is not started but it can be.
+        """
+        return bool(self.current_package and self.run_plan is None)
+
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])
 
@@ -353,23 +369,35 @@ class Application(Document):
 
     def start_application(self):
         if self.current_package:
-            #FIXME use right queue
+            backend = select_best_backend()
+            if not backend:
+                log.error(u"Can't start '%s', no backend "
+                          u"available" % self.name)
+                return
+
+            log.info(u"Setting backend '%s' in '%s' run plan" % (backend.name,
+                                                                 self.name))
+            run_plan = self.run_plan
+            run_plan.backends = [backend]
+            run_plan.save()
+
             task = send_task(
                 'upaas_admin.apps.applications.tasks.start_application',
-                (self.current_package.id,), queue='builder')
-            log.info("Start task for app '%s' queued with id '%s'" % (
-                self.name, task.task_id))
-            return task.task_id
+                (self.current_package.id,), queue=backend.name)
+            log.info("Start task for app '%s' queued with id '%s' in queue "
+                     "'%s'" % (self.name, task.task_id, backend.name))
+            return True
 
     def stop_application(self):
         if self.current_package:
-            #FIXME use right queue
-            task = send_task(
-                'upaas_admin.apps.applications.tasks.stop_application',
-                (self.current_package.id,), queue='builder')
-            log.info("Stop task for app '%s' queued with id '%s'" % (
-                self.name, task.task_id))
-            return task.task_id
+            run_plan = self.run_plan
+            for backend in run_plan.backends:
+                task = send_task(
+                    'upaas_admin.apps.applications.tasks.stop_application',
+                    (self.current_package.id,), queue=backend.name)
+                log.info("Stop task for app '%s' with id '%s' in queue "
+                         "'%s'" % (self.name, task.task_id, backend.name))
+            run_plan.delete()
 
     def update_application(self):
         #FIXME use right queue

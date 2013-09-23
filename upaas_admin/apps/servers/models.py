@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from upaas.inet import local_ipv4_addresses
 
 from upaas_admin.contrib.fields import IPv4Field
+from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 
 
 class BackendServer(Document):
@@ -40,6 +41,14 @@ class BackendServer(Document):
             backend = cls.objects(ip=local_ip).first()
             if backend:
                 return backend
+
+    @property
+    def run_plans(self):
+        """
+        Returns the list of application run plans scheduled to be running on
+        this backend.
+        """
+        return ApplicationRunPlan.objects(backends=self)
 
 
 class RouterServer(Document):
