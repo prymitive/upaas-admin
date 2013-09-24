@@ -118,10 +118,30 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
+        ports_data = backend.application_ports(self.application)
+        ports = {}
+        needs_update = False
+        if ports_data and 'socket' in ports_data.ports:
+            ports['socket'] = ports_data.ports['socket']
+        else:
+            ports['socket'] = backend.find_free_port()
+            needs_update = True
+        if ports_data and 'stats' in ports_data.ports:
+            ports['stats'] = ports_data.ports['stats']
+        else:
+            ports['stats'] = backend.find_free_port()
+            needs_update = True
+        if needs_update:
+            backend.set_application_ports(self.application, ports)
+
+        log.info(u"Using socket=%d and stats=%d for '%s'" % (
+            ports['socket'], ports['stats'], self.application.name))
+
         vars = {
             'namespace': self.package_path,
             'chdir': config.apps.home,
-            'socket': '%s:0' % backend.ip,
+            'socket': '%s:%d' % (backend.ip, ports['socket']),
+            'stats': '%s:%d' % (backend.ip, ports['stats']),
             'uid': config.apps.uid,
             'gid': config.apps.gid,
             'app_name': self.application.name,
@@ -388,6 +408,7 @@ class Application(Document):
             if not run_plan:
                 return
             for backend in run_plan.backends:
+                backend.delete_application_ports(self)
                 task = send_task(
                     'upaas_admin.apps.applications.tasks.stop_application',
                     (self.current_package.id,), queue=backend.name)

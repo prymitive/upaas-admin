@@ -19,7 +19,6 @@ def select_best_backend():
         for run_plan in backend.run_plans:
             scores = dict(scores.items() +
                           {backend: run_plan.memory_limit}.items())
-            print(scores)
     if scores:
         score = sorted(scores.values())[0]
         for (backend, backend_score) in scores.items():

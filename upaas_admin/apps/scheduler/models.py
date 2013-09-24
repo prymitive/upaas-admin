@@ -42,6 +42,7 @@ class ApplicationRunPlan(Document):
     Where should application run and how much resources can given app consume.
     """
     application = ReferenceField('Application', dbref=False)
+    #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
     backends = ListField(ReferenceField('BackendServer', dbref=False))
     memory_limit = IntField(required=False,
                             verbose_name=_('memory limit'))

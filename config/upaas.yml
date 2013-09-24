@@ -72,6 +72,11 @@ apps:
   home: /home/app
   # automatic domain for apps
   domain: upaas.local
+  # minimal port for app sockets
+  tcp:
+    # port range for app sockets, all ports from this range must be free
+    port_min: 2001
+    port_max: 7999
 
 
 defaults:

@@ -12,7 +12,9 @@ apps:
   gid: www-data
   home: /home/app
   domain: localhost
-
+  tcp:
+    port_min: 2001
+    port_max: 7999
 
 mongodb:
   # mongodb database settings

@@ -115,6 +115,10 @@ def start_application(package_id):
     log.info(u"Generating uWSGI vassal configuration")
     options = pkg.generate_uwsgi_config(backend)
 
+    if not options:
+        log.error(u"Couldn't generate vassal configuration")
+        return
+
     log.info(u"Saving vassal configuration to "
              u"'%s'" % pkg.application.vassal_path)
     with open(pkg.application.vassal_path, 'w') as vassal:
