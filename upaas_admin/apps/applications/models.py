@@ -11,8 +11,8 @@ import logging
 import tempfile
 import shutil
 
-from mongoengine import (signals, Document, DateTimeField, StringField,
-                         LongField, ReferenceField, ListField, CASCADE, DENY,
+from mongoengine import (Document, DateTimeField, StringField, LongField,
+                         ReferenceField, ListField, CASCADE, DENY,
                          QuerySetManager)
 
 from django.utils.translation import ugettext_lazy as _
@@ -62,15 +62,6 @@ class Package(Document):
         'ordering': ['date_created'],
     }
 
-    @classmethod
-    def post_save(cls, sender, document, **kwargs):
-        #FIXME only if application is running
-        log.info(u"Adding update task to queue")
-        #FIXME use right queue
-        send_task(
-            'upaas_admin.apps.applications.tasks.update_application',
-            (document.safe_id,), queue='builder')
-
     @property
     def safe_id(self):
         return str(self.id)
@@ -87,7 +78,7 @@ class Package(Document):
 
     @property
     def application(self):
-        return Application.objects(packages=self.id).first()
+        return Application.objects(packages=self).first()
 
     @property
     def package_path(self):
@@ -358,7 +349,7 @@ class Application(Document):
             title = _("Building new package")
         task = send_task('upaas_admin.apps.applications.tasks.build_package',
                          (self.metadata,),
-                         {'app_id': self.id,
+                         {'app_id': self.safe_id,
                           'system_filename': system_filename},
                          queue='builder')
         log.info("Build task for app '%s' queued with id '%s'" % (
@@ -378,6 +369,9 @@ class Application(Document):
             log.info(u"Setting backend '%s' in '%s' run plan" % (backend.name,
                                                                  self.name))
             run_plan = self.run_plan
+            if not run_plan:
+                log.error(u"Trying to start '%s' without run plan" % self.name)
+                return
             run_plan.backends = [backend]
             run_plan.save()
 
@@ -391,6 +385,8 @@ class Application(Document):
     def stop_application(self):
         if self.current_package:
             run_plan = self.run_plan
+            if not run_plan:
+                return
             for backend in run_plan.backends:
                 task = send_task(
                     'upaas_admin.apps.applications.tasks.stop_application',
@@ -407,6 +403,3 @@ class Application(Document):
         log.info("Start task for app '%s' queued with id '%s'" % (
             self.name, task.task_id))
         return task.task_id
-
-
-signals.post_save.connect(Package.post_save, sender=Package)

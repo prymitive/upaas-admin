@@ -45,6 +45,9 @@ def build_package(metadata, app_id=None, system_filename=None):
         build_package.update_state(state=FAILURE)
         raise Ignore()
 
+    log.info(u"Starting build task with parameters app_id=%s, "
+             u"system_filename=%s" % (app_id, system_filename))
+
     build_result = None
     try:
         builder = Builder(upaas_config, metadata_obj)
@@ -81,6 +84,13 @@ def build_package(metadata, app_id=None, system_filename=None):
             app.current_package = pkg
             app.save()
             log.info(u"Application '%s' updated" % app.name)
+
+            if app.run_plan:
+                for backend in app.run_plan.backends:
+                    log.info(u"Adding update task for '%s' to queue '%s'" % (
+                        app.name, backend.name))
+                    update_application.apply_async((pkg.safe_id,),
+                                                   queue=backend.name)
         else:
             log.error(u"Application with id '%s' not found" % app_id)
 

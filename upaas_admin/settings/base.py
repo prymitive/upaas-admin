@@ -272,7 +272,7 @@ PIPELINE_JS = {
 #==============================================================================
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'formatters': {
         'standard': {
             'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] "
@@ -290,32 +290,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'upaas': {
-            'handlers': ['console'],
             'level': 'INFO',
-            'propagate': True,
-        },
-        'upaas_admin': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'tastypie': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'tastypie_mongoengine': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
             'propagate': False,
         },
     },
