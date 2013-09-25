@@ -1,68 +1,35 @@
-- extends 'base.haml'
+- extends 'applications/base.haml'
 
 
 - load i18n
-- load django_bootstrap_breadcrumbs
-- load gravatar
 
 
-- block breadcrumbs
-  = block.super
-  - breadcrumb app.name "app_details"
+- block app_content
 
+  %dl.dl-horizontal
 
-- block content
+    %dt
+      {% trans "Name" %}:
+    %dd
+      = app.name
 
-  .col-md-8
-    %dl.dl-horizontal
+    %dt
+      {% trans "Interpreter" %}:
+    %dd
+      ={ app.interpreter_name } ={ app.interpreter_version }
 
-      %dt
-        {% trans "Name" %}:
-      %dd
-        = app.name
+    %dt
+      {% trans "System domain" %}:
+    %dd
+      %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
+        = app.system_domain
 
-      %dt
-        {% trans "Interpreter" %}:
-      %dd
-        ={ app.interpreter_name } ={ app.interpreter_version }
-
-      %dt
-        {% trans "System domain" %}:
-      %dd
-        %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
-          = app.system_domain
-
-      %dt
-        {% trans "Custom domains" %}:
-      %dd
-        - for domain in app.domains
-          %a{'href':'={ domain }', 'target':'_blank'}
-            = domain
-        - empty
-          .muted
-            - trans "None"
-
-  .col-md-4
-    .panel.panel-default
-      .panel-heading
-        - trans "Actions"
-      .panel-body
-        %ul.nav.nav-pills.nav-stacked
-          %li
-            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.build_package(callback, {"app_id":"{{ app.safe_id }}"});'}
-              %span.glyphicon.glyphicon-cog
-              - trans "Build new package"
-          %li{'class':'{% if not app.can_start %}disabled{% endif %}'}
-            %a{'href':'{% url "app_start" app.safe_id %}'}
-              %span.glyphicon.glyphicon-play
-              - trans "Run application"
-          %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
-            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.stop_app(callback, {"app_id":"{{ app.safe_id }}"});'}
-              %span.glyphicon.glyphicon-stop
-              - trans "Stop application"
-
-- block js_bottom
-  = block.super
-
-  :javascript
-    function callback(data) {}
+    %dt
+      {% trans "Custom domains" %}:
+    %dd
+      - for domain in app.domains
+        %a{'href':'={ domain }', 'target':'_blank'}
+          = domain
+      - empty
+        .muted
+          - trans "None"

@@ -1,0 +1,11 @@
+- load i18n
+
+.tabbable
+
+  %ul.nav.nav-tabs
+    - for tab in tabs
+      %li{'class':'{% if tab.tab_id == current_tab_id %}active{% endif %}'}
+        %a{'href':'{% url tab.tab_id app.safe_id %}'}
+          = tab.tab_label
+
+  .tab-content

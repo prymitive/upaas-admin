@@ -8,6 +8,8 @@
 import os
 import inspect
 
+from tabination.views import TabView
+
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.core.exceptions import PermissionDenied
@@ -36,3 +38,13 @@ class SuperUserRequiredMixin(object):
             raise PermissionDenied
         return super(SuperUserRequiredMixin, self).dispatch(request, *args,
                                                             **kwargs)
+
+
+class DetailTabView(TabView):
+
+    _is_tab = True
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)

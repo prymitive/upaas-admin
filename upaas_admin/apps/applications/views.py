@@ -13,7 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from pure_pagination.mixins import PaginationMixin
 
-from upaas_admin.mixin import LoginRequiredMixin, AppTemplatesDirMixin
+from upaas_admin.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
+                               DetailTabView)
 from upaas_admin.apps.applications.mixin import OwnedAppsMixin
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.applications.forms import RegisterApplicationForm
@@ -28,12 +29,28 @@ class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
 
 
 class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
-                            AppTemplatesDirMixin, DetailView):
+                            AppTemplatesDirMixin, DetailView, DetailTabView):
 
     template_name = 'details.haml'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
+    tab_id = 'app_details'
+    tab_group = 'app_navigation'
+    tab_label = _('Details')
+
+
+class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
+                               AppTemplatesDirMixin, DetailView,
+                               DetailTabView):
+
+    template_name = 'instances.haml'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    tab_id = 'app_instances'
+    tab_group = 'app_navigation'
+    tab_label = _('Instances')
 
 
 class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,

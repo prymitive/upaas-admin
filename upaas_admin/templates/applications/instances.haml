@@ -1,0 +1,45 @@
+- extends 'applications/base.haml'
+
+
+- load i18n
+
+
+- block app_content
+
+  - if app.run_plan
+    #stats-container
+  - else
+    %h3.text-center
+      - trans "Application is stopped, no instances are running"
+
+- block js_bottom
+  = block.super
+
+  :javascript
+    function stats_callback(data) {
+      console.info(data.stats);
+      var elems = new Array();
+      if (data.stats.length > 0) {
+        $.each(data.stats, function(i, item) {
+          elems.push('<div class="panel panel-default">');
+            elems.push('<div class="panel-heading">' + item.backend.name + '</div>');
+            elems.push('<div class="panel-body">');
+              elems.push('<ul>');
+                $.each(item.stats.workers, function(j, worker) {
+                  elems.push('<li>' + worker.rss + 'B / ' + worker.requests + ' r</li>');
+                });
+              elems.push('</ul>');
+            elems.push('</div>');
+          elems.push('</div>');
+        });
+      } else {
+        elems.push('<h3 class="text-center">');
+        elems.push("{% trans "Couldn't fetch any stats" %}");
+      }
+      $('#stats-container').html(elems.join('\n'));
+    }
+    $(document).ready(function(){
+      Dajaxice.upaas_admin.apps.applications.stats(stats_callback, {
+        "app_id":"{{ app.safe_id }}"
+      });
+    });

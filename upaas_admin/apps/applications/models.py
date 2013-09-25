@@ -34,6 +34,7 @@ from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.config import cached_main_config
 from upaas_admin.apps.scheduler.base import select_best_backend
+from upaas_admin.apps.servers.constants import PortsNames
 
 
 log = logging.getLogger(__name__)
@@ -121,27 +122,28 @@ class Package(Document):
         ports_data = backend.application_ports(self.application)
         ports = {}
         needs_update = False
-        if ports_data and 'socket' in ports_data.ports:
-            ports['socket'] = ports_data.ports['socket']
+        if ports_data and PortsNames.socket in ports_data.ports:
+            ports[PortsNames.socket] = ports_data.ports[PortsNames.socket]
         else:
-            ports['socket'] = backend.find_free_port()
+            ports[PortsNames.socket] = backend.find_free_port()
             needs_update = True
-        if ports_data and 'stats' in ports_data.ports:
-            ports['stats'] = ports_data.ports['stats']
+        if ports_data and PortsNames.stats in ports_data.ports:
+            ports[PortsNames.stats] = ports_data.ports[PortsNames.stats]
         else:
-            ports['stats'] = backend.find_free_port()
+            ports[PortsNames.stats] = backend.find_free_port()
             needs_update = True
         if needs_update:
             backend.set_application_ports(self.application, ports)
 
         log.info(u"Using socket=%d and stats=%d for '%s'" % (
-            ports['socket'], ports['stats'], self.application.name))
+            ports[PortsNames.socket], ports[PortsNames.stats],
+            self.application.name))
 
         vars = {
             'namespace': self.package_path,
             'chdir': config.apps.home,
-            'socket': '%s:%d' % (backend.ip, ports['socket']),
-            'stats': '%s:%d' % (backend.ip, ports['stats']),
+            'socket': '%s:%d' % (backend.ip, ports[PortsNames.socket]),
+            'stats': '%s:%d' % (backend.ip, ports[PortsNames.stats]),
             'uid': config.apps.uid,
             'gid': config.apps.gid,
             'app_name': self.application.name,
