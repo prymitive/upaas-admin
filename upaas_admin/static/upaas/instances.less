@@ -1,5 +1,22 @@
+@import "../bootstrap/less/variables";
+
+
 // table with uwsgi instance stats on applications "Instances" tab
 .upaas-instance-table {
   width: 100%;
   font-size: 85%;
+
+  tr.idle {
+    background-color: @state-success-bg;
+  }
+
+  tr.busy {
+    background-color: @state-danger-bg;
+  }
+
+  tr.summary {
+    font-weight: bold;
+    background-color: @state-info-bg;
+  }
+
 }
