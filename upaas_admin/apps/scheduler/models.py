@@ -12,18 +12,26 @@ from django.utils.translation import ugettext_lazy as _
 from upaas_admin.config import cached_main_config
 
 
-class UserBudget(Document):
-    """
-    How much resources can user apps consume.
-    """
-    user = ReferenceField('User', dbref=False)
-    apps_count = LongField(required=True,
-                           verbose_name=_('application count limit'))
+class BudgetLimits(Document):
+    worker_limit = IntField(required=True, verbose_name=_('worker limit'))
     memory_limit = IntField(required=True,
                             verbose_name=_('memory limit'))
     #TODO add cgroup limits
 
     _default_manager = QuerySetManager()
+
+    meta = {
+        'allow_inheritance': True
+    }
+
+
+class UserBudget(BudgetLimits):
+    """
+    How much resources can user apps consume.
+    """
+    user = ReferenceField('User', dbref=False)
+    apps_count = IntField(required=True,
+                          verbose_name=_('application count limit'))
 
     meta = {
         'indexes': [
@@ -37,15 +45,16 @@ class UserBudget(Document):
         return config.dump()['defaults']['budget']
 
 
-class ApplicationRunPlan(Document):
+class ApplicationRunPlan(BudgetLimits):
     """
     Where should application run and how much resources can given app consume.
     """
     application = ReferenceField('Application', dbref=False)
     #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
     backends = ListField(ReferenceField('BackendServer', dbref=False))
-    memory_limit = IntField(required=False,
-                            verbose_name=_('memory limit'))
-    #TODO add cgroup limits
 
-    _default_manager = QuerySetManager()
+    meta = {
+        'indexes': [
+            {'fields': ['application']}
+        ]
+    }

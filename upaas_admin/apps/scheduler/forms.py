@@ -15,7 +15,7 @@ from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 class ApplicationRunPlanForm(CrispyForm):
 
     submit_label = 'Start'
-    layout = ['memory_limit']
+    layout = ['worker_limit', 'memory_limit']
 
     class Meta:
         document = ApplicationRunPlan
@@ -29,3 +29,12 @@ class ApplicationRunPlanForm(CrispyForm):
                                           u"can't set higher application "
                                           u"memory limit" % budget_limit))
         return memory_limit
+
+    def clean_worker_limit(self):
+        worker_limit = self.cleaned_data['worker_limit']
+        budget_limit = self.user.budget['worker_limit']
+        if worker_limit > budget_limit:
+            raise forms.ValidationError(_(u"User total workers limit is only "
+                                          u"%d, can't set higher application "
+                                          u"workers limit" % budget_limit))
+        return worker_limit

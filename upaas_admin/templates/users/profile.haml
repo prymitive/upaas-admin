@@ -93,6 +93,13 @@
               - trans "no limit"
 
           %dt
+            {% trans "Worker limit" %}
+            %span#help-worker_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of workers for all running applications" %}'}
+            :
+          %dd
+            ={ user.budget.worker_limit }
+
+          %dt
             {% trans "Memory limit" %}
             %span#help-memory_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum amount of memory that can be allocated to all running applications" %}'}
             :
@@ -122,4 +129,5 @@
         $('#help-apikey').tooltip({container:'.upaas-content'});
         $('#help-apps_count').tooltip({container: '.upaas-content'});
         $('#help-memory_limit').tooltip({container: '.upaas-content'});
+        $('#help-worker_limit').tooltip({container: '.upaas-content'});
       });

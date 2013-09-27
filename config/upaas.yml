@@ -82,6 +82,7 @@ apps:
 defaults:
   budget:
     apps_count: 0
+    worker_limit: 16
     memory_limit: 512
 
 

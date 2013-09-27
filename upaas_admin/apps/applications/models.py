@@ -149,6 +149,8 @@ class Package(Document):
             'app_name': self.application.name,
             'app_id': self.application.safe_id,
             'pkg_id': self.safe_id,
+            'max_workers': self.application.run_plan.worker_limit,
+            'max_memory': self.application.run_plan.memory_limit * 1024 * 1024
         }
         try:
             vars.update(config.interpreters[self.interpreter_name]['any'][
