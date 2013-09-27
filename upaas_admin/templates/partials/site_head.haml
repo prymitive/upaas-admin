@@ -1,5 +1,6 @@
 - load compressed
 - load dajaxice_templatetags
+- load js
 
 
 %title
@@ -13,5 +14,6 @@
 /[if lt IE 9]>
   - compressed_js 'html5shiv'
 
+- django_js_init
 - compressed_js 'base'
 - dajaxice_js_import

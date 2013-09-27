@@ -47,6 +47,7 @@ urlpatterns = patterns(
         {'template_name': 'users/password_changed.haml'},
         name='password_changed'),
 
+    url(r'^djs/', include('djangojs.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 
     (r'^api/', include(v1_api.urls)),

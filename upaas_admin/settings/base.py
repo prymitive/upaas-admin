@@ -56,6 +56,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mongoengine.django.mongo_auth',
+    'djangojs',
     'dajaxice',
     'pipeline',
     'crispy_forms',
@@ -152,6 +153,10 @@ MIDDLEWARE_CLASSES += (
 
 AUTH_USER_MODEL = 'mongo_auth.MongoUser'
 
+AUTHENTICATION_BACKENDS = (
+    'mongoengine.django.auth.MongoEngineBackend',
+)
+
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
 LOGIN_REDIRECT_URL = '/'
@@ -231,7 +236,7 @@ PIPELINE_CSS = {
         'source_filenames': (
             'bootstrap/less/bootstrap.less',
             'bootstrap/less/theme.less',
-            'upaas/site.less',
+            'upaas/*.less',
         ),
         'output_filename': 'css/bootstrap.css',
     },
@@ -248,7 +253,8 @@ PIPELINE_JS = {
         'source_filenames': (
             'jquery/jquery-1.10.1.js',
             'bootstrap/js/bootstrap.js',
-            'upaas/csrf.js',
+            'js/djangojs/django.js',
+            'upaas/*.js',
         ),
         'output_filename': 'js/base.js',
     },

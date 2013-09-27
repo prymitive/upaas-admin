@@ -16,30 +16,22 @@
   = block.super
 
   :javascript
-    function stats_callback(data) {
-      console.info(data.stats);
-      var elems = new Array();
-      if (data.stats.length > 0) {
-        $.each(data.stats, function(i, item) {
-          elems.push('<div class="panel panel-default">');
-            elems.push('<div class="panel-heading">' + item.backend.name + '</div>');
-            elems.push('<div class="panel-body">');
-              elems.push('<ul>');
-                $.each(item.stats.workers, function(j, worker) {
-                  elems.push('<li>' + worker.rss + 'B / ' + worker.requests + ' r</li>');
-                });
-              elems.push('</ul>');
-            elems.push('</div>');
-          elems.push('</div>');
-        });
-      } else {
+    function instances_callback(data) {
+      var elems = instances_data_from_uwsgi_stats(data);
+      if (elems.length == 0) {
         elems.push('<h3 class="text-center">');
         elems.push("{% trans "Couldn't fetch any stats" %}");
       }
       $('#stats-container').html(elems.join('\n'));
     }
-    $(document).ready(function(){
-      Dajaxice.upaas_admin.apps.applications.stats(stats_callback, {
+
+    function update_instances() {
+      Dajaxice.upaas_admin.apps.applications.stats(instances_callback, {
         "app_id":"{{ app.safe_id }}"
       });
+    }
+
+    $(document).ready(function(){
+      window.setTimeout(update_instances, 1000);
+      window.setInterval(update_instances, 3000);
     });
