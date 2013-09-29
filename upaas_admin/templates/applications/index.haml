@@ -27,6 +27,10 @@
       - for application in object_list
         %tr
           %td
+            - if application.run_plan
+              %span.glyphicon.glyphicon-play{'title':'{% trans "Running" %}'}
+            - else
+              %span.glyphicon.glyphicon-stop{'title':'{% trans "Stopped" %}'}
             %a{'href':'{% url "app_details" application.id %}'}
               = application.name
           %td
