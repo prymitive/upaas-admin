@@ -15,7 +15,8 @@ from mongoengine.django.auth import User as MongoUser
 from mongoengine.fields import StringField
 from mongoengine import signals
 
-from upaas_admin.apps.scheduler.models import UserBudget
+from upaas_admin.apps.scheduler.models import UserBudget, ApplicationRunPlan
+from upaas_admin.apps.applications.models import Application
 
 
 log = logging.getLogger(__name__)
@@ -68,6 +69,24 @@ class User(MongoUser):
     @property
     def budget(self):
         return UserBudget.objects(user=self).first()
+
+    @property
+    def applications(self):
+        return Application.objects(owner=self)
+
+    @property
+    def running_applications(self):
+        return [arp.application for arp in ApplicationRunPlan.objects(
+            application__in=Application.objects(owner=self))]
+
+    @property
+    def limits_usage(self):
+        usage = {'worker_limit': 0, 'memory_limit': 0}
+        for arp in ApplicationRunPlan.objects(
+                application__in=Application.objects(owner=self)):
+            usage['worker_limit'] += arp.worker_limit
+            usage['memory_limit'] += arp.memory_limit
+        return usage
 
 
 signals.pre_save.connect(User.pre_save, sender=User)

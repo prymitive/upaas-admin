@@ -27,7 +27,6 @@ from upaas.config.metadata import MetadataConfig
 from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import StorageError
 
-from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
@@ -273,7 +272,7 @@ class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, max_length=100, unique_with='owner',
                        verbose_name=_('name'))
-    owner = ReferenceField(User, reverse_delete_rule=DENY, dbref=False,
+    owner = ReferenceField('User', reverse_delete_rule=DENY, dbref=False,
                            required=True)
     metadata = StringField(verbose_name=_('Application metadata'))
     current_package = ReferenceField(Package, reverse_delete_rule=CASCADE,
