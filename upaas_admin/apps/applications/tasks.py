@@ -25,6 +25,8 @@ from upaas import processes
 from upaas_admin.apps.applications.models import Package, Application
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.servers.models import BackendServer
+# FIXME mongoengine complains that User model is not registered without it
+from upaas_admin.apps.users.models import User
 
 
 log = get_task_logger(__name__)

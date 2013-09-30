@@ -12,8 +12,7 @@ import tempfile
 import shutil
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
-                         ReferenceField, ListField, CASCADE, DENY,
-                         QuerySetManager)
+                         ReferenceField, ListField, CASCADE, QuerySetManager)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -272,8 +271,8 @@ class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, max_length=100, unique_with='owner',
                        verbose_name=_('name'))
-    owner = ReferenceField('User', reverse_delete_rule=DENY, dbref=False,
-                           required=True)
+    # FIXME reverse_delete_rule=DENY for owner
+    owner = ReferenceField('User', dbref=False, required=True)
     metadata = StringField(verbose_name=_('Application metadata'))
     current_package = ReferenceField(Package, reverse_delete_rule=CASCADE,
                                      dbref=False, required=False)
