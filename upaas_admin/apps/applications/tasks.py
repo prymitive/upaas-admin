@@ -27,7 +27,7 @@ from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.servers.models import BackendServer
 # FIXME mongoengine complains that User model is not registered without it
 from upaas_admin.apps.users.models import User
-
+from upaas_admin.apps.tasks.constants import STATE_PROGRESS
 
 log = get_task_logger(__name__)
 
@@ -55,9 +55,8 @@ def build_package(metadata, app_id=None, system_filename=None):
         builder = Builder(upaas_config, metadata_obj)
         for result in builder.build_package(system_filename=system_filename):
             log.info("Build progress: %d%%" % result.progress)
-            current_task.update_state(state='PROGRESS',
-                                      meta={'current': result.progress,
-                                            'total': 100})
+            current_task.update_state(state=STATE_PROGRESS,
+                                      meta={'progress': result.progress})
             build_result = result
     except exceptions.BuildError:
         log.error(u"Build failed")
@@ -86,13 +85,7 @@ def build_package(metadata, app_id=None, system_filename=None):
             app.current_package = pkg
             app.save()
             log.info(u"Application '%s' updated" % app.name)
-
-            if app.run_plan:
-                for backend in app.run_plan.backends:
-                    log.info(u"Adding update task for '%s' to queue '%s'" % (
-                        app.name, backend.name))
-                    update_application.apply_async((pkg.safe_id,),
-                                                   queue=backend.name)
+            app.update_application()
         else:
             log.error(u"Application with id '%s' not found" % app_id)
 

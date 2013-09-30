@@ -4,7 +4,6 @@
     :contact: l.mierzwa@gmail.com
 """
 
-
 import os
 import datetime
 import logging
@@ -365,10 +364,10 @@ class Application(Document):
 
     def build_package(self, force_fresh=False):
         system_filename = None
-        title = _("Building new fresh package")
+        title = _("Building new fresh package for") + " " + self.name
         if not force_fresh and self.current_package:
             system_filename = self.current_package.filename
-            title = _("Building new package")
+            title = _("Building new package for") + " " + self.name
         task = send_task('upaas_admin.apps.applications.tasks.build_package',
                          (self.metadata,),
                          {'app_id': self.safe_id,
@@ -376,7 +375,8 @@ class Application(Document):
                          queue='builder')
         log.info("Build task for app '%s' queued with id '%s'" % (
             self.name, task.task_id))
-        task_link = Task(task_id=task.task_id, title=title, application=self)
+        task_link = Task(task_id=task.task_id, title=title, application=self,
+                         user=self.owner)
         task_link.save()
         return task.task_id
 
@@ -402,6 +402,10 @@ class Application(Document):
                 (self.current_package.id,), queue=backend.name)
             log.info("Start task for app '%s' queued with id '%s' in queue "
                      "'%s'" % (self.name, task.task_id, backend.name))
+            task_link = Task(task_id=task.task_id,
+                             title=_("Starting application") + " " + self.name,
+                             application=self, user=self.owner)
+            task_link.save()
             return True
 
     def stop_application(self):
@@ -416,13 +420,24 @@ class Application(Document):
                     (self.current_package.id,), queue=backend.name)
                 log.info("Stop task for app '%s' with id '%s' in queue "
                          "'%s'" % (self.name, task.task_id, backend.name))
+            task_link = Task(task_id=task.task_id,
+                             title=_("Stopping application") + " " + self.name,
+                             application=self, user=self.owner)
+            task_link.save()
             run_plan.delete()
 
     def update_application(self):
-        #FIXME use right queue
-        task = send_task(
-            'upaas_admin.apps.applications.tasks.start_application',
-            (self.current_package.id,), queue='builder')
-        log.info("Start task for app '%s' queued with id '%s'" % (
-            self.name, task.task_id))
-        return task.task_id
+        if self.current_package:
+            run_plan = self.run_plan
+            if not run_plan:
+                return
+            for backend in run_plan.backends:
+                task = send_task(
+                    'upaas_admin.apps.applications.tasks.start_application',
+                    (self.current_package.id,), queue=backend.name)
+                log.info("Start task for app '%s' with id '%s' in queue "
+                         "'%s'" % (self.name, task.task_id, backend.name))
+                task_link = Task(task_id=task.task_id,
+                                 title=_("Updating application") + " " +
+                                 self.name, application=self, user=self.owner)
+                task_link.save()

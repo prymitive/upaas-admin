@@ -254,6 +254,7 @@ PIPELINE_JS = {
             'jquery/jquery-1.10.1.js',
             'bootstrap/js/bootstrap.js',
             'js/djangojs/django.js',
+            'moment-js/moment+langs.js',
             'upaas/*.js',
         ),
         'output_filename': 'js/base.js',

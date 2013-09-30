@@ -37,6 +37,17 @@
             %li.divider-vertical
             %li.dropdown
               %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
+                %strong
+                  %span#upaas-tasks-badge.badge
+                    ?
+                %span.caret
+              %ul#upaas-tasks-menu.dropdown-menu{'role':'button'}
+                %li
+                  %a{'href':'#'}
+                    - trans "No running tasks"
+            %li.divider-vertical
+            %li.dropdown
+              %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
                 %img.img-rounded{'src':'{% gravatar_url user.email 24 %}', 'height':'24', 'width':'24'}
                 %strong
                   - if user.first_name and user.last_name

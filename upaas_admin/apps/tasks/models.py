@@ -7,7 +7,7 @@
 
 import datetime
 
-from mongoengine import *
+from mongoengine import ReferenceField, StringField, DateTimeField, Document
 
 
 class Task(Document):
@@ -15,11 +15,12 @@ class Task(Document):
 
     task_id = StringField(required=True)
     title = StringField()
+    user = ReferenceField('User', dbref=False)
     application = ReferenceField('Application', dbref=False)
 
     meta = {
         'indexes': [
             {'fields': ['application', 'task_id']}
         ],
-        'ordering': ['date_created'],
+        'ordering': ['-date_created'],
     }
