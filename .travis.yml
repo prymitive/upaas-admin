@@ -7,6 +7,7 @@ python:
 install:
   - pip install -U pip
   - pip install -Ur requirements.txt --use-mirrors
+  - pip install -Ur requirements-test.txt --use-mirrors
   - ./setup.py develop
 
 script:
