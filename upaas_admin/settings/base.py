@@ -228,7 +228,7 @@ CELERY_TRACK_STARTED = True
 # django-pipeline
 #==============================================================================
 
-STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 PIPELINE_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
