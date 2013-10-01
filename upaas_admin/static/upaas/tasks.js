@@ -52,5 +52,7 @@ function tasks_callback(data) {
 
 
 $(document).ready(function(){
-    Dajaxice.upaas_admin.apps.tasks.user_tasks(tasks_callback);
+    if (Django.user.is_authenticated) {
+        Dajaxice.upaas_admin.apps.tasks.user_tasks(tasks_callback);
+    }
 });

@@ -32,5 +32,9 @@ def register_local_backend(sender=None, conf=None, **kwargs):
 
     name = gethostname()
     log.info("Registering backend as '%s' with IP '%s'" % (name, local_ip))
-    backend = BackendServer(name=name, ip=local_ip)
+    backend = BackendServer.objects(name=name).first()
+    if backend:
+        backend.ip = local_ip
+    else:
+        backend = BackendServer(name=name, ip=local_ip)
     backend.save()

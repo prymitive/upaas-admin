@@ -31,7 +31,7 @@ DATABASES = {
 }
 
 DEBUG = False
-TEMPLATE_DEBUG = False
+TEMPLATE_DEBUG = DEBUG
 
 SITE_ID = 1
 
@@ -160,6 +160,9 @@ AUTHENTICATION_BACKENDS = (
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
 LOGIN_REDIRECT_URL = '/'
+
+#FIXME use domain from upaas.yaml ??
+ALLOWED_HOSTS = ['*']
 
 #==============================================================================
 # MongoEngine

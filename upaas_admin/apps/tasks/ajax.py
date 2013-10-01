@@ -20,8 +20,8 @@ from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.tasks.constants import *
 
 
-@login_required
 @dajaxice_register
+@login_required
 def task_status(request, task_id):
     task = Task.objects.filter(task_id=task_id).first()
     if task:
@@ -32,9 +32,9 @@ def task_status(request, task_id):
     return dumps({})
 
 
-@login_required
-@dajaxice_register
 @cache_page(2)  # TODO make it configurable?
+@dajaxice_register
+@login_required
 def user_tasks(request):
     tasks = []
     running = 0
