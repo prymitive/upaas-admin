@@ -1,3 +1,0 @@
-django-debug-toolbar
-django-debug-toolbar-template-timings
-django-debug-toolbar-mongo
