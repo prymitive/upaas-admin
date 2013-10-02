@@ -401,7 +401,7 @@ class Application(Document):
 
             task = send_task(
                 'upaas_admin.apps.applications.tasks.start_application',
-                (self.current_package.id,), queue=backend.name)
+                (self.safe_id,), queue=backend.name)
             log.info("Start task for app '%s' queued with id '%s' in queue "
                      "'%s'" % (self.name, task.task_id, backend.name))
             task_link = Task(task_id=task.task_id,
@@ -415,31 +415,28 @@ class Application(Document):
             run_plan = self.run_plan
             if not run_plan:
                 return
-            for backend in run_plan.backends:
-                backend.delete_application_ports(self)
-                task = send_task(
-                    'upaas_admin.apps.applications.tasks.stop_application',
-                    (self.current_package.id,), queue=backend.name)
-                log.info("Stop task for app '%s' with id '%s' in queue "
-                         "'%s'" % (self.name, task.task_id, backend.name))
-                task_link = Task(task_id=task.task_id, title=_(
-                    "Stopping application") + " " + self.name,
-                    application=self, user=self.owner)
-                task_link.save()
-            run_plan.delete()
+            task = send_task(
+                'upaas_admin.apps.applications.tasks.stop_application',
+                (self.safe_id,), queue='default')
+            log.info("Stop task for app '%s' with id '%s'" % (self.name,
+                                                              task.task_id))
+            task_link = Task(task_id=task.task_id, title=_(
+                "Stopping application") + " " + self.name,
+                application=self, user=self.owner)
+            task_link.save()
 
     def update_application(self):
         if self.current_package:
             run_plan = self.run_plan
             if not run_plan:
                 return
-            for backend in run_plan.backends:
-                task = send_task(
-                    'upaas_admin.apps.applications.tasks.start_application',
-                    (self.current_package.id,), queue=backend.name)
-                log.info("Start task for app '%s' with id '%s' in queue "
-                         "'%s'" % (self.name, task.task_id, backend.name))
-                task_link = Task(task_id=task.task_id,
-                                 title=_("Updating application") + " " +
-                                 self.name, application=self, user=self.owner)
-                task_link.save()
+            backend = run_plan.backends[0]
+            task = send_task(
+                'upaas_admin.apps.applications.tasks.start_application',
+                (self.safe_id,), queue=backend.name)
+            log.info("Start task for app '%s' with id '%s' in queue "
+                     "'%s'" % (self.name, task.task_id, backend.name))
+            task_link = Task(task_id=task.task_id,
+                             title=_("Updating application") + " " +
+                             self.name, application=self, user=self.owner)
+            task_link.save()

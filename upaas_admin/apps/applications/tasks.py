@@ -10,7 +10,7 @@ from __future__ import absolute_import
 import os
 import time
 
-from celery import task, current_task
+from celery import task, current_task, group
 from celery.utils.log import get_task_logger
 from celery.exceptions import Ignore
 from celery.states import FAILURE
@@ -93,11 +93,11 @@ def build_package(metadata, app_id=None, system_filename=None):
 
 
 @task
-def start_application(package_id):
+def start_package(package_id):
     pkg = Package.objects(id=package_id).first()
     if not pkg:
         log.error(u"Package with id '%s' not found" % package_id)
-        start_application.update_state(state=FAILURE)
+        start_package.update_state(state=FAILURE)
         raise Ignore()
 
     try:
@@ -123,7 +123,7 @@ def start_application(package_id):
 
 
 @task
-def stop_application(package_id):
+def stop_package(package_id):
     def _remove_pkg_dir(directory):
         log.info(u"Removing package directory '%s'" % directory)
         try:
@@ -134,7 +134,7 @@ def stop_application(package_id):
     pkg = Package.objects(id=package_id).first()
     if not pkg:
         log.error(u"Package with id '%s' not found" % package_id)
-        stop_application.update_state(state=FAILURE)
+        stop_package.update_state(state=FAILURE)
         raise Ignore()
 
     if os.path.isfile(pkg.application.vassal_path):
@@ -145,7 +145,7 @@ def stop_application(package_id):
         except OSError, e:
             log.error(u"Can't remove vassal config file at '%s': %s" % (
                 pkg.application.vassal_path, e))
-            stop_application.update_state(state=FAILURE)
+            stop_package.update_state(state=FAILURE)
             raise Ignore()
     else:
         log.error(u"Vassal config file for application '%s' not found at "
@@ -166,13 +166,13 @@ def stop_application(package_id):
 
 
 @task
-def update_application(package_id):
+def update_package(package_id):
     #FIXME refactor it to be more DRY
 
     pkg = Package.objects(id=package_id).first()
     if not pkg:
         log.error(u"Package with id '%s' not found" % package_id)
-        start_application.update_state(state=FAILURE)
+        update_package.update_state(state=FAILURE)
         raise Ignore()
 
     try:
@@ -215,3 +215,65 @@ def update_application(package_id):
             except OSError, e:
                 log.error(u"Exception during package directory cleanup: "
                           u"%s" % e)
+
+
+@task
+def start_application(app_id):
+    app = Application.objects(id=app_id).first()
+    if not app or not app.run_plan or not app.run_plan.backends:
+        start_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    job = group([
+        start_package.subtask(app.current_package.safe_id,
+                              queue=b.name) for b in app.run_plan.backends])
+    result = job.apply_async()
+    while not result.ready():
+        start_application.update_state(
+            state=STATE_PROGRESS, meta={'progress': result.completed_count()})
+        time.sleep(1)
+    start_application.update_state(state=STATE_PROGRESS,
+                                   meta={'progress': result.completed_count()})
+
+
+@task
+def stop_application(app_id):
+    app = Application.objects(id=app_id).first()
+    if not app or not app.run_plan or not app.run_plan.backends:
+        stop_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    for backend in app.run_plan.backends:
+        backend.delete_application_ports(app)
+
+    job = group([
+        stop_package.subtask(app.current_package.safe_id,
+                             queue=b.name) for b in app.run_plan.backends])
+    result = job.apply_async()
+    while not result.ready():
+        stop_application.update_state(
+            state=STATE_PROGRESS, meta={'progress': result.completed_count()})
+        time.sleep(1)
+    stop_application.update_state(state=STATE_PROGRESS,
+                                  meta={'progress': result.completed_count()})
+
+    app.run_plan.delete()
+
+
+@task
+def update_application(app_id):
+    app = Application.objects(id=app_id).first()
+    if not app or not app.run_plan or not app.run_plan.backends:
+        update_application.update_state(state=FAILURE)
+        raise Ignore()
+
+    job = group([
+        update_package.subtask(app.current_package.safe_id,
+                               queue=b.name) for b in app.run_plan.backends])
+    result = job.apply_async()
+    while not result.ready():
+        update_application.update_state(
+            state=STATE_PROGRESS, meta={'progress': result.completed_count()})
+        time.sleep(1)
+    update_application.update_state(
+        state=STATE_PROGRESS, meta={'progress': result.completed_count()})
