@@ -224,14 +224,15 @@ def start_application(app_id):
         start_application.update_state(state=FAILURE)
         raise Ignore()
 
-    job = group([
-        start_package.subtask(app.current_package.safe_id,
-                              queue=b.name) for b in app.run_plan.backends])
+    job = group([start_package.subtask(app.current_package.safe_id,
+                                       options={'queue': b.name})
+                 for b in app.run_plan.backends])
     result = job.apply_async()
     while not result.ready():
         start_application.update_state(
             state=STATE_PROGRESS, meta={'progress': result.completed_count()})
         time.sleep(1)
+        log.info(u"Waiting for subtasks")
     start_application.update_state(state=STATE_PROGRESS,
                                    meta={'progress': result.completed_count()})
 
@@ -244,16 +245,28 @@ def stop_application(app_id):
         raise Ignore()
 
     for backend in app.run_plan.backends:
+        log.info(u"Removing application ports from '%s'" % backend.name)
         backend.delete_application_ports(app)
 
-    job = group([
-        stop_package.subtask(app.current_package.safe_id,
-                             queue=b.name) for b in app.run_plan.backends])
+    job = group([stop_package.subtask(app.current_package.safe_id,
+                                      options={'queue': b.name})
+                 for b in app.run_plan.backends])
     result = job.apply_async()
+    waited = 0
+    max_wait = 60
     while not result.ready():
         stop_application.update_state(
             state=STATE_PROGRESS, meta={'progress': result.completed_count()})
-        time.sleep(1)
+        #FIXME proper handling for timeouts and exceptions
+        if waited < max_wait:
+            time.sleep(1)
+            waited += 1
+            log.info(u"Waiting for subtasks (%d)" % waited)
+        else:
+            log.error(u"Waited too long (%d times)" % waited)
+            stop_application.update_state(state=FAILURE)
+            app.run_plan.delete()
+            raise Ignore()
     stop_application.update_state(state=STATE_PROGRESS,
                                   meta={'progress': result.completed_count()})
 
@@ -267,13 +280,14 @@ def update_application(app_id):
         update_application.update_state(state=FAILURE)
         raise Ignore()
 
-    job = group([
-        update_package.subtask(app.current_package.safe_id,
-                               queue=b.name) for b in app.run_plan.backends])
+    job = group([update_package.subtask(app.current_package.safe_id,
+                                        options={'queue': b.name})
+                 for b in app.run_plan.backends])
     result = job.apply_async()
     while not result.ready():
         update_application.update_state(
             state=STATE_PROGRESS, meta={'progress': result.completed_count()})
         time.sleep(1)
+        log.info(u"Waiting for subtasks")
     update_application.update_state(
         state=STATE_PROGRESS, meta={'progress': result.completed_count()})
