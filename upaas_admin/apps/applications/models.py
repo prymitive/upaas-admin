@@ -382,7 +382,12 @@ class Application(Document):
 
     def start_application(self):
         if self.current_package:
-            backend = select_best_backend()
+            run_plan = self.run_plan
+            if not run_plan:
+                log.error(u"Trying to start '%s' without run plan" % self.name)
+                return
+
+            backend = select_best_backend(run_plan.backends)
             if not backend:
                 log.error(u"Can't start '%s', no backend "
                           u"available" % self.name)
@@ -390,11 +395,8 @@ class Application(Document):
 
             log.info(u"Setting backend '%s' in '%s' run plan" % (backend.name,
                                                                  self.name))
-            run_plan = self.run_plan
-            if not run_plan:
-                log.error(u"Trying to start '%s' without run plan" % self.name)
-                return
-            run_plan.backends = [backend]
+
+            run_plan.backends += [backend]
             run_plan.save()
 
             task = send_task(
@@ -420,10 +422,10 @@ class Application(Document):
                     (self.current_package.id,), queue=backend.name)
                 log.info("Stop task for app '%s' with id '%s' in queue "
                          "'%s'" % (self.name, task.task_id, backend.name))
-            task_link = Task(task_id=task.task_id,
-                             title=_("Stopping application") + " " + self.name,
-                             application=self, user=self.owner)
-            task_link.save()
+                task_link = Task(task_id=task.task_id, title=_(
+                    "Stopping application") + " " + self.name,
+                    application=self, user=self.owner)
+                task_link.save()
             run_plan.delete()
 
     def update_application(self):

@@ -8,14 +8,15 @@
 from upaas_admin.apps.servers.models import BackendServer
 
 
-def select_best_backend():
+def select_best_backend(exclude=[]):
     """
     Return backend server that is the least loaded one or None if there is no
     enabled backend.
     """
     #FIXME make it aware of each backend resources
     scores = {}
-    for backend in BackendServer.objects(is_enabled=True):
+    for backend in BackendServer.objects(is_enabled=True,
+                                         name__nin=[b.name for b in exclude]):
         for run_plan in backend.run_plans:
             scores = dict(scores.items() +
                           {backend: run_plan.memory_limit}.items())
@@ -26,4 +27,5 @@ def select_best_backend():
                 return backend
     else:
         # no run plans, just return first backend
-        return BackendServer.objects(is_enabled=True).first()
+        return BackendServer.objects(
+            is_enabled=True, name__nin=[b.name for b in exclude]).first()
