@@ -224,7 +224,7 @@ def start_application(app_id):
         start_application.update_state(state=FAILURE)
         raise Ignore()
 
-    job = group([start_package.subtask(app.current_package.safe_id,
+    job = group([start_package.subtask((app.current_package.safe_id,),
                                        options={'queue': b.name})
                  for b in app.run_plan.backends])
     result = job.apply_async()
@@ -248,7 +248,7 @@ def stop_application(app_id):
         log.info(u"Removing application ports from '%s'" % backend.name)
         backend.delete_application_ports(app)
 
-    job = group([stop_package.subtask(app.current_package.safe_id,
+    job = group([stop_package.subtask((app.current_package.safe_id,),
                                       options={'queue': b.name})
                  for b in app.run_plan.backends])
     result = job.apply_async()
@@ -280,7 +280,7 @@ def update_application(app_id):
         update_application.update_state(state=FAILURE)
         raise Ignore()
 
-    job = group([update_package.subtask(app.current_package.safe_id,
+    job = group([update_package.subtask((app.current_package.safe_id,),
                                         options={'queue': b.name})
                  for b in app.run_plan.backends])
     result = job.apply_async()
