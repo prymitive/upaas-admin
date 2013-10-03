@@ -7,11 +7,15 @@
 
 import datetime
 import uuid
+import logging
 
 from mongoengine import (ReferenceField, StringField, DateTimeField, IntField,
                          ListField, DictField, Document)
 
 from upaas_admin.apps.tasks.constants import STATUS_CHOICES, TaskStatus
+
+
+log = logging.getLogger(__name__)
 
 
 class Task(Document):
@@ -51,19 +55,33 @@ class Task(Document):
         self.save()
 
     def execute(self):
+        log.info(u"Executing task '%s' using %s.%s, params: %s" % (
+            self.id, self.task_module, self.task_class,
+            self.task_params.keys()))
         task_class = None
         try:
             exec("from %s import %s as task_class" % (
                 self.task_module, self.task_class))
         except ImportError:
+            log.error(u"Task class not found: %s.%s" % self.task_module,
+                      self.task_class)
             return self.fail_task()
         else:
-            ret = task_class().run(self.task_params)
-            self.unlock_task()
-            self.status = TaskStatus.successful
-            self.save()
-            print("GOT RET: %s" % ret)
-            return ret
+            params = {}
+            params.update(self.task_params)
+            if self.application:
+                params['app_id'] = self.application.safe_id
+            try:
+                for progress in task_class().run(params):
+                    log.info(u"Task progress: %d%%" % progress)
+                    self.update(set__progress=progress)
+            except Exception, e:
+                log.error(u"Task %s failed: %s" % (self.id, e))
+                self.fail_task()
+            else:
+                self.unlock_task()
+                self.status = TaskStatus.successful
+                self.save()
 
     @classmethod
     def random_uuid(cls):

@@ -9,7 +9,8 @@ ICON_PENDING = 'glyphicon-time'
 ICON_STARTED = 'glyphicon-cog'
 
 
-DEFAULT_QUEUE = 'default'
+BUILDER_QUEUE = 'builder'
+BACKEND_QUEUE_PREFIX = 'backend.'
 
 
 class TaskStatus:
