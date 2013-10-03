@@ -5,8 +5,19 @@
 """
 
 
-STATE_PROGRESS = 'PROGRESS'
-
-
 ICON_PENDING = 'glyphicon-time'
 ICON_STARTED = 'glyphicon-cog'
+
+
+DEFAULT_QUEUE = 'default'
+
+
+class TaskStatus:
+    pending = 'PENDING'
+    running = 'RUNNING'
+    successful = 'SUCCESSFUL'
+    failed = 'FAILED'
+
+
+STATUS_CHOICES = (TaskStatus.pending, TaskStatus.running,
+                  TaskStatus.successful, TaskStatus.failed)
