@@ -33,7 +33,8 @@ class BackendServer(Document):
     Backend server - used for running applications.
     """
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
-    name = StringField(required=True, max_length=60, verbose_name=_('name'))
+    name = StringField(required=True, max_length=128, unique=True,
+                       verbose_name=_('name'))
     ip = IPv4Field(required=True, unique=True, verbose_name=_('IP address'))
     is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
     ports = ListField(EmbeddedDocumentField(Ports))
@@ -42,7 +43,7 @@ class BackendServer(Document):
 
     meta = {
         'indexes': [
-            {'fields': ['name', 'ip'], 'unique': True}
+            {'fields': ['name', 'ip']}
         ],
         'ordering': ['name'],
     }

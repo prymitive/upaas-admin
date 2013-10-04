@@ -5,12 +5,15 @@
 """
 
 
+import os
 import datetime
-import uuid
 import logging
+from socket import gethostname
 
 from mongoengine import (ReferenceField, StringField, DateTimeField, IntField,
-                         ListField, DictField, Document)
+                         ListField, Document)
+
+from django.utils.translation import ugettext_lazy as _
 
 from upaas_admin.apps.tasks.constants import STATUS_CHOICES, TaskStatus
 
@@ -24,29 +27,30 @@ class Task(Document):
     title = StringField(required=True)
     user = ReferenceField('User', dbref=False)
     application = ReferenceField('Application', dbref=False)
-    queue = StringField(required=True)
     status = StringField(required=True, choices=STATUS_CHOICES,
                          default=TaskStatus.pending)
     progress = IntField(min_value=0, max_value=100, default=0)
     messages = ListField(StringField())
-    locked_by = StringField()
     locked_since = DateTimeField()
-    task_module = StringField(required=True)
-    task_class = StringField(required=True)
-    task_params = DictField()
+    locked_by_backend = StringField()
+    locked_by_pid = IntField()
+
+    worker_hostname = gethostname()
+    worker_pid = os.getpid()
 
     meta = {
         'allow_inheritance': True,
         'indexes': [
-            {'fields': ['application', 'user', 'queue']},
-            {'fields': ['locked_by'], 'unique': True}
+            {'fields': ['application', 'user']},
         ],
         'ordering': ['-date_created'],
     }
 
     def unlock_task(self):
+        self.reload()
         self.date_finished = datetime.datetime.now()
-        del self.locked_by
+        del self.locked_by_backend
+        del self.locked_by_pid
         del self.locked_since
 
     def fail_task(self):
@@ -55,41 +59,26 @@ class Task(Document):
         self.save()
 
     def execute(self):
-        log.info(u"Executing task '%s' using %s.%s, params: %s" % (
-            self.id, self.task_module, self.task_class,
-            self.task_params.keys()))
-        task_class = None
         try:
-            exec("from %s import %s as task_class" % (
-                self.task_module, self.task_class))
-        except ImportError:
-            log.error(u"Task class not found: %s.%s" % self.task_module,
-                      self.task_class)
-            return self.fail_task()
+            for progress in self.job():
+                log.info(u"Task progress: %d%%" % progress)
+                self.update(set__progress=progress)
+        except Exception, e:
+            log.error(u"Task %s failed: %s" % (self.id, e))
+            self.fail_task()
         else:
-            params = {}
-            params.update(self.task_params)
-            if self.application:
-                params['app_id'] = self.application.safe_id
-            try:
-                for progress in task_class().run(params):
-                    log.info(u"Task progress: %d%%" % progress)
-                    self.update(set__progress=progress)
-            except Exception, e:
-                log.error(u"Task %s failed: %s" % (self.id, e))
-                self.fail_task()
-            else:
-                self.unlock_task()
-                self.status = TaskStatus.successful
-                self.save()
+            self.unlock_task()
+            self.status = TaskStatus.successful
+            self.save()
+
+    def job(self):
+        raise NotImplementedError(_(u"Task has no job defined!"))
 
     @classmethod
-    def random_uuid(cls):
-        return str(uuid.uuid4())
-
-    @classmethod
-    def pop(cls, queues):
-        task_id = cls.random_uuid()
-        cls.objects(queue__in=queues, status=TaskStatus.pending).update_one(
-            set__locked_by=task_id, set__locked_since=datetime.datetime.now())
-        return cls.objects(locked_by=task_id).first()
+    def pop(cls, **kwargs):
+        cls.objects(status=TaskStatus.pending, **kwargs).update_one(
+            set__locked_by_backend=cls.worker_hostname,
+            set__locked_by_pid=cls.worker_pid,
+            set__locked_since=datetime.datetime.now())
+        return cls.objects(locked_by_backend=cls.worker_hostname,
+                           locked_by_pid=cls.worker_pid).first()

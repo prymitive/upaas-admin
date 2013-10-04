@@ -10,8 +10,7 @@ import time
 
 from django.core.management.base import BaseCommand
 
-from upaas_admin.apps.tasks.constants import BUILDER_QUEUE
-from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.applications.utasks import BuildPackageTask
 
 log = logging.getLogger(__name__)
 
@@ -23,11 +22,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         while True:
             try:
-                task = Task.pop([BUILDER_QUEUE])
+                task = BuildPackageTask.pop()
                 if task:
-                    log.info(u"Got task '%s' - '%s.%s'" % (task.id,
-                                                           task.task_module,
-                                                           task.task_class))
+                    log.info(u"Got task '%s' - %s" % (task.id,
+                                                      task.__class__.__name__))
                     task.execute()
                 else:
                     log.debug(u"No task popped, sleeping")
