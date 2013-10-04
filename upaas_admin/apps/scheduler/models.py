@@ -29,14 +29,12 @@ class UserBudget(BudgetLimits):
     """
     How much resources can user apps consume.
     """
-    user = ReferenceField('User', dbref=False)
+    user = ReferenceField('User', dbref=False, unique=True)
     apps_count = IntField(required=True,
                           verbose_name=_('application count limit'))
 
     meta = {
-        'indexes': [
-            {'fields': ['user'], 'unique': True}
-        ]
+        'indexes': ['user'],
     }
 
     @classmethod
@@ -54,7 +52,5 @@ class ApplicationRunPlan(BudgetLimits):
     backends = ListField(ReferenceField('BackendServer', dbref=False))
 
     meta = {
-        'indexes': [
-            {'fields': ['application']}
-        ]
+        'indexes': ['application'],
     }

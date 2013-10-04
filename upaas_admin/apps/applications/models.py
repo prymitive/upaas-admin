@@ -54,9 +54,7 @@ class Package(Document):
     distro_arch = StringField(required=True)
 
     meta = {
-        'indexes': [
-            {'fields': ['filename']}
-        ],
+        'indexes': ['filename'],
         'ordering': ['date_created'],
     }
 
@@ -283,7 +281,7 @@ class Application(Document):
 
     meta = {
         'indexes': [
-            {'fields': ['name', 'owner']}
+            {'fields': ['name', 'owner'], 'unique': True}
         ],
         'ordering': ['name'],
     }

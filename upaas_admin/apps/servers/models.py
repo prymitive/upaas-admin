@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 
 class Ports(EmbeddedDocument):
-    application = ReferenceField('Application', dbref=False)
+    application = ReferenceField('Application', dbref=False, unique=True)
     ports = DictField()
 
 
@@ -42,9 +42,7 @@ class BackendServer(Document):
     _default_manager = QuerySetManager()
 
     meta = {
-        'indexes': [
-            {'fields': ['name', 'ip']}
-        ],
+        'indexes': ['name', 'ip'],
         'ordering': ['name'],
     }
 
@@ -139,7 +137,8 @@ class RouterServer(Document):
     Router server - used for load balancing.
     """
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
-    name = StringField(required=True, max_length=60, verbose_name=_('name'))
+    name = StringField(required=True, max_length=60, unique=True,
+                       verbose_name=_('name'))
     private_ip = IPv4Field(required=True, unique=True,
                            verbose_name=_('private IP address'))
     public_ip = IPv4Field(required=True, unique=True,
@@ -152,8 +151,6 @@ class RouterServer(Document):
     _default_manager = QuerySetManager()
 
     meta = {
-        'indexes': [
-            {'fields': ['name', 'private_ip', 'public_ip'], 'unique': True}
-        ],
+        'indexes': ['name', 'private_ip', 'public_ip'],
         'ordering': ['name'],
     }

@@ -39,10 +39,9 @@ class Task(Document):
     worker_pid = os.getpid()
 
     meta = {
+        'abstract': True,
         'allow_inheritance': True,
-        'indexes': [
-            {'fields': ['application', 'user']},
-        ],
+        'indexes': ['application'],
         'ordering': ['-date_created'],
     }
 
