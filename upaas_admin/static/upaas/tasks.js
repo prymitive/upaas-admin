@@ -19,8 +19,10 @@ function tasks_callback(data) {
 
             if (task.date_finished) {
                 menu.push(gettext('Finished') + ': ' + moment(task.date_finished).fromNow());
+            } else if (task.pending) {
+                menu.push(gettext('Queued') + ': ' + moment(task.date_created).fromNow());
             } else {
-                menu.push(gettext('Started') + ': ' + moment(task.date_created).fromNow());
+                menu.push(gettext('Started') + ': ' + moment(task.locked_since).fromNow());
             }
             menu.push('</li>');
 
@@ -29,7 +31,7 @@ function tasks_callback(data) {
             menu.push('<span class="glyphicon ' + task.icon + '"></span>');
             menu.push(task.title);
             if (task.progress >= 0) {
-                menu.push('<div class="progress progress-tasks-menu">')
+                menu.push('<div class="progresss progress-tasks-menu">')
                 menu.push('<div class="progress-bar" role="progressbar" aria-valuenow="'
                               + task.progress
                               + '" aria-valuemin="0" aria-valuemax="100" style="width: '

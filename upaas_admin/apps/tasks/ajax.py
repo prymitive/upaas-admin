@@ -48,10 +48,16 @@ def user_tasks(request):
         if task.date_finished:
             date_finished = task.date_finished.isoformat()
 
+        locked_since = None
+        if task.locked_since:
+            locked_since = task.locked_since.isoformat()
+
         tasks.append({'task_id': task.safe_id, 'title': task.title,
                       'date_created': task.date_created.isoformat(),
                       'date_finished': date_finished,
+                      'locked_since': locked_since,
                       'status': task.status,
+                      'pending': task.status == TaskStatus.pending,
                       'progress': task.progress, 'icon': icon,
                       'application': {'name': task.application.name,
                                       'id': task.application.safe_id}})
