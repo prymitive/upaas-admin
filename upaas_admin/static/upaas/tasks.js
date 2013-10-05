@@ -9,14 +9,19 @@ function tasks_callback(data) {
 
     var menu = new Array();
 
-    if (data.running) {
+    if (data.tasks.length > 0) {
         $.each(data.tasks, function (i, task) {
             if (i > 0) {
                 menu.push('<li role="presentation" class="divider"></li>');
             }
 
             menu.push('<li role="presentation" class="dropdown-header">');
-            menu.push(moment(task.date_created).fromNow());
+
+            if (task.date_finished) {
+                menu.push(gettext('Finished') + ': ' + moment(task.date_finished).fromNow());
+            } else {
+                menu.push(gettext('Started') + ': ' + moment(task.date_created).fromNow());
+            }
             menu.push('</li>');
 
             menu.push('<li>');

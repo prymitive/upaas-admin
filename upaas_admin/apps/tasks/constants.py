@@ -7,6 +7,8 @@
 
 ICON_PENDING = 'glyphicon-time'
 ICON_STARTED = 'glyphicon-cog'
+ICON_FAILED = 'glyphicon-remove-circle'
+ICON_SUCCESSFUL = 'glyphicon-ok-circle'
 
 
 class TaskStatus:
@@ -21,3 +23,4 @@ STATUS_CHOICES = (TaskStatus.pending, TaskStatus.running,
 
 
 ACTIVE_TASK_STATUSES = (TaskStatus.pending, TaskStatus.running)
+FINISHED_TASKS_STATUSES = (TaskStatus.failed, TaskStatus.successful)

@@ -5,7 +5,10 @@
 """
 
 
+from datetime import datetime, timedelta
 from json import dumps
+
+from mongoengine import Q
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
@@ -13,8 +16,7 @@ from django.views.decorators.cache import cache_page
 from dajaxice.decorators import dajaxice_register
 
 from upaas_admin.apps.tasks.base import ApplicationTask
-from upaas_admin.apps.tasks.constants import (ACTIVE_TASK_STATUSES, TaskStatus,
-                                              ICON_STARTED, ICON_PENDING)
+from upaas_admin.apps.tasks.constants import *
 
 
 @cache_page(2)  # TODO make it configurable?
@@ -24,15 +26,30 @@ def user_tasks(request):
     tasks = []
     running = 0
     for task in ApplicationTask.objects(
-            application__in=request.user.applications,
-            status__in=ACTIVE_TASK_STATUSES):
+            Q(application__in=request.user.applications) & (
+            Q(status__in=ACTIVE_TASK_STATUSES) |
+            Q(date_finished__gte=datetime.now() - timedelta(seconds=180)))):
+
+        #TODO make that 180 seconds configurable (?)
+
         if task.status == TaskStatus.pending:
             icon = ICON_PENDING
+            running += 1
+        elif task.status == TaskStatus.failed:
+            icon = ICON_FAILED
+        elif task.status == TaskStatus.successful:
+            icon = ICON_SUCCESSFUL
         else:
             icon = ICON_STARTED
-        running += 1
+            running += 1
+
+        date_finished = None
+        if task.date_finished:
+            date_finished = task.date_finished.isoformat()
+
         tasks.append({'task_id': task.safe_id, 'title': task.title,
                       'date_created': task.date_created.isoformat(),
+                      'date_finished': date_finished,
                       'status': task.status,
                       'progress': task.progress, 'icon': icon,
                       'application': {'name': task.application.name,
