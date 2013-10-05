@@ -8,8 +8,7 @@
 from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
-
-from upaas_admin.config import cached_main_config
+from django.conf import settings
 
 
 class BudgetLimits(Document):
@@ -39,8 +38,7 @@ class UserBudget(BudgetLimits):
 
     @classmethod
     def get_default_limits(cls):
-        config = cached_main_config()
-        return config.dump()['defaults']['budget']
+        return settings.UPAAS_CONFIG.dump()['defaults']['budget']
 
 
 class ApplicationRunPlan(BudgetLimits):

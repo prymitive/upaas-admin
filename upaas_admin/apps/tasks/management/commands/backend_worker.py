@@ -15,7 +15,7 @@ from django.core.management.base import BaseCommand
 
 from upaas.inet import local_ipv4_addresses
 
-from upaas_admin.apps.applications.utasks import BackendTask
+from upaas_admin.apps.tasks.base import BackendTask
 from upaas_admin.apps.servers.models import BackendServer
 
 log = logging.getLogger(__name__)

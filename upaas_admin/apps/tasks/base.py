@@ -12,13 +12,15 @@ from upaas_admin.apps.tasks.models import Task
 
 class BackendTask(Task):
     """
-    Task that will run on specific backend server.
+    Application task that will run on specific backend server.
     """
 
     backend = ReferenceField('BackendServer', dbref=False, required=True)
 
     meta = {
         'allow_inheritance': True,
+        'indexes': ['backend'],
+        'collection': 'tasks',
     }
 
 
@@ -31,18 +33,20 @@ class ApplicationTask(Task):
 
     meta = {
         'allow_inheritance': True,
+        'indexes': ['application'],
+        'collection': 'tasks',
     }
 
 
-class PackageTask(Task):
+class PackageTask(BackendTask, ApplicationTask):
     """
     Task that will run on specific backend server for specific application.
     """
 
-    backend = ReferenceField('BackendServer', dbref=False, required=True)
-    application = ReferenceField('Application', dbref=False, required=True)
     package = ReferenceField('Package', dbref=False, required=True)
 
     meta = {
         'allow_inheritance': True,
+        'indexes': ['application', 'backend'],
+        'collection': 'tasks',
     }

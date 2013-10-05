@@ -5,15 +5,10 @@
 """
 
 
-from __future__ import absolute_import
-
 import os
-import time
+import logging
 
-from celery import task, current_task, group
-from celery.utils.log import get_task_logger
-from celery.exceptions import Ignore
-from celery.states import FAILURE
+from mongoengine import StringField, ReferenceField
 
 from upaas.config.main import load_main_config
 from upaas.config.metadata import MetadataConfig
@@ -22,87 +17,154 @@ from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
 from upaas import processes
 
-from upaas_admin.apps.applications.models import Package, Application
 from upaas_admin.apps.applications.exceptions import UnpackError
-from upaas_admin.apps.servers.models import BackendServer
-# FIXME mongoengine complains that User model is not registered without it
-from upaas_admin.apps.users.models import User
-from upaas_admin.apps.tasks.constants import STATE_PROGRESS
-
-log = get_task_logger(__name__)
+from upaas_admin.apps.applications.models import Package
+from upaas_admin.apps.tasks.base import ApplicationTask, PackageTask
+from upaas_admin.apps.tasks.registry import register
 
 
-@task
-def start_application(app_id):
-    app = Application.objects(id=app_id).first()
-    if not app or not app.run_plan or not app.run_plan.backends:
-        start_application.update_state(state=FAILURE)
-        raise Ignore()
-
-    job = group([start_package.subtask((app.current_package.safe_id,),
-                                       options={'queue': b.name})
-                 for b in app.run_plan.backends])
-    result = job.apply_async()
-    while not result.ready():
-        start_application.update_state(
-            state=STATE_PROGRESS, meta={'progress': result.completed_count()})
-        time.sleep(1)
-        log.info(u"Waiting for subtasks")
-    start_application.update_state(state=STATE_PROGRESS,
-                                   meta={'progress': result.completed_count()})
+log = logging.getLogger(__name__)
 
 
-@task
-def stop_application(app_id):
-    app = Application.objects(id=app_id).first()
-    if not app or not app.run_plan or not app.run_plan.backends:
-        stop_application.update_state(state=FAILURE)
-        raise Ignore()
+@register
+class BuildPackageTask(ApplicationTask):
 
-    for backend in app.run_plan.backends:
-        log.info(u"Removing application ports from '%s'" % backend.name)
-        backend.delete_application_ports(app)
+    application = ReferenceField('Application', dbref=False, required=True)
+    metadata = StringField(required=True)
+    system_filename = StringField()
 
-    job = group([stop_package.subtask((app.current_package.safe_id,),
-                                      options={'queue': b.name})
-                 for b in app.run_plan.backends])
-    result = job.apply_async()
-    waited = 0
-    max_wait = 60
-    while not result.ready():
-        stop_application.update_state(
-            state=STATE_PROGRESS, meta={'progress': result.completed_count()})
-        #FIXME proper handling for timeouts and exceptions
-        if waited < max_wait:
-            time.sleep(1)
-            waited += 1
-            log.info(u"Waiting for subtasks (%d)" % waited)
+    def job(self):
+
+        try:
+            metadata_obj = MetadataConfig.from_string(self.metadata)
+        except ConfigurationError:
+            log.error(u"Invalid app metadata")
+            raise Exception()
+
+        upaas_config = load_main_config()
+        if not upaas_config:
+            log.error(u"Missing uPaaS configuration")
+            raise Exception()
+
+        log.info(u"Starting build task with parameters app_id=%s, "
+                 u"system_filename=%s" % (self.application.safe_id,
+                                          self.system_filename))
+
+        build_result = None
+        try:
+            builder = Builder(upaas_config, metadata_obj)
+            for result in builder.build_package(
+                    system_filename=self.system_filename):
+                log.info("Build progress: %d%%" % result.progress)
+                yield result.progress
+                build_result = result
+        except exceptions.BuildError:
+            log.error(u"Build failed")
+            raise Exception()
+
+        log.info(u"Build completed")
+        pkg = Package(metadata=self.metadata,
+                      interpreter_name=metadata_obj.interpreter.type,
+                      interpreter_version=build_result.interpreter_version,
+                      bytes=build_result.bytes,
+                      filename=build_result.filename,
+                      checksum=build_result.checksum,
+                      parent=build_result.parent,
+                      distro_name=build_result.distro_name,
+                      distro_version=build_result.distro_version,
+                      distro_arch=build_result.distro_arch)
+        pkg.save()
+        log.info(u"Package saved with id %s" % pkg.id)
+
+        self.application.reload()
+        self.application.packages.append(pkg)
+        self.application.current_package = pkg
+        self.application.save()
+        log.info(u"Application '%s' updated" % self.application.name)
+        self.application.update_application()
+
+
+@register
+class StartPackageTask(PackageTask):
+
+    def job(self):
+
+        if not self.application.run_plan:
+            log.error(u"Missing run plan, cannot start "
+                      u"'%s'" % self.application.name)
+            raise(u"Missing run plan for '%s'" % self.application.name)
+
+        log.info(u"Starting application '%s' using package '%s'" % (
+            self.application.name, self.package.safe_id))
+
+        try:
+            self.package.unpack()
+        except UnpackError, e:
+            log.error(u"Unpacking failed: %s" % e)
+            raise Exception(u"Unpacking package failed: %s" % e)
         else:
-            log.error(u"Waited too long (%d times)" % waited)
-            stop_application.update_state(state=FAILURE)
-            app.run_plan.delete()
-            raise Ignore()
-    stop_application.update_state(state=STATE_PROGRESS,
-                                  meta={'progress': result.completed_count()})
+            yield 75
 
-    app.run_plan.delete()
+        self.package.save_vassal_config(self.backend)
+        # TODO handle backend start task failure with rescue code
+        yield 100
 
 
-@task
-def update_application(app_id):
-    app = Application.objects(id=app_id).first()
-    if not app or not app.run_plan or not app.run_plan.backends:
-        update_application.update_state(state=FAILURE)
-        raise Ignore()
+@register
+class StopPackageTask(PackageTask):
 
-    job = group([update_package.subtask((app.current_package.safe_id,),
-                                        options={'queue': b.name})
-                 for b in app.run_plan.backends])
-    result = job.apply_async()
-    while not result.ready():
-        update_application.update_state(
-            state=STATE_PROGRESS, meta={'progress': result.completed_count()})
-        time.sleep(1)
-        log.info(u"Waiting for subtasks")
-    update_application.update_state(
-        state=STATE_PROGRESS, meta={'progress': result.completed_count()})
+    def job(self):
+        def _remove_pkg_dir(directory):
+            log.info(u"Removing package directory '%s'" % directory)
+            try:
+                processes.kill_and_remove_dir(directory)
+            except OSError, e:
+                log.error(u"Exception during package directory cleanup: "
+                          u"%s" % e)
+
+        if os.path.isfile(self.application.vassal_path):
+            log.info(u"Removing vassal config file "
+                     u"'%s'" % self.application.vassal_path)
+            try:
+                os.remove(self.application.vassal_path)
+            except OSError, e:
+                log.error(u"Can't remove vassal config file at '%s': %s" % (
+                    self.application.vassal_path, e))
+                raise
+        else:
+            log.error(u"Vassal config file for application '%s' not found at "
+                      u"'%s" % (self.application.safe_id,
+                                self.application.vassal_path))
+        yield 10
+
+        if os.path.isdir(self.package.package_path):
+            _remove_pkg_dir(self.package.package_path)
+        else:
+            log.info(u"Package directory not found at "
+                     u"'%s'" % self.package.package_path)
+        yield 75
+
+        log.info(u"Checking for old application packages")
+        for oldpkg in self.application.packages:
+            if os.path.isdir(oldpkg.package_path):
+                _remove_pkg_dir(oldpkg.package_path)
+
+        log.info(u"Application '%s' stopped" % self.application.name)
+        yield 100
+
+
+@register
+class UpdatePackageTask(PackageTask):
+
+    def job(self):
+        try:
+            self.package.unpack()
+        except UnpackError:
+            log.error(u"Unpacking failed")
+            raise
+        yield 50
+
+        self.package.save_vassal_config(self.backend)
+        yield 75
+        self.package.cleanup_application_packages()
+        yield 100

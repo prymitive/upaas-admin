@@ -10,14 +10,14 @@ import logging
 import tempfile
 import shutil
 import time
+from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
                          ReferenceField, ListField, CASCADE, QuerySetManager)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
-
-from celery.execute import send_task
+from django.conf import settings
 
 from upaas import utils
 from upaas import tar
@@ -28,12 +28,11 @@ from upaas.storage.exceptions import StorageError
 from upaas import processes
 
 from upaas_admin.apps.servers.models import RouterServer
-from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
-from upaas_admin.config import cached_main_config
 from upaas_admin.apps.scheduler.base import select_best_backend
 from upaas_admin.apps.servers.constants import PortsNames
+from upaas_admin.apps.tasks.models import Task
 
 
 log = logging.getLogger(__name__)
@@ -72,7 +71,7 @@ class Package(Document):
 
     @property
     def upaas_config(self):
-        return cached_main_config()
+        return settings.UPAAS_CONFIG
 
     @property
     def application(self):
@@ -83,7 +82,7 @@ class Package(Document):
         """
         Unpacked package directory path
         """
-        return os.path.join(self.upaas_config.paths.apps, self.safe_id)
+        return os.path.join(settings.UPAAS_CONFIG.paths.apps, self.safe_id)
 
     def generate_uwsgi_config(self, backend):
         """
@@ -100,7 +99,7 @@ class Package(Document):
                     return ret
 
         # so it won't change while generating configuration
-        config = self.upaas_config
+        config = deepcopy(self.upaas_config)
 
         base_template = config.interpreters['uwsgi']['template']
 
@@ -338,7 +337,7 @@ class Application(Document):
 
     @property
     def upaas_config(self):
-        return cached_main_config()
+        return settings.UPAAS_CONFIG
 
     @property
     def vassal_path(self):
@@ -406,17 +405,10 @@ class Application(Document):
         if not force_fresh and self.current_package:
             system_filename = self.current_package.filename
             title = _("Building new package for") + " " + self.name
-        task = send_task('upaas_admin.apps.applications.tasks.build_package',
-                         (self.metadata,),
-                         {'app_id': self.safe_id,
-                          'system_filename': system_filename},
-                         queue='builder')
-        log.info("Build task for app '%s' queued with id '%s'" % (
-            self.name, task.task_id))
-        task_link = Task(task_id=task.task_id, title=title, application=self,
-                         user=self.owner)
-        task_link.save()
-        return task.task_id
+        task = Task.put('BuildPackageTask', title=title, application=self,
+                        metadata=self.metadata,
+                        system_filename=system_filename)
+        log.info(u"Created start task: %s" % task.safe_id)
 
     def start_application(self):
         if self.current_package:
@@ -437,20 +429,32 @@ class Application(Document):
             run_plan.backends += [backend]
             run_plan.save()
 
-            #FIXME call task
-            return True
+            task = Task.put('StartPackageTask',
+                            title=u'Starting application %s' % self.name,
+                            backend=backend, application=self,
+                            package=self.current_package)
+            log.info(u"Created start task: %s" % task.safe_id)
 
     def stop_application(self):
         if self.current_package:
-            run_plan = self.run_plan
-            if not run_plan:
+            if not self.run_plan:
                 return
-            #FIXME call task
+            for backend in self.run_plan.backends:
+                task = Task.put('StopPackageTask',
+                                title=u'Stooping application %s' % self.name,
+                                backend=backend, application=self,
+                                package=self.current_package)
+                log.info(u"Created stop task: %s" % task.safe_id)
+            self.run_plan.delete()
+            #TODO rewrite for task group (?)
 
     def update_application(self):
         if self.current_package:
-            run_plan = self.run_plan
-            if not run_plan:
+            if not self.run_plan:
                 return
-            backend = run_plan.backends[0]
-            #FIXME call task
+            for backend in self.run_plan.backends:
+                task = Task.put('UpdatePackageTask',
+                                title=u'Updating application %s' % self.name,
+                                backend=backend, application=self,
+                                package=self.current_package)
+                log.info(u"Created update task: %s" % task.safe_id)

@@ -12,10 +12,10 @@ from random import randrange
 from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 
 from upaas.inet import local_ipv4_addresses
 
-from upaas_admin.config import cached_main_config
 from upaas_admin.contrib.fields import IPv4Field
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 
@@ -63,11 +63,11 @@ class BackendServer(Document):
 
     @property
     def port_min(self):
-        return cached_main_config().apps.tcp.port_min
+        return settings.UPAAS_CONFIG.apps.tcp.port_min
 
     @property
     def port_max(self):
-        return cached_main_config().apps.tcp.port_max
+        return settings.UPAAS_CONFIG.apps.tcp.port_max
 
     @property
     def allocated_ports(self):

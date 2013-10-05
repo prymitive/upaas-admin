@@ -10,7 +10,7 @@ import time
 
 from django.core.management.base import BaseCommand
 
-from upaas_admin.apps.applications.utasks import BuildPackageTask
+from upaas_admin.apps.applications.tasks import BuildPackageTask
 
 log = logging.getLogger(__name__)
 

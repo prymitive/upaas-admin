@@ -30,6 +30,12 @@ DATABASES = {
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    },
+}
+
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
@@ -64,7 +70,6 @@ INSTALLED_APPS = (
     'tastypie',
     'tastypie_mongoengine',
     'pure_pagination',
-    'djcelery',
     'django_gravatar',
     'upaas_admin.apps.users',
     'upaas_admin.apps.applications',
@@ -172,57 +177,21 @@ SESSION_ENGINE = 'mongoengine.django.sessions'
 
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 
-upaas_config = load_main_config()
+UPAAS_CONFIG = load_main_config()
 
-if not upaas_config:
+if not UPAAS_CONFIG:
     sys.exit(1)
 
 from mongoengine import connect
-mongo_opts = dict(host=upaas_config.mongodb.host,
-                  port=upaas_config.mongodb.port)
-if upaas_config.mongodb.get('username'):
-    mongo_opts['username'] = upaas_config.mongodb.username
-    if upaas_config.mongodb.get('password'):
-        mongo_opts['password'] = upaas_config.mongodb.password
+mongo_opts = dict(host=UPAAS_CONFIG.mongodb.host,
+                  port=UPAAS_CONFIG.mongodb.port)
+if UPAAS_CONFIG.mongodb.get('username'):
+    mongo_opts['username'] = UPAAS_CONFIG.mongodb.username
+    if UPAAS_CONFIG.mongodb.get('password'):
+        mongo_opts['password'] = UPAAS_CONFIG.mongodb.password
 
-connect(upaas_config.mongodb.database, **mongo_opts)
+connect(UPAAS_CONFIG.mongodb.database, **mongo_opts)
 
-#==============================================================================
-# celery
-#==============================================================================
-
-import djcelery
-djcelery.setup_loader()
-
-mongouri = "mongodb://"
-
-if upaas_config.mongodb.get('username'):
-    mongouri += upaas_config.mongodb.username
-    if upaas_config.mongodb.get('password'):
-        mongouri += ':' + upaas_config.mongodb.password
-    mongouri += "@"
-
-mongouri += "%s:%s/%s" % (upaas_config.mongodb.host,
-                          upaas_config.mongodb.port,
-                          upaas_config.mongodb.database)
-
-BROKER_URL = mongouri
-
-CELERY_MONGODB_BACKEND_SETTINGS = {
-    "host": upaas_config.mongodb.host,
-    "port": upaas_config.mongodb.port,
-    "database": upaas_config.mongodb.database,
-}
-
-if upaas_config.mongodb.get('username'):
-    CELERY_MONGODB_BACKEND_SETTINGS['user'] = upaas_config.mongodb.username
-    if upaas_config.mongodb.get('password'):
-        CELERY_MONGODB_BACKEND_SETTINGS['password'] = upaas_config.\
-            mongodb.password
-
-CELERY_RESULT_BACKEND = "mongodb"
-CELERY_MONGODB_BACKEND_SETTINGS = CELERY_MONGODB_BACKEND_SETTINGS
-CELERY_TRACK_STARTED = True
 
 #==============================================================================
 # django-pipeline

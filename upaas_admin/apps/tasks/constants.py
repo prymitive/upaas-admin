@@ -18,3 +18,6 @@ class TaskStatus:
 
 STATUS_CHOICES = (TaskStatus.pending, TaskStatus.running,
                   TaskStatus.successful, TaskStatus.failed)
+
+
+ACTIVE_TASK_STATUSES = (TaskStatus.pending, TaskStatus.running)
