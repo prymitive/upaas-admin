@@ -25,6 +25,7 @@ from upaas_admin.apps.tasks.constants import *
 def user_tasks(request):
     tasks = []
     running = 0
+    # look for running or pending tasks and recently finished tasks
     for task in ApplicationTask.objects(
             Q(application__in=request.user.applications) & (
             Q(status__in=ACTIVE_TASK_STATUSES) |
