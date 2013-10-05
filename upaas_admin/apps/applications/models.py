@@ -9,6 +9,7 @@ import datetime
 import logging
 import tempfile
 import shutil
+import time
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
                          ReferenceField, ListField, CASCADE, QuerySetManager)
@@ -24,6 +25,7 @@ from upaas.config.base import UPAAS_CONFIG_DIRS
 from upaas.config.metadata import MetadataConfig
 from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import StorageError
+from upaas import processes
 
 from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.tasks.models import Task
@@ -214,6 +216,15 @@ class Package(Document):
         options.append('\n')
         return options
 
+    def save_vassal_config(self, backend):
+        log.info(u"Generating uWSGI vassal configuration")
+        options = self.generate_uwsgi_config(backend)
+        log.info(u"Saving vassal configuration to "
+                 u"'%s'" % self.application.vassal_path)
+        with open(self.application.vassal_path, 'w') as vassal:
+            vassal.write('\n'.join(options))
+        log.info(u"Vassal saved")
+
     def unpack(self):
         upaas_config = self.upaas_config
 
@@ -262,6 +273,35 @@ class Package(Document):
                               u"'%s'" % self.package_path)
         log.info(u"Package moved")
         utils.rmdirs(directory)
+
+    def cleanup_application_packages(self):
+        """
+        Remove all but current unpacked packages
+        """
+        log.info(u"Cleaning old packages for '%s'" % self.application.name)
+        for oldpkg in self.application.packages:
+            if oldpkg.id == self.id:
+                # skip current package!
+                continue
+            if os.path.isdir(oldpkg.package_path):
+                log.info(u"Removing package directory "
+                         u"'%s'" % oldpkg.package_path)
+
+                # if there are running pids inside package dir we will need to
+                # wait this should only happen during upgrade, when we need to
+                # wait for app to reload into new package dir
+                pids = processes.directory_pids(oldpkg.package_path)
+                while pids:
+                    log.info(u"Waiting for %d pid(s) in %s to terminate" % (
+                        len(pids), oldpkg.package_path))
+                    time.sleep(2)
+                    pids = processes.directory_pids(oldpkg.package_path)
+
+                try:
+                    processes.kill_and_remove_dir(oldpkg.package_path)
+                except OSError, e:
+                    log.error(u"Exception during package directory cleanup: "
+                              u"%s" % e)
 
 
 class Application(Document):
@@ -397,15 +437,7 @@ class Application(Document):
             run_plan.backends += [backend]
             run_plan.save()
 
-            task = send_task(
-                'upaas_admin.apps.applications.tasks.start_application',
-                (self.safe_id,), queue=backend.name)
-            log.info("Start task for app '%s' queued with id '%s' in queue "
-                     "'%s'" % (self.name, task.task_id, backend.name))
-            task_link = Task(task_id=task.task_id,
-                             title=_("Starting application") + " " + self.name,
-                             application=self, user=self.owner)
-            task_link.save()
+            #FIXME call task
             return True
 
     def stop_application(self):
@@ -413,15 +445,7 @@ class Application(Document):
             run_plan = self.run_plan
             if not run_plan:
                 return
-            task = send_task(
-                'upaas_admin.apps.applications.tasks.stop_application',
-                (self.safe_id,), queue='default')
-            log.info("Stop task for app '%s' with id '%s'" % (self.name,
-                                                              task.task_id))
-            task_link = Task(task_id=task.task_id, title=_(
-                "Stopping application") + " " + self.name,
-                application=self, user=self.owner)
-            task_link.save()
+            #FIXME call task
 
     def update_application(self):
         if self.current_package:
@@ -429,12 +453,4 @@ class Application(Document):
             if not run_plan:
                 return
             backend = run_plan.backends[0]
-            task = send_task(
-                'upaas_admin.apps.applications.tasks.start_application',
-                (self.safe_id,), queue=backend.name)
-            log.info("Start task for app '%s' with id '%s' in queue "
-                     "'%s'" % (self.name, task.task_id, backend.name))
-            task_link = Task(task_id=task.task_id,
-                             title=_("Updating application") + " " +
-                             self.name, application=self, user=self.owner)
-            task_link.save()
+            #FIXME call task

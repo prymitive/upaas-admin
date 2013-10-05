@@ -26,7 +26,6 @@ class Task(Document):
     date_finished = DateTimeField()
     title = StringField(required=True)
     user = ReferenceField('User', dbref=False)
-    application = ReferenceField('Application', dbref=False)
     status = StringField(required=True, choices=STATUS_CHOICES,
                          default=TaskStatus.pending)
     progress = IntField(min_value=0, max_value=100, default=0)

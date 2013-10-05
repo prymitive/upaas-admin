@@ -5,6 +5,7 @@
 """
 
 
+import os
 import logging
 
 from mongoengine import StringField, ReferenceField
@@ -14,18 +15,18 @@ from upaas.config.metadata import MetadataConfig
 from upaas.builder.builder import Builder
 from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
-from upaas_admin.apps.applications.exceptions import UnpackError
+from upaas import processes
 
-from upaas_admin.apps.applications.models import Package, Application
-from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.applications.exceptions import UnpackError
+from upaas_admin.apps.applications.models import Package
+from upaas_admin.apps.tasks.base import PackageTask, ApplicationTask
 
 
 log = logging.getLogger(__name__)
 
 
-class BuildPackageTask(Task):
+class BuildPackageTask(ApplicationTask):
 
-    application = ReferenceField('Application', dbref=False, required=True)
     metadata = StringField(required=True)
     system_filename = StringField()
 
@@ -80,18 +81,7 @@ class BuildPackageTask(Task):
         self.application.update_application()
 
 
-class BackendTask(Task):
-
-    backend = ReferenceField('BackendServer', dbref=False, required=True)
-
-    meta = {
-        'allow_inheritance': True,
-    }
-
-
-class StartPackageTask(BackendTask):
-
-    package = ReferenceField('Package', dbref=False, required=True)
+class StartPackageTask(PackageTask):
 
     def job(self):
 
@@ -109,16 +99,56 @@ class StartPackageTask(BackendTask):
             log.error(u"Unpacking failed: %s" % e)
             raise Exception(u"Unpacking package failed: %s" % e)
 
-        log.info(u"Generating uWSGI vassal configuration")
-        options = self.package.generate_uwsgi_config(self.backend)
+        self.package.save_vassal_config(self.backend)
 
-        if not options:
-            log.error(u"Couldn't generate vassal configuration")
+
+class StopPackageTask(PackageTask):
+
+    def job(self):
+        def _remove_pkg_dir(directory):
+            log.info(u"Removing package directory '%s'" % directory)
+            try:
+                processes.kill_and_remove_dir(directory)
+            except OSError, e:
+                log.error(u"Exception during package directory cleanup: "
+                          u"%s" % e)
+
+        if os.path.isfile(self.application.vassal_path):
+            log.info(u"Removing vassal config file "
+                     u"'%s'" % self.application.vassal_path)
+            try:
+                os.remove(self.application.vassal_path)
+            except OSError, e:
+                log.error(u"Can't remove vassal config file at '%s': %s" % (
+                    self.application.vassal_path, e))
+                return
+        else:
+            log.error(u"Vassal config file for application '%s' not found at "
+                      u"'%s" % (self.application.safe_id,
+                                self.application.vassal_path))
+
+        if os.path.isdir(self.package_path):
+            _remove_pkg_dir(self.package_path)
+        else:
+            log.info(u"Package directory not found at "
+                     u"'%s'" % self.package.package_path)
+
+        log.info(u"Checking for old application packages")
+        for oldpkg in self.application.packages:
+            if os.path.isdir(oldpkg.package_path):
+                _remove_pkg_dir(oldpkg.package_path)
+
+        log.info(u"Application '%s' stopped" % self.application.name)
+
+
+class UpdatePackageTask(PackageTask):
+
+    def job(self):
+        try:
+            self.package.unpack()
+        except UnpackError:
+            log.error(u"Unpacking failed")
             return
 
-        log.info(u"Saving vassal configuration to "
-                 u"'%s'" % self.application.vassal_path)
-        with open(self.application.vassal_path, 'w') as vassal:
-            vassal.write('\n'.join(options))
-
-        log.info(u"Vassal saved")
+        self.package.save_vassal_config(self.backend)
+        self.package.cleanup_application_packages()
