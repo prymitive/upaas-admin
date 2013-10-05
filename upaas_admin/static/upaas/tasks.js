@@ -31,7 +31,7 @@ function tasks_callback(data) {
             menu.push('<span class="glyphicon ' + task.icon + '"></span>');
             menu.push(task.title);
             if (task.progress >= 0) {
-                menu.push('<div class="progresss progress-tasks-menu">')
+                menu.push('<div class="progress progress-tasks-menu">')
                 menu.push('<div class="progress-bar" role="progressbar" aria-valuenow="'
                               + task.progress
                               + '" aria-valuemin="0" aria-valuemax="100" style="width: '
