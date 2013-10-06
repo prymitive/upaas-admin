@@ -25,7 +25,11 @@ function tasks_callback(data) {
                 return false;
             }
 
-            menu.push('<li role="presentation" class="dropdown-header">');
+            if (task.failed) {
+                menu.push('<li role="presentation" class="dropdown-header upaas-task-failed">');
+            } else {
+                menu.push('<li role="presentation" class="dropdown-header">');
+            }
 
             if (task.date_finished) {
                 menu.push(gettext('Finished') + ': ' + moment(task.date_finished).fromNow());
@@ -36,12 +40,16 @@ function tasks_callback(data) {
             }
             menu.push('</li>');
 
-            menu.push('<li>');
+            if (task.failed) {
+                menu.push('<li class="upaas-task-failed">');
+            } else {
+                menu.push('<li>');
+            }
             menu.push('<a href="' + Django.url('app_details', task.application.id) + '">');
             menu.push('<span class="glyphicon ' + task.icon + '"></span>');
             menu.push(task.title);
             if (!task.pending && task.progress >= 0) {
-                menu.push('<div class="progress progress-tasks-menu">')
+                menu.push('<div class="progress upaas-task-progressbar">')
                 menu.push('<div class="progress-bar" role="progressbar" aria-valuenow="'
                               + task.progress
                               + '" aria-valuemin="0" aria-valuemax="100" style="width: '

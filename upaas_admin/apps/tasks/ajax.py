@@ -58,6 +58,7 @@ def user_tasks(request):
                       'locked_since': locked_since,
                       'status': task.status,
                       'pending': task.status == TaskStatus.pending,
+                      'failed': task.status == TaskStatus.failed,
                       'progress': task.progress, 'icon': icon,
                       'application': {'name': task.application.name,
                                       'id': task.application.safe_id}})
