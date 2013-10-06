@@ -21,15 +21,24 @@
     %dt
       {% trans "System domain" %}:
     %dd
-      %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
-        = app.system_domain
+      - if app.run_plan
+        %a{'href':'http://={ app.system_domain }', 'target':'_blank'}
+          = app.system_domain
+      - else
+        .text-muted
+          = app.system_domain
 
     %dt
       {% trans "Custom domains" %}:
     %dd
       - for domain in app.domains
-        %a{'href':'={ domain }', 'target':'_blank'}
-          = domain
+        - if app.run_plan
+          %a{'href':'={ domain }', 'target':'_blank'}
+            = domain
+        - else
+          .text-muted
+            = domain
       - empty
         .muted
-          - trans "None"
+          .text-muted
+            - trans "None"

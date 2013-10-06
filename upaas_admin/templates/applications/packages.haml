@@ -1,0 +1,43 @@
+- extends 'applications/base.haml'
+
+
+- load i18n
+
+
+- block app_content
+
+  %table.table.table-striped
+
+    %thead
+      %tr
+        %th
+          - trans "Created"
+        %th
+          - trans "Interpreter name"
+        %th
+          - trans "Interpreter version"
+        %th
+          - trans "Size"
+        %th
+          - trans "Builder"
+
+    %tbody
+      - for package in packages
+        %tr
+          %td
+            = package.date_created
+          %td
+            = package.interpreter_name
+          %td
+            = package.interpreter_version
+          %td
+            = package.bytes|filesizeformat
+          %td
+            = package.builder
+      - empty
+        %tr
+          %td{'colspan':'4'}
+            .text-center
+              - trans "No packages built yet"
+
+  - include "partials/pagination_footer.haml"

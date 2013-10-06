@@ -50,8 +50,8 @@ class Command(BaseCommand):
                 backend.ip = IP(local_ip)
                 backend.save()
         else:
-            log.error(u"Local backend not found, registering as '%s' with IP "
-                      u"'%s'" % (name, local_ip))
+            log.info(u"Local backend not found, registering as '%s' with IP "
+                     u"'%s'" % (name, local_ip))
             backend = BackendServer(name=name, ip=local_ip)
             backend.save()
 

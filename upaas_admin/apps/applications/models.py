@@ -41,6 +41,7 @@ log = logging.getLogger(__name__)
 class Package(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     metadata = StringField(help_text=_('Application metadata'))
+    application = ReferenceField('Application', dbref=False, required=True)
 
     interpreter_name = StringField(required=True)
     interpreter_version = StringField(required=True)
@@ -49,6 +50,7 @@ class Package(Document):
     filename = StringField(required=True)
     bytes = LongField(required=True)
     checksum = StringField(required=True)
+    builder = StringField(required=True)
 
     distro_name = StringField(required=True)
     distro_version = StringField(required=True)
@@ -56,8 +58,10 @@ class Package(Document):
 
     meta = {
         'indexes': ['filename'],
-        'ordering': ['date_created'],
+        'ordering': ['-date_created'],
     }
+
+    _default_manager = QuerySetManager()
 
     @property
     def safe_id(self):
@@ -72,10 +76,6 @@ class Package(Document):
     @property
     def upaas_config(self):
         return settings.UPAAS_CONFIG
-
-    @property
-    def application(self):
-        return Application.objects(packages=self).first()
 
     @property
     def package_path(self):

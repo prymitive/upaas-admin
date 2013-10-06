@@ -2,28 +2,33 @@
 
 
 - if page_obj.paginator.num_pages > 1
-  .pagination.pagination-centered
-    %ul
+  %ul.pagination
+    %li{'class':'{% if not page_obj.has_previous %}disabled{% endif %}'}
       - if page_obj.has_previous
-        %li
-          %a{'href':'?={ page_obj.previous_page_number.querystring }', 'title':'{% trans "Previous" %}'}
-            %span.glyphicon.glyphicon-chevron-left
-      - for page in page_obj.pages
-        - if page
-          - ifequal page page_obj.number
-            %li.active
-              %a
-                = page
-          - else
-            %li
-              %a{'href':'?{{ page.querystring }}'}
-                = page
+        %a{'href':'?={ page_obj.previous_page_number.querystring }', 'title':'{% trans "Previous" %}'}
+          %span.glyphicon.glyphicon-chevron-left
+      - else
+        %a{'href':'#', 'title':'{% trans "Previous" %}'}
+          %span.glyphicon.glyphicon-chevron-left
+    - for page in page_obj.pages
+      - if page
+        - ifequal page page_obj.number
+          %li
+            %a#upaas-pagination-active{'href':'#'}
+              = page
         - else
-          %li.disabled
-            %a
-              :plain
-                ...
+          %li
+            %a{'href':'?{{ page.querystring }}'}
+              = page
+      - else
+        %li.disabled
+          %a
+            :plain
+              ...
+    %li{'class':'{% if not page_obj.has_next %}disabled{% endif %}'}
       - if page_obj.has_next
-        %li
-          %a{'href':'?={ page_obj.next_page_number.querystring }', 'title':'{% trans "Next" %}'}
-            %span.glyphicon.glyphicon-chevron-right
+        %a{'href':'?={ page_obj.next_page_number.querystring }', 'title':'{% trans "Next" %}'}
+          %span.glyphicon.glyphicon-chevron-right
+      - else
+        %a{'href':'#', 'title':'{% trans "Previous" %}'}
+          %span.glyphicon.glyphicon-chevron-right

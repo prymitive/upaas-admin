@@ -15,9 +15,11 @@
 
 	.btn-shadow(@navbar-default-bg);
 	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+	filter: none;
 
 	&-inverse {
 		.btn-shadow(@navbar-inverse-bg);
+		filter: none;
 		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
 	}
 
@@ -91,8 +93,25 @@ h1, h2, h3, h4, h5, h6 {
 
 // Navs =======================================================================
 
+.pagination {
+
+	.active > a,
+	.active > a:hover {
+		border-color: #ddd;
+	}
+}
+
 // Indicators =================================================================
 
 // Progress bars ==============================================================
 
 // Containers =================================================================
+
+.panel {
+
+	&-primary {
+		.panel-title {
+			color: #fff;
+		}
+	}
+}

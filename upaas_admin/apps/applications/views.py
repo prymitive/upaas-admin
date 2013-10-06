@@ -8,15 +8,17 @@
 from django.views.generic import ListView, DetailView, CreateView
 from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
-from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
+from tabination.views import TabView
+
+from pure_pagination import Paginator, PageNotAnInteger
 from pure_pagination.mixins import PaginationMixin
 
 from upaas_admin.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                DetailTabView)
 from upaas_admin.apps.applications.mixin import OwnedAppsMixin
-from upaas_admin.apps.applications.models import Application
+from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import RegisterApplicationForm
 from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 
@@ -38,6 +40,35 @@ class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
     tab_id = 'app_details'
     tab_group = 'app_navigation'
     tab_label = _('Details')
+
+
+class ApplicationPackagesView(LoginRequiredMixin, AppTemplatesDirMixin,
+                              PaginationMixin, DetailView, TabView):
+
+    template_name = 'packages.haml'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    paginate_by = 10
+    _is_tab = True
+    tab_id = 'app_packages'
+    tab_group = 'app_navigation'
+    tab_label = _('Packages')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        self.object = self.get_object()
+        self.object_list = Package.objects(application=self.object)
+        paginator = Paginator(self.object_list, self.paginate_by,
+                              request=request)
+        packages = paginator.page(page)
+        context = self.get_context_data(object=self.object,
+                                        packages=packages.object_list,
+                                        page_obj=packages)
+        return self.render_to_response(context)
 
 
 class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,

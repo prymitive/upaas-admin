@@ -15,6 +15,14 @@ function tasks_callback(data) {
                 menu.push('<li role="presentation" class="divider"></li>');
             }
 
+            if (i > 5 && data.tasks.length > 6) {
+                menu.push('<li role="presentation" class="dropdown-header"></li>');
+                menu.push('<li class="text-centered">');
+                menu.push('<a href="#">' + (data.tasks.length - i) + ' ' + gettext('more tasks') + '</a>');
+                menu.push('</li>');
+                return false;
+            }
+
             menu.push('<li role="presentation" class="dropdown-header">');
 
             if (task.date_finished) {

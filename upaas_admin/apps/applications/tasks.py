@@ -7,6 +7,7 @@
 
 import os
 import logging
+from socket import gethostname
 
 from mongoengine import StringField, ReferenceField
 
@@ -64,12 +65,14 @@ class BuildPackageTask(ApplicationTask):
 
         log.info(u"Build completed")
         pkg = Package(metadata=self.metadata,
+                      application=self.application,
                       interpreter_name=metadata_obj.interpreter.type,
                       interpreter_version=build_result.interpreter_version,
                       bytes=build_result.bytes,
                       filename=build_result.filename,
                       checksum=build_result.checksum,
                       parent=build_result.parent,
+                      builder=gethostname(),
                       distro_name=build_result.distro_name,
                       distro_version=build_result.distro_version,
                       distro_arch=build_result.distro_arch)

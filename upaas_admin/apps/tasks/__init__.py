@@ -5,7 +5,15 @@
 """
 
 
+import logging
+
 from registry import tasks_autodiscover
 
 
-tasks_autodiscover()
+log = logging.getLogger(__name__)
+
+
+try:
+    tasks_autodiscover()
+except:
+    log.debug(u"Task discovery failed")
