@@ -152,6 +152,7 @@ class StopPackageTask(PackageTask):
             if os.path.isdir(oldpkg.package_path):
                 _remove_pkg_dir(oldpkg.package_path)
 
+        self.application.run_plan.delete()
         log.info(u"Application '%s' stopped" % self.application.name)
         yield 100
 

@@ -445,7 +445,6 @@ class Application(Document):
                                 backend=backend, application=self,
                                 package=self.current_package)
                 log.info(u"Created stop task: %s" % task.safe_id)
-            self.run_plan.delete()
             #TODO rewrite for task group (?)
 
     def update_application(self):
