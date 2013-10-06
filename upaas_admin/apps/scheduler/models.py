@@ -28,7 +28,7 @@ class UserBudget(BudgetLimits):
     """
     How much resources can user apps consume.
     """
-    user = ReferenceField('User', dbref=False, unique=True)
+    user = ReferenceField('User', dbref=False, unique=True, required=True)
     apps_count = IntField(required=True,
                           verbose_name=_('application count limit'))
 
@@ -45,7 +45,7 @@ class ApplicationRunPlan(BudgetLimits):
     """
     Where should application run and how much resources can given app consume.
     """
-    application = ReferenceField('Application', dbref=False)
+    application = ReferenceField('Application', dbref=False, required=True)
     #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
     backends = ListField(ReferenceField('BackendServer', dbref=False))
 

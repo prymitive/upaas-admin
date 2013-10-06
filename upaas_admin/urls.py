@@ -17,6 +17,7 @@ from tastypie.api import Api
 from upaas_admin.apps.applications.api import (ApplicationResource,
                                                PackageResource)
 from upaas_admin.apps.servers.api import (BackendResource, RouterResource)
+from upaas_admin.apps.scheduler.api import RunPlanResource
 
 from upaas_admin.apps.applications.views import IndexView
 
@@ -26,6 +27,7 @@ v1_api.register(ApplicationResource())
 v1_api.register(PackageResource())
 v1_api.register(BackendResource())
 v1_api.register(RouterResource())
+v1_api.register(RunPlanResource())
 
 
 dajaxice_autodiscover()
