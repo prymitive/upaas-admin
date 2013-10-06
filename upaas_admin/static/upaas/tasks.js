@@ -17,8 +17,10 @@ function tasks_callback(data) {
 
             if (i > 5 && data.tasks.length > 6) {
                 menu.push('<li role="presentation" class="dropdown-header"></li>');
-                menu.push('<li class="text-centered">');
-                menu.push('<a href="#">' + (data.tasks.length - i) + ' ' + gettext('more tasks') + '</a>');
+                menu.push('<li>');
+                menu.push('<a href="#"> ' + gettext('and') + ' ' +
+                              (data.tasks.length - i) + ' ' +
+                              gettext('more tasks') + '</a>');
                 menu.push('</li>');
                 return false;
             }
@@ -38,7 +40,7 @@ function tasks_callback(data) {
             menu.push('<a href="' + Django.url('app_details', task.application.id) + '">');
             menu.push('<span class="glyphicon ' + task.icon + '"></span>');
             menu.push(task.title);
-            if (task.progress >= 0) {
+            if (!task.pending && task.progress >= 0) {
                 menu.push('<div class="progress progress-tasks-menu">')
                 menu.push('<div class="progress-bar" role="progressbar" aria-valuenow="'
                               + task.progress
