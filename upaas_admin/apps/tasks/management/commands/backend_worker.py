@@ -56,6 +56,7 @@ class Command(BaseCommand):
             backend.save()
 
         while True:
+            #TODO add cleanup here for purging/retrying interrupted tasks
             try:
                 task = BackendTask.pop(backend=backend)
                 if task:
