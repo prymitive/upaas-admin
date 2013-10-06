@@ -40,7 +40,7 @@ class Task(Document):
 
     meta = {
         'abstract': True,
-        'ordering': ['-locked_since', '-date_created'],
+        'ordering': ['-locked_since', '-date_finished', '-date_created'],
     }
 
     @property
