@@ -25,7 +25,7 @@ class UserProfileView(LoginRequiredMixin, AppTemplatesDirMixin, TemplateView):
 
 
 class ResetApiKeyView(LoginRequiredMixin, AppTemplatesDirMixin, FormView):
-    template_name = 'apikey_reset.haml'
+    template_name = 'apikey_reset.html'
     form_class = ResetApiKeyForm
     success_url = reverse_lazy('users_profile')
 

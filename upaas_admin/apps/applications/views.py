@@ -26,14 +26,14 @@ from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
                 PaginationMixin, ListView):
 
-    template_name = 'index.haml'
+    template_name = 'index.html'
     paginate_by = 10
 
 
 class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
                             AppTemplatesDirMixin, DetailView, DetailTabView):
 
-    template_name = 'details.haml'
+    template_name = 'details.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
@@ -45,7 +45,7 @@ class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
 class ApplicationPackagesView(LoginRequiredMixin, AppTemplatesDirMixin,
                               PaginationMixin, DetailView, TabView):
 
-    template_name = 'packages.haml'
+    template_name = 'packages.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
@@ -75,7 +75,7 @@ class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
                                AppTemplatesDirMixin, DetailView,
                                DetailTabView):
 
-    template_name = 'instances.haml'
+    template_name = 'instances.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
@@ -86,7 +86,7 @@ class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
 
 class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
                               CreateView):
-    template_name = 'register.haml'
+    template_name = 'register.html'
     model = Application
     form_class = RegisterApplicationForm
 
@@ -98,7 +98,7 @@ class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
 
 class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
                            CreateView, SingleObjectMixin):
-    template_name = 'start.haml'
+    template_name = 'start.html'
     model = Application
     form_class = ApplicationRunPlanForm
     slug_field = 'id'

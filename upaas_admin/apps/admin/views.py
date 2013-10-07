@@ -19,7 +19,7 @@ from upaas_admin.apps.admin.forms import *
 
 class AdminCreateUserView(LoginRequiredMixin, SuperUserRequiredMixin,
                           AppTemplatesDirMixin, CreateView):
-    template_name = 'create_user.haml'
+    template_name = 'create_user.html'
     model = User
     slug_field = 'username'
     success_url = reverse_lazy('admin_users_list')
@@ -28,7 +28,7 @@ class AdminCreateUserView(LoginRequiredMixin, SuperUserRequiredMixin,
 
 class AdminEditUserView(LoginRequiredMixin, SuperUserRequiredMixin,
                         AppTemplatesDirMixin, UpdateView):
-    template_name = 'edit_user.haml'
+    template_name = 'edit_user.html'
     model = User
     slug_field = 'username'
     success_url = reverse_lazy('admin_users_list')
@@ -37,14 +37,14 @@ class AdminEditUserView(LoginRequiredMixin, SuperUserRequiredMixin,
 
 class AdminUserListView(LoginRequiredMixin, SuperUserRequiredMixin,
                         AppTemplatesDirMixin, PaginationMixin, ListView):
-    template_name = 'user_list.haml'
+    template_name = 'user_list.html'
     paginate_by = 10
     model = User
 
 
 class AdminCreateRouterView(LoginRequiredMixin, SuperUserRequiredMixin,
                             AppTemplatesDirMixin, CreateView):
-    template_name = 'create_router.haml'
+    template_name = 'create_router.html'
     model = RouterServer
     slug_field = 'name'
     success_url = reverse_lazy('admin_routers_list')
@@ -53,7 +53,7 @@ class AdminCreateRouterView(LoginRequiredMixin, SuperUserRequiredMixin,
 
 class AdminEditRouterView(LoginRequiredMixin, SuperUserRequiredMixin,
                           AppTemplatesDirMixin, UpdateView):
-    template_name = 'edit_router.haml'
+    template_name = 'edit_router.html'
     model = RouterServer
     slug_field = 'name'
     success_url = reverse_lazy('admin_routers_list')
@@ -62,14 +62,14 @@ class AdminEditRouterView(LoginRequiredMixin, SuperUserRequiredMixin,
 
 class AdminRouterListView(LoginRequiredMixin, SuperUserRequiredMixin,
                           AppTemplatesDirMixin, PaginationMixin, ListView):
-    template_name = 'router_list.haml'
+    template_name = 'router_list.html'
     paginate_by = 10
     model = RouterServer
 
 
 class AdminCreateBackendView(LoginRequiredMixin, SuperUserRequiredMixin,
                              AppTemplatesDirMixin, CreateView):
-    template_name = 'create_backend.haml'
+    template_name = 'create_backend.html'
     model = BackendServer
     slug_field = 'name'
     success_url = reverse_lazy('admin_backends_list')
@@ -78,7 +78,7 @@ class AdminCreateBackendView(LoginRequiredMixin, SuperUserRequiredMixin,
 
 class AdminEditBackendView(LoginRequiredMixin, SuperUserRequiredMixin,
                            AppTemplatesDirMixin, UpdateView):
-    template_name = 'edit_backend.haml'
+    template_name = 'edit_backend.html'
     model = BackendServer
     slug_field = 'name'
     success_url = reverse_lazy('admin_backends_list')
@@ -87,6 +87,6 @@ class AdminEditBackendView(LoginRequiredMixin, SuperUserRequiredMixin,
 
 class AdminBackendListView(LoginRequiredMixin, SuperUserRequiredMixin,
                            AppTemplatesDirMixin, PaginationMixin, ListView):
-    template_name = 'backend_list.haml'
+    template_name = 'backend_list.html'
     paginate_by = 10
     model = BackendServer

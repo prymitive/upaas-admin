@@ -11,13 +11,13 @@ from socket import gethostname
 
 from mongoengine import StringField, ReferenceField
 
-from upaas.config.main import load_main_config
 from upaas.config.metadata import MetadataConfig
 from upaas.builder.builder import Builder
 from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
 from upaas import processes
 
+from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.applications.models import Package
 from upaas_admin.apps.tasks.base import ApplicationTask, PackageTask

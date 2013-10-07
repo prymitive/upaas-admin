@@ -38,15 +38,15 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name='site_index'),
 
     url(r'^login$', 'django.contrib.auth.views.login',
-        {'template_name': 'users/login.haml'}, name='site_login'),
+        {'template_name': 'users/login.html'}, name='site_login'),
     url(r'^logout$', 'django.contrib.auth.views.logout_then_login',
         name='site_logout'),
 
     url(r'^password$', 'django.contrib.auth.views.password_change',
-        {'template_name': 'users/password.haml'}, name='password'),
+        {'template_name': 'users/password.html'}, name='password'),
     url(r'^password/changed$',
         'django.contrib.auth.views.password_change_done',
-        {'template_name': 'users/password_changed.haml'},
+        {'template_name': 'users/password_changed.html'},
         name='password_changed'),
 
     url(r'^djs/', include('djangojs.urls')),

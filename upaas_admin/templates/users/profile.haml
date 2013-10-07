@@ -1,4 +1,4 @@
-- extends 'base.haml'
+- extends 'base.html'
 
 
 - load i18n
@@ -111,7 +111,7 @@
   - block js_bottom
     = block.super
 
-    - include "partials/load_zeroclipboard.haml"
+    - include "partials/load_zeroclipboard.html"
 
     :javascript
       $(document).ready(function(){

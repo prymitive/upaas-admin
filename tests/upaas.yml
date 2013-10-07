@@ -1,6 +1,10 @@
 # uPaaS configuration
 
 
+admin:
+  secretkey: notsosecret
+
+
 defaults:
   budget:
     apps_count: 0

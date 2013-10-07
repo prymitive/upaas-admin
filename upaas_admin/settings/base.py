@@ -11,13 +11,23 @@ import logging
 
 from tzlocal import get_localzone
 
-from upaas.config.main import load_main_config
+from upaas_admin.config import load_main_config
 
 from django.conf.global_settings import *   # pylint: disable=W0614,W0401
 
 
 # basic logger needed to print startup errors
 logging.basicConfig()
+
+
+#==============================================================================
+# UPaaS configuraton file
+#==============================================================================
+UPAAS_CONFIG = load_main_config()
+
+if not UPAAS_CONFIG:
+    print("Missing or invalid configuration file!")
+    sys.exit(1)
 
 
 #==============================================================================
@@ -52,8 +62,7 @@ LANGUAGES = (
     ('en', 'English'),
 )
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'hf(i1^w^c@cc@err0m5ho$oc&@yxsywsvlgc&co+%!9+o_56pn'
+SECRET_KEY = UPAAS_CONFIG.admin.secretkey
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -134,8 +143,6 @@ TEMPLATE_CONTEXT_PROCESSORS += (
 
 TEMPLATE_LOADERS = (
     ('django.template.loaders.cached.Loader', (
-        'hamlpy.template.loaders.HamlPyFilesystemLoader',
-        'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
         'django.template.loaders.filesystem.Loader',
         'django.template.loaders.app_directories.Loader',
         'django.template.loaders.eggs.Loader'), ),
@@ -166,8 +173,9 @@ LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
 LOGIN_REDIRECT_URL = '/'
 
-#FIXME use domain from upaas.yaml ??
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = UPAAS_CONFIG.admin.domains or ['*']
+
+print ALLOWED_HOSTS
 
 #==============================================================================
 # MongoEngine
@@ -176,11 +184,6 @@ ALLOWED_HOSTS = ['*']
 SESSION_ENGINE = 'mongoengine.django.sessions'
 
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
-
-UPAAS_CONFIG = load_main_config()
-
-if not UPAAS_CONFIG:
-    sys.exit(1)
 
 from mongoengine import connect
 mongo_opts = dict(host=UPAAS_CONFIG.mongodb.host,
