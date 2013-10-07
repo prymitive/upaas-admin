@@ -17,7 +17,7 @@ except ImportError:
 
 setup(
     name='upaas-admin',
-    version='0.1-dev',
+    version='0.1-dev1',
     license='GPLv3',
     description="",
     author="Łukasz Mierzwa",
