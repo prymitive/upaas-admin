@@ -12,7 +12,7 @@ install:
 
 script:
   - py.test -vs --pep8
-  - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.dev ./upaas_admin/manage.py test -v 0 users
+  - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.dev ./upaas_admin/upaas_admin test -v 0 users
 
 services:
   - mongodb

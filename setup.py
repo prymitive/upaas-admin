@@ -25,6 +25,6 @@ setup(
     url='',
     packages=find_packages(),
     package_data={'upaas_admin': ['static/*', 'templates/*', 'var/*']},
-    scripts=['upaas_admin/manage.py'],
+    scripts=['upaas_admin/upaas_admin'],
     install_requires=[str(r.req) for r in required],
 )
