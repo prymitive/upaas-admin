@@ -7,10 +7,12 @@
 
 
 from setuptools import setup, find_packages
-from pip.req import parse_requirements
 
-
-required = parse_requirements('requirements.txt')
+try:
+    from pip.req import parse_requirements
+    required = parse_requirements('requirements.txt')
+except ImportError:
+    required = []
 
 
 setup(
