@@ -1,6 +1,17 @@
 @import "../bootstrap/less/variables";
 
 
+// FIXME bit hackish
+span#upaas-tasks-badge {
+  line-height: 18px;
+}
+
+
+span#upaas-tasks-badge.active {
+  background-color: @label-info-bg;
+}
+
+
 .upaas-task-failed {
   background-color: @state-danger-bg;
 }

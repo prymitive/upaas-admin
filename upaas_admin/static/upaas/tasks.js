@@ -7,6 +7,14 @@
 function tasks_callback(data) {
     $('#upaas-tasks-badge').text(data.running);
 
+    if (data.running > 0) {
+        if ($('#upaas-tasks-badge').hasClass('active') == false) {
+            $('#upaas-tasks-badge').addClass('active');
+        }
+    } else {
+        $('#upaas-tasks-badge').removeClass('active');
+    }
+
     var menu = new Array();
 
     if (data.tasks.length > 0) {
