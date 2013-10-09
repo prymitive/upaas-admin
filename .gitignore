@@ -36,7 +36,7 @@ nosetests.xml
 
 .idea
 
-upaas_admin/var/*
+upaas_admin/var/static/*
 upaas_admin/settings/local.py
 upaas_admin/settings/local/*
 docs/_build
