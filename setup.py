@@ -25,7 +25,7 @@ setup(
     url='',
     packages=find_packages(),
     package_data={'upaas_admin': ['upaas_admin/templates/*',
-                                  'upaas_admin/var/*', 'config/*', 'uwsgi/*']},
+                                  'upaas_admin/var/*']},
     include_package_data=True,
     scripts=['upaas_admin/upaas_admin'],
     install_requires=[str(r.req) for r in required],
