@@ -1,0 +1,2 @@
+recursive-include upaas_admin/templates *
+recursive-include upaas_admin/var *
