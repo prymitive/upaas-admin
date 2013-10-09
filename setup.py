@@ -17,7 +17,7 @@ except ImportError:
 
 setup(
     name='upaas-admin',
-    version='0.1-dev6',
+    version='0.1-dev7',
     license='GPLv3',
     description="UPaaS admin API and UI",
     author="Łukasz Mierzwa",
@@ -25,7 +25,7 @@ setup(
     url='',
     packages=find_packages(),
     package_data={'upaas_admin': ['upaas_admin/templates/*',
-                                  'upaas_admin/var/*']},
+                                  'upaas_admin/var/*', 'config/*', 'uwsgi/*']},
     include_package_data=True,
     scripts=['upaas_admin/upaas_admin'],
     install_requires=[str(r.req) for r in required],
