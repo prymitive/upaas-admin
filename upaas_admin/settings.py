@@ -17,7 +17,7 @@ from django.conf.global_settings import *   # pylint: disable=W0614,W0401
 
 
 # basic logger needed to print startup errors
-logging.basicConfig()
+log = logging.basicConfig()
 
 
 #==============================================================================
@@ -45,9 +45,6 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     },
 }
-
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 
 SITE_ID = 1
 
@@ -268,10 +265,18 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
         },
+        'rotatedlogfile': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'standard',
+            'filename': UPAAS_CONFIG.admin.log,
+            'maxBytes': 1024*1024*10,
+            'backupCount': 7,
+        },
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
+            'handlers': ['console', 'rotatedlogfile'],
             'level': 'INFO',
             'propagate': False,
         },
@@ -307,3 +312,83 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #==============================================================================
 
 TEST_RUNNER = 'upaas_admin.contrib.tests.MongoEngineTestRunner'
+
+
+#==============================================================================
+# DEBUG
+#==============================================================================
+
+if UPAAS_CONFIG.admin.debug:
+
+    logging.warning(u"Debug mode enabled!")
+
+    DEBUG = UPAAS_CONFIG.admin.debug
+    TEMPLATE_DEBUG = DEBUG
+    DEBUG_PROPAGATE_EXCEPTIONS = True
+
+    TEMPLATE_LOADERS = (
+        'hamlpy.template.loaders.HamlPyFilesystemLoader',
+        'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+        'django.template.loaders.eggs.Loader',
+    )
+
+    STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
+
+    #==========================================================================
+    # django-debug-toolbar
+    #==========================================================================
+
+    INSTALLED_APPS += (
+        'debug_toolbar',
+        'template_timings_panel',
+        'debug_toolbar_mongo',
+    )
+
+    MIDDLEWARE_CLASSES += (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
+
+    # code from http://djangosnippets.org/snippets/1362/
+
+    from IPy import IP
+
+    class IPList(list):
+
+        def __init__(self, ips):
+            try:
+                for ip in ips:
+                    self.append(IP(ip))
+            except ImportError:
+                pass
+
+        def __contains__(self, ip):
+            try:
+                for net in self:
+                    if ip in net:
+                        return True
+            except:
+                pass
+            return False
+
+    INTERNAL_IPS = IPList(['127.0.0.1', '10.0.0.0/8', '172.16.0.0/12',
+                          '192.168.0.0/16'])
+
+    DEBUG_TOOLBAR_PANELS = (
+        'debug_toolbar.panels.version.VersionDebugPanel',
+        'debug_toolbar.panels.timer.TimerDebugPanel',
+        'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+        'debug_toolbar.panels.headers.HeaderDebugPanel',
+        'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+        'debug_toolbar.panels.template.TemplateDebugPanel',
+        'debug_toolbar.panels.signals.SignalDebugPanel',
+        #'debug_toolbar.panels.logger.LoggingPanel',
+        'template_timings_panel.panels.TemplateTimings.TemplateTimings',
+        'debug_toolbar.panels.sql.SQLDebugPanel',
+        'debug_toolbar_mongo.panel.MongoDebugPanel',
+    )
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+    }

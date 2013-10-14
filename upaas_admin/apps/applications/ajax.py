@@ -20,11 +20,10 @@ from upaas_admin.contrib.uwsgi import fetch_json_stats
 @login_required
 @dajaxice_register
 def build_package(request, app_id):
-    task_id = None
     app = Application.objects.filter(id=app_id, owner=request.user).first()
     if app and app.metadata:
-        task_id = app.build_package()
-    return dumps({'task_id': task_id})
+        app.build_package()
+    return dumps({})
 
 
 @login_required

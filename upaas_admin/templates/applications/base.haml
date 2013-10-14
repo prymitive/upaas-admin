@@ -26,7 +26,7 @@
       .panel-body
         %ul.nav.nav-pills.nav-stacked
           %li
-            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.build_package(dummy_callback, {"app_id":"{{ app.safe_id }}"});'}
+            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.build_package(function(){}, {"app_id":"{{ app.safe_id }}"});'}
               %span.glyphicon.glyphicon-cog
               - trans "Build new package"
           %li{'class':'{% if not app.can_start %}disabled{% endif %}'}
@@ -34,12 +34,9 @@
               %span.glyphicon.glyphicon-play
               - trans "Run application"
           %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
-            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.stop_app(dummy_callback, {"app_id":"{{ app.safe_id }}"});'}
+            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.stop_app(function(){}, {"app_id":"{{ app.safe_id }}"});'}
               %span.glyphicon.glyphicon-stop
               - trans "Stop application"
 
 - block js_bottom
   = block.super
-
-  :javascript
-    function dummy_callback(data) {}
