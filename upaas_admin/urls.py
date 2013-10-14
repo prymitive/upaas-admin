@@ -20,6 +20,7 @@ from upaas_admin.apps.servers.api import (BackendResource, RouterResource)
 from upaas_admin.apps.scheduler.api import RunPlanResource
 
 from upaas_admin.apps.applications.views import IndexView
+from upaas_admin.apps.tasks.registry import tasks_autodiscover
 
 
 v1_api = Api(api_name='v1')
@@ -31,6 +32,8 @@ v1_api.register(RunPlanResource())
 
 
 dajaxice_autodiscover()
+
+tasks_autodiscover()
 
 
 urlpatterns = patterns(
