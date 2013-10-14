@@ -3,6 +3,7 @@
 
 admin:
   secretkey: notsosecret
+  debug: true
 
 
 defaults:
