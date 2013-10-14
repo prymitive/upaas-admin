@@ -30,7 +30,7 @@ paths:
   # where to store app files during package build
   workdir: /var/upaas/workdir
   apps: /var/upaas/apps
-  vassals: /etc/upaas/vassals
+  vassals: /etc/uwsgi-emperor/vassals
 
 
 storage:
