@@ -2,6 +2,11 @@
 
 
 admin:
+  # set debug to true to enable django debbuging mode, docs:
+  # https://docs.djangoproject.com/en/dev/ref/settings/#debug
+  debug: false
+  # set log file path
+  log: /tmp/upaas_admin.log
   # secret key, must be set to some random value
   # each node in single cluster must have the same value for it!
   secretkey: changeme
