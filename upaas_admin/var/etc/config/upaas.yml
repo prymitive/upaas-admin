@@ -139,7 +139,7 @@ interpreters:
             - bundle install --deployment --without test development
     1.8.7:
       uwsgi:
-        plugin: ruby18
+        plugin: rack_ruby18
       packages:
         - ruby1.8
         - ruby1.8-dev
@@ -151,7 +151,7 @@ interpreters:
             - ruby -v
     1.9.3:
       uwsgi:
-        plugin: ruby191
+        plugin: rack_ruby191
       packages:
         - ruby1.9.1
         - ruby1.9.1-dev
@@ -162,7 +162,7 @@ interpreters:
             - ruby -v
     2.0.0:
       uwsgi:
-        plugin: ruby20
+        plugin: rack_ruby20
       packages:
         - ruby2.0
         - ruby2.0-dev
@@ -180,7 +180,7 @@ interpreters:
 
     2.7:
       uwsgi:
-        plugin: python
+        plugin: python27
       packages:
         - python2.7
         - python2.7-dev
@@ -191,7 +191,7 @@ interpreters:
             - pip install -qMU -r requirements.txt
     3.2:
       uwsgi:
-        plugin: python3
+        plugin: python32
       packages:
         - python3.2
         - python3.2-dev
