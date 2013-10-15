@@ -17,8 +17,13 @@ from upaas.inet import local_ipv4_addresses
 
 from upaas_admin.apps.tasks.base import BackendTask
 from upaas_admin.apps.servers.models import BackendServer
+from upaas_admin.apps.tasks.registry import tasks_autodiscover
+
 
 log = logging.getLogger(__name__)
+
+
+tasks_autodiscover()
 
 
 class Command(BaseCommand):

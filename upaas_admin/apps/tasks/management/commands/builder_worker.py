@@ -11,8 +11,13 @@ import time
 from django.core.management.base import BaseCommand
 
 from upaas_admin.apps.applications.tasks import BuildPackageTask
+from upaas_admin.apps.tasks.registry import tasks_autodiscover
+
 
 log = logging.getLogger(__name__)
+
+
+tasks_autodiscover()
 
 
 class Command(BaseCommand):
