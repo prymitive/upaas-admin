@@ -106,6 +106,7 @@ interpreters:
   env:
     LC_ALL: C
     LANG: C
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   uwsgi:
     # base template path
     template: base.ini
@@ -116,7 +117,7 @@ interpreters:
         - echo "#!/bin/sh\n" > /usr/sbin/policy-rc.d
         - echo "exit 101\n" >> /usr/sbin/policy-rc.d
         - chmod 755 /usr/sbin/policy-rc.d
-        - apt-add-repository -y ppa:brightbox/ruby-ng-experimental
+        - apt-add-repository -y ppa:brightbox/ruby-ng
         - apt-get update
         - apt-get dist-upgrade -y
       finalize:
