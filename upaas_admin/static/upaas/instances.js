@@ -11,7 +11,9 @@ UPAAS = {
         if (data.stats.length > 0) {
             $.each(data.stats, function (i, item) {
                 elems.push('<div class="panel panel-default">');
-                elems.push('<div class="panel-heading">' + item.backend.name + '</div>');
+                elems.push('<div class="panel-heading">' + item.backend.name);
+                elems.push(' (' + item.stats.version + ')');
+                elems.push('</div>');
                 elems.push('<div class="panel-body">');
 
                 elems.push('<table class="table-bordered table-condensed table-hover upaas-instance-table"><thead><tr>');
