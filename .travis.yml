@@ -7,8 +7,7 @@ python:
 install:
   - sudo apt-add-repository -y ppa:chris-lea/node.js
   - sudo apt-get update -qq || echo "apt-get update failed"
-  - sudo apt-get purge -yy nodejs npm
-  - sudo apt-get -yy install nodejs npm
+  - sudo apt-get -yy install nodejs
   - sudo npm install -g less
   - pip install -U pip
   - pip install -Ur requirements.txt --use-mirrors
