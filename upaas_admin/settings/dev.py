@@ -19,7 +19,15 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.eggs.Loader',
 )
 
+
+#==============================================================================
+# django-pipeline
+#==============================================================================
+
+PIPELINE_ENABLED = False
+
 STATICFILES_STORAGE = 'pipeline.storage.NonPackagingPipelineStorage'
+
 
 #==============================================================================
 # django-debug-toolbar

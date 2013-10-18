@@ -197,6 +197,9 @@ connect(UPAAS_CONFIG.mongodb.database, **mongo_opts)
 # django-pipeline
 #==============================================================================
 
+# force pipeline to be enabled even if DEBUG=True
+PIPELINE_ENABLED = True
+
 STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 PIPELINE_COMPILERS = (
