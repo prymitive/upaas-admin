@@ -61,8 +61,8 @@ class Command(BaseCommand):
             backend.save()
 
         while True:
-            #TODO add cleanup here for purging/retrying interrupted tasks
             try:
+                BackendTask.cleanup_local_tasks()
                 task = BackendTask.pop(backend=backend)
                 if task:
                     log.info(u"Got %s with id '%s'" % (

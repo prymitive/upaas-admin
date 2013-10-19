@@ -26,8 +26,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         while True:
-            #TODO add cleanup here for purging/retrying interrupted tasks
             try:
+                BuildPackageTask.cleanup_local_tasks()
                 task = BuildPackageTask.pop()
                 if task:
                     log.info(u"Got task '%s' - %s" % (task.id,

@@ -15,6 +15,8 @@ from mongoengine import (StringField, DateTimeField, IntField, ListField,
 
 from django.utils.translation import ugettext_lazy as _
 
+from upaas.processes import is_pid_running
+
 from upaas_admin.apps.tasks.constants import STATUS_CHOICES, TaskStatus
 from upaas_admin.apps.tasks.registry import find_task_class
 
@@ -48,6 +50,10 @@ class Task(Document):
         return str(self.id)
 
     def unlock_task(self):
+        """
+        Set all attributes needed when unlocking locked task. Unlocking happens
+        when worker finishes running task or it has failed.
+        """
         self.reload()
         self.date_finished = datetime.datetime.now()
         del self.locked_by_backend
@@ -55,11 +61,18 @@ class Task(Document):
         del self.locked_since
 
     def fail_task(self):
+        """
+        Mark task as failed and unlock it.
+        """
         self.unlock_task()
         self.status = TaskStatus.failed
         self.save()
 
     def execute(self):
+        """
+        Task execution happens here, this is base method that executes task job
+        code implemented in job() method.
+        """
         try:
             for progress in self.job():
                 if progress is not None:
@@ -74,10 +87,17 @@ class Task(Document):
             self.save()
 
     def job(self):
+        """
+        Implement task run code here.
+        """
         raise NotImplementedError(_(u"Task has no job defined!"))
 
     @classmethod
     def put(cls, task_class, *args, **kwargs):
+        """
+        Create new task with given arguments and place in on the queue.
+        Returns task instance.
+        """
         klass = find_task_class(task_class)
         if klass:
             task = klass(*args, **kwargs)
@@ -88,6 +108,10 @@ class Task(Document):
 
     @classmethod
     def pop(cls, **kwargs):
+        """
+        Pop one pending task from the queue. Returns task instance or None
+        if there is no pending task.
+        """
         cls.objects(status=TaskStatus.pending, **kwargs).update_one(
             set__locked_by_backend=cls.worker_hostname,
             set__locked_by_pid=cls.worker_pid,
@@ -95,3 +119,21 @@ class Task(Document):
             set__status=TaskStatus.running)
         return cls.objects(locked_by_backend=cls.worker_hostname,
                            locked_by_pid=cls.worker_pid).first()
+
+    @classmethod
+    def cleanup_local_tasks(cls):
+        """
+        Cleanup all interrupted tasks assigned to local backend and mark them
+        as failed.
+        """
+        # look for tasks locked at least 60 seconds ago
+        timestamp = datetime.datetime.now() - datetime.timedelta(seconds=60)
+        for task in cls.objects(locked_by_backend=cls.worker_hostname,
+                                locked_by_pid__ne=cls.worker_pid,
+                                locked_since__lte=timestamp):
+            if not is_pid_running(task.locked_by_pid):
+                log.warning(u"Task '%s' with id %s is locked by non existing "
+                            u"pid %d, marking as failed" % (
+                                task.__class__.__name__,
+                                task.safe_id, task.locked_by_pid))
+                task.fail_task()
