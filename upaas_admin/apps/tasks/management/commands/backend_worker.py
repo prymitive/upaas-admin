@@ -6,29 +6,28 @@
 
 
 import logging
-import time
 from socket import gethostname
 
 from IPy import IP
 
-from django.core.management.base import BaseCommand
-
 from upaas.inet import local_ipv4_addresses
 
 from upaas_admin.apps.tasks.base import BackendTask
+from upaas_admin.apps.tasks.daemon import DaemonCommand
 from upaas_admin.apps.servers.models import BackendServer
-from upaas_admin.apps.tasks.registry import tasks_autodiscover
 
 
 log = logging.getLogger(__name__)
 
 
-tasks_autodiscover()
-
-
-class Command(BaseCommand):
+class Command(DaemonCommand):
 
     help = 'Run backend worker'
+
+    task_class = BackendTask
+
+    def pop_task(self, **kwargs):
+        super(Command, self).pop_task(backend=self.backend)
 
     def handle(self, *args, **options):
         name = gethostname()
@@ -60,17 +59,6 @@ class Command(BaseCommand):
             backend = BackendServer(name=name, ip=local_ip)
             backend.save()
 
-        while True:
-            try:
-                BackendTask.cleanup_local_tasks()
-                task = BackendTask.pop(backend=backend)
-                if task:
-                    log.info(u"Got %s with id '%s'" % (
-                        task.__class__.__name__, task.id))
-                    task.execute()
-                else:
-                    log.debug(u"No task popped, sleeping")
-                    time.sleep(2)
-            except KeyboardInterrupt:
-                log.info(u"Got ctr+c, exiting")
-                break
+        self.backend = backend
+
+        super(Command, self).handle(*args, **options)
