@@ -137,3 +137,5 @@ class Task(Document):
                                 task.__class__.__name__,
                                 task.safe_id, task.locked_by_pid))
                 task.fail_task()
+
+    #TODO we also need to cleanup tasks for failed/removed backends
