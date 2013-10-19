@@ -33,6 +33,7 @@ from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.scheduler.base import select_best_backend
 from upaas_admin.apps.servers.constants import PortsNames
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 log = logging.getLogger(__name__)
@@ -396,19 +397,41 @@ class Application(Document):
         """
         return bool(self.current_package and self.run_plan is None)
 
+    @property
+    def pending_build_tasks(self):
+        """
+        Returns list of pending build tasks for this application.
+        """
+        return Task.find('BuildPackageTask', application=self,
+                         status=TaskStatus.pending)
+
+    @property
+    def running_build_tasks(self):
+        """
+        Returns list of running build tasks for this application.
+        """
+        return Task.find('BuildPackageTask', application=self,
+                         status=TaskStatus.running)
+
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])
 
     def build_package(self, force_fresh=False):
-        system_filename = None
-        title = _("Building new fresh package for") + " " + self.name
-        if not force_fresh and self.current_package:
-            system_filename = self.current_package.filename
-            title = _("Building new package for") + " " + self.name
-        task = Task.put('BuildPackageTask', title=title, application=self,
-                        metadata=self.metadata,
-                        system_filename=system_filename)
-        log.info(u"Created start task: %s" % task.safe_id)
+        if self.pending_build_tasks:
+            log.info(_(u"Application {name} is already queued for "
+                       u"building").format(name=self.name))
+        else:
+            system_filename = None
+            title = _(u"Building new fresh package for {name}").format(
+                name=self.name)
+            if not force_fresh and self.current_package:
+                system_filename = self.current_package.filename
+                title = _(u"Building new package for {name}").format(
+                    name=self.name)
+            task = Task.put('BuildPackageTask', title=title, application=self,
+                            metadata=self.metadata,
+                            system_filename=system_filename)
+            log.info(u"Created start task: %s" % task.safe_id)
 
     def start_application(self):
         if self.current_package:

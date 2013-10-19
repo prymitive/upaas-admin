@@ -93,6 +93,17 @@ class Task(Document):
         raise NotImplementedError(_(u"Task has no job defined!"))
 
     @classmethod
+    def find(cls, task_class, **kwargs):
+        """
+        Returns list of created tasks of given class with given filter.
+        """
+        ret = []
+        klass = find_task_class(task_class)
+        if klass:
+            ret = klass.objects(**kwargs)
+        return ret
+
+    @classmethod
     def put(cls, task_class, *args, **kwargs):
         """
         Create new task with given arguments and place in on the queue.

@@ -12,7 +12,7 @@ from upaas_admin.apps.tasks.models import Task
 
 class BackendTask(Task):
     """
-    Application task that will run on specific backend server.
+    Generic task that will run on specific backend server.
     """
 
     backend = ReferenceField('BackendServer', dbref=False, required=True)

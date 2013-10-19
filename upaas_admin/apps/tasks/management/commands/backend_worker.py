@@ -12,8 +12,9 @@ from IPy import IP
 
 from upaas.inet import local_ipv4_addresses
 
-from upaas_admin.apps.tasks.base import BackendTask
+from upaas_admin.apps.tasks.base import BackendTask, PackageTask
 from upaas_admin.apps.tasks.daemon import DaemonCommand
+from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.servers.models import BackendServer
 
 
@@ -27,7 +28,14 @@ class Command(DaemonCommand):
     task_class = BackendTask
 
     def pop_task(self, **kwargs):
-        super(Command, self).pop_task(backend=self.backend)
+        # little magic - BackendTasks are generic but they also cover
+        # PackageTask that should be serialized for every application
+        # injecting raw mongo query to do so
+        running_apps = [t.application for t in PackageTask.objects(
+            status=TaskStatus.running, backend=self.backend)]
+        return super(Command, self).pop_task(
+            backend=self.backend,
+            __raw__={'application': {'$nin': [a.id for a in running_apps]}})
 
     def handle(self, *args, **options):
         name = gethostname()
