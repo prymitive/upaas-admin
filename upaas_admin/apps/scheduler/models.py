@@ -20,7 +20,7 @@ class BudgetLimits(Document):
     _default_manager = QuerySetManager()
 
     meta = {
-        'allow_inheritance': True
+        'abstract': True,
     }
 
 
