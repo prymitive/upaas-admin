@@ -5,7 +5,7 @@
 """
 
 
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -19,7 +19,9 @@ from upaas_admin.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                DetailTabView)
 from upaas_admin.apps.applications.mixin import OwnedAppsMixin
 from upaas_admin.apps.applications.models import Application, Package
-from upaas_admin.apps.applications.forms import RegisterApplicationForm
+from upaas_admin.apps.applications.forms import (
+    RegisterApplicationForm, UpdateApplicationMetadataForm,
+    UpdateApplicationMetadataInlineForm)
 from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 
 
@@ -40,6 +42,27 @@ class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
     tab_id = 'app_details'
     tab_group = 'app_navigation'
     tab_label = _('Details')
+
+
+class ApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
+                              AppTemplatesDirMixin, DetailView, DetailTabView):
+
+    template_name = 'metadata.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    tab_id = 'app_metadata'
+    tab_group = 'app_navigation'
+    tab_label = _('Metadata')
+
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationMetadataView, self).get_context_data(
+            **kwargs)
+        metadata_form = UpdateApplicationMetadataInlineForm()
+        metadata_form.helper.form_action = reverse('app_update_metadata',
+                                                   args=[self.object.safe_id])
+        context['metadata_form'] = metadata_form
+        return context
 
 
 class ApplicationPackagesView(LoginRequiredMixin, AppTemplatesDirMixin,
@@ -94,6 +117,22 @@ class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
         form.instance.owner = self.request.user
         form.instance.metadata = form.cleaned_data['metadata']
         return super(RegisterApplicationView, self).form_valid(form)
+
+
+class UpdateApplicationMetadataView(LoginRequiredMixin, AppTemplatesDirMixin,
+                                    UpdateView):
+    template_name = 'update_metadata.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    form_class = UpdateApplicationMetadataForm
+
+    def get_success_url(self):
+        return reverse('app_metadata', args=[self.object.safe_id])
+
+    def form_valid(self, form):
+        form.instance.metadata = form.cleaned_data['metadata']
+        return super(UpdateApplicationMetadataView, self).form_valid(form)
 
 
 class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,

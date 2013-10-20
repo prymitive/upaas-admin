@@ -12,10 +12,14 @@ from upaas_admin.apps.applications.views import *
 
 urlpatterns = patterns(
     'upaas_admin.apps.applications.views',
-    url(r'^show/(?P<slug>[-_\w]+)$', ApplicationDetailView.as_view(),
-        name=ApplicationDetailView.tab_id),
     url(r'^register$', RegisterApplicationView.as_view(),
         name='app_register'),
+    url(r'^update/metadata/(?P<slug>[-_\w]+)$',
+        UpdateApplicationMetadataView.as_view(), name='app_update_metadata'),
+    url(r'^show/(?P<slug>[-_\w]+)$', ApplicationDetailView.as_view(),
+        name=ApplicationDetailView.tab_id),
+    url(r'^metadata/(?P<slug>[-_\w]+)$', ApplicationMetadataView.as_view(),
+        name=ApplicationMetadataView.tab_id),
     url(r'^start/(?P<slug>[-_\w]+)$', StartApplicationView.as_view(),
         name='app_start'),
     url(r'^packages/(?P<slug>[-_\w]+)$', ApplicationPackagesView.as_view(),

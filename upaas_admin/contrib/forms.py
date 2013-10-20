@@ -59,3 +59,27 @@ class CrispyForm(MongoForm):
                          type='submit'),
         ]
         self.helper.layout = Layout(*layout)
+
+
+class InlineCrispyForm(MongoForm):
+
+    submit_label = 'Submit'
+    form_action = None
+    form_class = 'form-inline'
+    label_class = 'col-md-3'
+    field_class = 'col-md-7'
+    layout = []
+
+    def __init__(self, *args, **kwargs):
+        super(InlineCrispyForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_action = self.form_action
+        self.helper.form_class = self.form_class
+        self.helper.label_class = self.label_class
+        self.helper.field_class = self.field_class
+        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        layout = self.layout + [
+            StrictButton(_(self.submit_label), css_class='btn-primary',
+                         type='submit'),
+        ]
+        self.helper.layout = Layout(*layout)

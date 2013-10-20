@@ -1,0 +1,17 @@
+- extends 'applications/base.html'
+
+
+- load i18n
+- load crispy_forms_tags
+
+
+- block app_content
+
+  %form{'role':'form'}
+    %textarea{'readonly':'true', 'class':'form-control', 'rows':'25'}<
+      = app.metadata
+
+  %p
+
+  .well
+    - crispy metadata_form
