@@ -321,7 +321,8 @@ class Application(Document):
 
     meta = {
         'indexes': [
-            {'fields': ['name', 'owner'], 'unique': True}
+            {'fields': ['name', 'owner'], 'unique': True},
+            {'fields': ['packages']}
         ],
         'ordering': ['name'],
     }

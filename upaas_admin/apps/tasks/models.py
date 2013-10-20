@@ -43,6 +43,8 @@ class Task(Document):
     meta = {
         'abstract': True,
         'ordering': ['-locked_since', '-date_finished', '-date_created'],
+        'indexes': ['status', 'date_created', 'locked_since',
+                    'locked_by_backend', 'locked_by_pid'],
     }
 
     @property

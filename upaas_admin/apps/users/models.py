@@ -33,7 +33,8 @@ class User(MongoUser):
     meta = {
         'allow_inheritance': True,
         'indexes': [
-            {'fields': ['username', 'apikey'], 'unique': True}
+            {'fields': ['username', 'apikey'], 'unique': True},
+            {'fields': ['is_active']},
         ]
     }
 
