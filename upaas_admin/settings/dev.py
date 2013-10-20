@@ -20,7 +20,7 @@ TEMPLATE_LOADERS = (
 )
 
 
-LOGGING = ['handlers']['console']['level'] = 'DEBUG'
+LOGGING['handlers']['console']['level'] = 'DEBUG'
 
 
 #==============================================================================
