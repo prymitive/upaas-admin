@@ -252,6 +252,11 @@ PIPELINE_JS = {
 #==============================================================================
 # logging
 #==============================================================================
+
+ADMINS = (('UPAAS Admin', 'root@localhost'),)
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
