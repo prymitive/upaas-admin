@@ -271,7 +271,7 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'rotatedlogfile'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
