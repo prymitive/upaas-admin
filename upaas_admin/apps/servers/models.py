@@ -42,7 +42,7 @@ class BackendServer(Document):
     _default_manager = QuerySetManager()
 
     meta = {
-        'indexes': ['name', 'ip'],
+        'indexes': ['name', 'ip', 'is_enabled'],
         'ordering': ['name'],
     }
 
@@ -151,6 +151,6 @@ class RouterServer(Document):
     _default_manager = QuerySetManager()
 
     meta = {
-        'indexes': ['name', 'private_ip', 'public_ip'],
+        'indexes': ['name', 'private_ip', 'public_ip', 'is_enabled'],
         'ordering': ['name'],
     }
