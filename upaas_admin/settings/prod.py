@@ -268,14 +268,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
         },
-        'rotatedlogfile': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'formatter': 'standard',
-            'filename': UPAAS_CONFIG.admin.log,
-            'maxBytes': 1024*1024*10,
-            'backupCount': 7,
-        },
     },
     'loggers': {
         '': {

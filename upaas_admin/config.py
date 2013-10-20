@@ -66,8 +66,6 @@ class UPaaSConfig(base.Config):
             "secretkey": base.StringEntry(required=True),
             "debug": base.BooleanEntry(default=False),
             "domains": base.ListEntry(value_type=basestring),
-            "log": base.FSPathEntry(must_exist=False,
-                                    default="/tmp/upaas_admin.log"),
         },
         "interpreters": base.WildcardEntry(),
     }
