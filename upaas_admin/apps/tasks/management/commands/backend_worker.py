@@ -64,7 +64,7 @@ class Command(DaemonCommand):
         else:
             log.info(u"Local backend not found, registering as '%s' with IP "
                      u"'%s'" % (name, local_ip))
-            backend = BackendServer(name=name, ip=local_ip)
+            backend = BackendServer(name=name, ip=local_ip, is_enabled=False)
             backend.save()
 
         self.backend = backend
