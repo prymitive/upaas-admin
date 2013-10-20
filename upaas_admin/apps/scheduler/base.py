@@ -5,7 +5,12 @@
 """
 
 
+import logging
+
 from upaas_admin.apps.servers.models import BackendServer
+
+
+log = logging.getLogger(__name__)
 
 
 def select_best_backend(exclude=[]):
@@ -21,6 +26,7 @@ def select_best_backend(exclude=[]):
             scores = dict(scores.items() +
                           {backend: run_plan.memory_limit}.items())
     if scores:
+        log.debug(u"Backend scores: %s" % scores)
         score = sorted(scores.values())[0]
         for (backend, backend_score) in scores.items():
             if score == backend_score:
