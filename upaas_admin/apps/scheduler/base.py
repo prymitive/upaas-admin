@@ -22,9 +22,15 @@ def select_best_backend(exclude=[]):
     scores = {}
     for backend in BackendServer.objects(is_enabled=True,
                                          name__nin=[b.name for b in exclude]):
-        for run_plan in backend.run_plans:
-            scores = dict(scores.items() +
-                          {backend: run_plan.memory_limit}.items())
+        if backend.run_plans:
+            for run_plan in backend.run_plans:
+                scores = dict(scores.items() +
+                              {backend: run_plan.memory_limit}.items())
+            log.debug(u"Backend %s has %d run plans, with final score %d" % (
+                backend.name, len(backend.run_plans), scores[backend]))
+        else:
+            scores[backend] = 0
+            log.debug(u"Backend %s has no run plans" % backend.name)
     if scores:
         log.debug(u"Backend scores: %s" % scores)
         score = sorted(scores.values())[0]
