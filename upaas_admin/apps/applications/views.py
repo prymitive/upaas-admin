@@ -17,7 +17,8 @@ from pure_pagination.mixins import PaginationMixin
 
 from upaas_admin.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                DetailTabView)
-from upaas_admin.apps.applications.mixin import OwnedAppsMixin
+from upaas_admin.apps.applications.mixin import (OwnedAppsMixin,
+                                                 OwnedPackagesMixin)
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
@@ -164,3 +165,12 @@ class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
         ret = super(StartApplicationView, self).form_valid(form)
         self.app.start_application()
         return ret
+
+
+class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
+                        AppTemplatesDirMixin, DetailView):
+
+    template_name = 'package_details.html'
+    model = Package
+    slug_field = 'id'
+    context_object_name = 'pkg'

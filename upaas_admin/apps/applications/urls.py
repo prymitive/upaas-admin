@@ -26,4 +26,7 @@ urlpatterns = patterns(
         name=ApplicationPackagesView.tab_id),
     url(r'^instances/(?P<slug>[-_\w]+)$', ApplicationInstancesView.as_view(),
         name=ApplicationInstancesView.tab_id),
+
+    url(r'^pkg/(?P<slug>[-_\w]+)$', PackageDetailView.as_view(),
+        name='package_details'),
 )

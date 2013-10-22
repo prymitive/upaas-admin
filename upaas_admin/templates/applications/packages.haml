@@ -18,22 +18,19 @@
           - trans "Interpreter version"
         %th
           - trans "Size"
-        %th
-          - trans "Builder"
 
     %tbody
       - for package in packages
         %tr
           %td
-            = package.date_created
+            %a{'href':'{% url "package_details" package.safe_id %}'}
+              = package.date_created
           %td
             = package.interpreter_name
           %td
             = package.interpreter_version
           %td
             = package.bytes|filesizeformat
-          %td
-            = package.builder
       - empty
         %tr
           %td{'colspan':'4'}
