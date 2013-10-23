@@ -186,7 +186,7 @@ from mongoengine import connect
 
 mongo_opts = {}
 
-if UPAAS_CONFIG.mongodb.uri:
+if UPAAS_CONFIG.mongodb.get('uri'):
     # URI scheme is used for connecting
     db = UPAAS_CONFIG.mongodb.uri.split('/')[3].split('?')[0]
     connect(db, host=UPAAS_CONFIG.mongodb.uri)
