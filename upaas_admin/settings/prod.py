@@ -183,14 +183,23 @@ SESSION_ENGINE = 'mongoengine.django.sessions'
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 
 from mongoengine import connect
-mongo_opts = dict(host=UPAAS_CONFIG.mongodb.host,
-                  port=UPAAS_CONFIG.mongodb.port)
-if UPAAS_CONFIG.mongodb.get('username'):
-    mongo_opts['username'] = UPAAS_CONFIG.mongodb.username
-    if UPAAS_CONFIG.mongodb.get('password'):
-        mongo_opts['password'] = UPAAS_CONFIG.mongodb.password
 
-connect(UPAAS_CONFIG.mongodb.database, **mongo_opts)
+mongo_opts = {}
+
+if UPAAS_CONFIG.mongodb.uri:
+    # URI scheme is used for connecting
+    db = UPAAS_CONFIG.mongodb.uri.split('/')[3].split('?')[0]
+    connect(db, host=UPAAS_CONFIG.mongodb.uri)
+else:
+    # host & port settings
+    mongo_opts = {'host': UPAAS_CONFIG.mongodb.host,
+                  'port': UPAAS_CONFIG.mongodb.port}
+    if UPAAS_CONFIG.mongodb.get('username'):
+        mongo_opts['username'] = UPAAS_CONFIG.mongodb.username
+        if UPAAS_CONFIG.mongodb.get('password'):
+            mongo_opts['password'] = UPAAS_CONFIG.mongodb.password
+
+    connect(UPAAS_CONFIG.mongodb.database, **mongo_opts)
 
 
 #==============================================================================

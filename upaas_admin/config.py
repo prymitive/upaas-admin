@@ -12,7 +12,8 @@ class UPaaSConfig(base.Config):
 
     schema = {
         "mongodb": {
-            "host": base.StringEntry(required=True),
+            "uri": base.StringEntry(),
+            "host": base.StringEntry(default='localhost'),
             "port": base.IntegerEntry(default=27017),
             "username": base.StringEntry(),
             "password": base.StringEntry(),
@@ -49,7 +50,7 @@ class UPaaSConfig(base.Config):
             "uid": base.StringEntry(required=True),
             "gid": base.StringEntry(required=True),
             "home": base.StringEntry(required=True),
-            "domain": base.StringEntry(default="upaas.local"),
+            "domain": base.StringEntry(default="localdomain"),
             "tcp": {
                 "port_min": base.IntegerEntry(required=True),
                 "port_max": base.IntegerEntry(required=True),
