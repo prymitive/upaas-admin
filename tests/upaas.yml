@@ -11,7 +11,7 @@ defaults:
     apps_count: 0
     worker_limit: 16
     memory_limit: 512
-    package_limit: 1
+    package_limit: 2
 
 
 apps:
