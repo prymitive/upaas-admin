@@ -31,6 +31,8 @@ class UserBudget(BudgetLimits):
     user = ReferenceField('User', dbref=False, unique=True, required=True)
     apps_count = IntField(required=True,
                           verbose_name=_('application count limit'))
+    package_limit = IntField(required=True, verbose_name=_('active packages '
+                                                           'per app limit'))
 
     meta = {
         'indexes': ['user'],

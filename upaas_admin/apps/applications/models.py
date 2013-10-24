@@ -13,7 +13,8 @@ import time
 from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
-                         ReferenceField, ListField, CASCADE, QuerySetManager)
+                         BooleanField, ReferenceField, ListField, CASCADE,
+                         QuerySetManager)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -48,7 +49,7 @@ class Package(Document):
     interpreter_version = StringField(required=True)
 
     parent = StringField()
-    filename = StringField(required=True)
+    filename = StringField()
     bytes = LongField(required=True)
     checksum = StringField(required=True)
     builder = StringField(required=True)
@@ -481,3 +482,32 @@ class Application(Document):
                                 backend=backend, application=self,
                                 package=self.current_package)
                 log.info(u"Created update task: %s" % task.safe_id)
+
+    def trim_package_files(self):
+        """
+        Removes over limit package files from database. Number of packages per
+        app that are kept in database for rollback feature are set in user
+        budget as 'package_limit'.
+        """
+        storage = find_storage_handler(self.upaas_config)
+        if not storage:
+            log.error(u"Storage handler '%s' not found, cannot trim "
+                      u"packages" % self.upaas_config.storage.handler)
+            return
+
+        removed = 0
+        for pkg in Package.objects(
+                application=self, filename__exists=True,
+                id__ne=self.current_package)[self.owner.budget.package_limit]:
+
+            if storage.exists(pkg.filename):
+                log.info(u"Removing package %s file from "
+                         u"database" % pkg.safe_id)
+                storage.delete(pkg.filename)
+            del pkg.filename
+            pkg.save()
+            removed += 1
+
+        if removed:
+            log.info(u"Removed %d package file(s) for app %s" % (removed,
+                                                                 self.name))

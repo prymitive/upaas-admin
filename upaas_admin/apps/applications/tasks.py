@@ -83,6 +83,7 @@ class BuildPackageTask(ApplicationTask):
         self.application.packages.append(pkg)
         self.application.current_package = pkg
         self.application.save()
+        self.application.trim_package_files()
         log.info(u"Application '%s' updated" % self.application.name)
         self.application.update_application()
 
