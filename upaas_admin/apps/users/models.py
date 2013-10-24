@@ -48,20 +48,17 @@ class User(MongoUser):
         return apikey
 
     @classmethod
+    def post_init(cls, sender, document, **kwargs):
+        if document.budget:
+            document.sync_budget()
+        else:
+            document.create_default_budget()
+
+    @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.apikey:
             log.info("Generating API key for '%s'" % document.username)
             document.apikey = User.generate_apikey()
-
-    @classmethod
-    def post_save(cls, sender, document, **kwargs):
-        user_budget = UserBudget.objects(user=document).first()
-        if not user_budget:
-            log.info(u"Saving default user budget for "
-                     u"'%s'" % document.username)
-            user_budget = UserBudget(user=document,
-                                     **UserBudget.get_default_limits())
-            user_budget.save()
 
     @property
     def full_name_or_login(self):
@@ -89,6 +86,23 @@ class User(MongoUser):
             usage['memory_limit'] += arp.memory_limit
         return usage
 
+    def create_default_budget(self):
+        log.info(u"Saving default user budget for '%s'" % self.username)
+        user_budget = UserBudget(user=self, **UserBudget.get_default_limits())
+        user_budget.save()
 
+    def sync_budget(self):
+        changed = False
+        budget = self.budget
+        for key, value in UserBudget.get_default_limits().items():
+            if getattr(budget, key) is None:
+                log.info(u"Updating user '%s' budget with defaults: %s => "
+                         u"%s" % (self.username, key, value))
+                setattr(budget, key, value)
+                changed = True
+        if changed:
+            budget.save()
+
+
+signals.post_init.connect(User.post_init, sender=User)
 signals.pre_save.connect(User.pre_save, sender=User)
-signals.post_save.connect(User.post_save, sender=User)

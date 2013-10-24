@@ -470,7 +470,7 @@ class Application(Document):
                                 backend=backend, application=self,
                                 package=self.current_package)
                 log.info(u"Created stop task: %s" % task.safe_id)
-            #TODO rewrite for task group (?)
+                #TODO rewrite for task group (?)
 
     def update_application(self):
         if self.current_package:
@@ -496,17 +496,17 @@ class Application(Document):
             return
 
         removed = 0
-        for pkg in Package.objects(
-                application=self, filename__exists=True,
-                id__ne=self.current_package)[self.owner.budget.package_limit]:
-
+        for pkg in Package.objects(application=self, filename__exists=True)[
+                self.owner.budget.package_limit:]:
+            if pkg.id == self.current_package.id:
+                continue
+            del pkg.filename
+            pkg.save()
+            removed += 1
             if storage.exists(pkg.filename):
                 log.info(u"Removing package %s file from "
                          u"database" % pkg.safe_id)
                 storage.delete(pkg.filename)
-            del pkg.filename
-            pkg.save()
-            removed += 1
 
         if removed:
             log.info(u"Removed %d package file(s) for app %s" % (removed,

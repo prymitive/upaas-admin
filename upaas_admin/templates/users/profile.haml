@@ -108,6 +108,13 @@
           %dd
             ={ user.limits_usage.memory_limit } MB / ={ user.budget.memory_limit } MB
 
+          %dt
+            {% trans "Package limit" %}
+            %span#help-package_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
+            :
+          %dd
+            ={ user.budget.package_limit }
+
   - block js_bottom
     = block.super
 
@@ -132,4 +139,5 @@
         $('#help-apps_count').tooltip({container: '.upaas-content'});
         $('#help-memory_limit').tooltip({container: '.upaas-content'});
         $('#help-worker_limit').tooltip({container: '.upaas-content'});
+        $('#help-package_limit').tooltip({container: '.upaas-content'});
       });

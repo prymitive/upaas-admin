@@ -30,7 +30,11 @@
           %td
             = package.interpreter_version
           %td
-            = package.bytes|filesizeformat
+            - if package.filename
+              = package.bytes|filesizeformat
+            - else
+              %p.text-muted
+                - trans "Removed"
       - empty
         %tr
           %td{'colspan':'4'}
