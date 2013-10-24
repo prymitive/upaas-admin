@@ -36,6 +36,10 @@ dajaxice_autodiscover()
 tasks_autodiscover()
 
 
+handler404 = 'upaas_admin.contrib.handlers.page_not_found'
+handler500 = 'upaas_admin.contrib.handlers.server_error'
+
+
 urlpatterns = patterns(
     '',
     url(r'^$', IndexView.as_view(), name='site_index'),
