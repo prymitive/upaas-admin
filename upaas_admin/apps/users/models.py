@@ -49,16 +49,22 @@ class User(MongoUser):
 
     @classmethod
     def post_init(cls, sender, document, **kwargs):
-        if document.budget:
-            document.sync_budget()
-        else:
-            document.create_default_budget()
+        if document.id:
+            if document.budget:
+                document.sync_budget()
+            else:
+                document.create_default_budget()
 
     @classmethod
     def pre_save(cls, sender, document, **kwargs):
         if not document.apikey:
             log.info("Generating API key for '%s'" % document.username)
             document.apikey = User.generate_apikey()
+
+    @classmethod
+    def post_save(cls, sender, document, **kwargs):
+        if not document.budget:
+            document.create_default_budget()
 
     @property
     def full_name_or_login(self):
@@ -106,3 +112,4 @@ class User(MongoUser):
 
 signals.post_init.connect(User.post_init, sender=User)
 signals.pre_save.connect(User.pre_save, sender=User)
+signals.post_save.connect(User.post_save, sender=User)
