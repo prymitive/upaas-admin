@@ -54,7 +54,7 @@ function tasks_callback(data) {
                 menu.push('<li>');
             }
             menu.push('<a href="' + Django.url('app_details', task.application.id) + '">');
-            menu.push('<span class="glyphicon ' + task.icon + '"></span>');
+            menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
             if (!task.pending && task.progress >= 0) {
                 menu.push('<div class="progress upaas-task-progressbar">')
@@ -73,7 +73,9 @@ function tasks_callback(data) {
         menu.push('<a href="#">' + gettext('No running tasks') + '</a>');
         menu.push('</li>');
     }
-    $('#upaas-tasks-menu').html(menu.join('\n'));
+    if ($('#upaas-tasks-menu').html() != menu.join('\n')) {
+        $('#upaas-tasks-menu').html(menu.join('\n'));
+    }
 
     window.setTimeout(
         function() {

@@ -60,21 +60,21 @@
                 {% trans "Administrator" %}:
               %dd
                 - if user.is_superuser
-                  %span.glyphicon.glyphicon-thumbs-up
+                  %i.fa.fa-thumbs-o-up
                 - else
-                  %span.glyphicon.glyphicon-thumbs-down
+                  %i.fa.fa-thumbs-o-down
 
       #apikey.tab-pane
         .form-horizontal{'role':'form'}
           .form-group
             %label.col-md-2.control-label{'for':'apikey-input'}
               - trans "Api key"
-              %span#help-apikey.glyphicon.glyphicon-question-sign{'title':'{% trans "API key is used for accessing uPaaS using cli client" %}'}
+              %i#help-apikey.fa.fa-question-circle{'title':'{% trans "API key is used for accessing uPaaS using cli client" %}'}
               :
             .col-md-8
               %input.form-control{'id':'apikey-input','type':'text', 'readonly':'readonly', 'value': '={ user.apikey }'}
             %button.btn.btn-default{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
-              %span.glyphicon.glyphicon-file
+              %i.fa.fa-files-o
 
         .text-center
           %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
@@ -84,7 +84,7 @@
         %dl.dl-horizontal
           %dt
             {% trans "Application limit" %}
-            %span#help-apps_count.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of running applications" %}'}
+            %i#help-apps_count.fa.fa-question-circle{'title':'{% trans "Maximum number of running applications" %}'}
             :
           %dd
             = user.running_applications|length
@@ -96,21 +96,21 @@
 
           %dt
             {% trans "Worker limit" %}
-            %span#help-worker_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of workers for all running applications" %}'}
+            %i#help-worker_limit.fa.fa-question-circle{'title':'{% trans "Maximum number of workers for all running applications" %}'}
             :
           %dd
             ={ user.limits_usage.worker_limit } / ={ user.budget.worker_limit }
 
           %dt
             {% trans "Memory limit" %}
-            %span#help-memory_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum amount of memory that can be allocated to all running applications" %}'}
+            %i#help-memory_limit.fa.fa-question-circle{'title':'{% trans "Maximum amount of memory that can be allocated to all running applications" %}'}
             :
           %dd
             ={ user.limits_usage.memory_limit } MB / ={ user.budget.memory_limit } MB
 
           %dt
             {% trans "Package limit" %}
-            %span#help-package_limit.glyphicon.glyphicon-question-sign{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
+            %i#help-package_limit.fa.fa-question-circle{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
             :
           %dd
             ={ user.budget.package_limit }

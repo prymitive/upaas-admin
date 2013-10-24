@@ -219,6 +219,7 @@ PIPELINE_CSS = {
     'base': {
         'source_filenames': (
             'bootstrap/less/bootstrap.less',
+            'font-awesome/less/font-awesome.less',
             'bootstrap/less/theme.less',
             'upaas/*.less',
         ),

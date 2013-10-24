@@ -27,15 +27,15 @@
         %ul.nav.nav-pills.nav-stacked
           %li
             %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.build_package(function(){}, {"app_id":"{{ app.safe_id }}"});'}
-              %span.glyphicon.glyphicon-cog
+              %i.fa.fa-cog
               - trans "Build new package"
           %li{'class':'{% if not app.can_start %}disabled{% endif %}'}
             %a{'href':'{% url "app_start" app.safe_id %}'}
-              %span.glyphicon.glyphicon-play
+              %i.fa.fa-play
               - trans "Run application"
           %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
             %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.stop_app(function(){}, {"app_id":"{{ app.safe_id }}"});'}
-              %span.glyphicon.glyphicon-stop
+              %i.fa.fa-stop
               - trans "Stop application"
 
 - block js_bottom

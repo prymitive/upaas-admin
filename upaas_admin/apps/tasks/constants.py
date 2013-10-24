@@ -5,10 +5,10 @@
 """
 
 
-ICON_PENDING = 'glyphicon-time'
-ICON_STARTED = 'glyphicon-cog'
-ICON_FAILED = 'glyphicon-remove-circle'
-ICON_SUCCESSFUL = 'glyphicon-ok-circle'
+ICON_PENDING = 'fa fa-clock-o'
+ICON_STARTED = 'fa fa-refresh fa-spin'
+ICON_FAILED = 'fa fa-times-circle-o'
+ICON_SUCCESSFUL = 'fa fa-check-circle-o'
 
 
 class TaskStatus:

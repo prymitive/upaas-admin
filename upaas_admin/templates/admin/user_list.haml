@@ -59,9 +59,9 @@
             = user_object.email
           %td
             - if user_object.is_active
-              %span.glyphicon.glyphicon-thumbs-up
+              %i.fa.fa-thumbs-o-up
           %td
             - if user_object.is_superuser
-              %span.glyphicon.glyphicon-thumbs-up
+              %i.fa.fa-thumbs-o-up
 
   - include "partials/pagination_footer.html"
