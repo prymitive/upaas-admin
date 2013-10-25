@@ -14,7 +14,7 @@ from dajaxice.decorators import dajaxice_register
 
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.servers.constants import PortsNames
-from upaas_admin.contrib.uwsgi import fetch_json_stats
+from upaas_admin.common.uwsgi import fetch_json_stats
 
 
 @login_required

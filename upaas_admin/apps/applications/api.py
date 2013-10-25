@@ -20,7 +20,7 @@ from tastypie.authorization import Authorization
 from tastypie.utils import trailing_slash
 
 from upaas_admin.apps.applications.models import Application, Package
-from upaas_admin.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
 
 
 log = logging.getLogger(__name__)

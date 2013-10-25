@@ -11,7 +11,7 @@ from mongoforms import MongoForm
 
 from mongoengine.django.auth import make_password
 
-from upaas_admin.contrib.forms import ContribFormFieldGenerator
+from upaas_admin.common.forms import ContribFormFieldGenerator
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
 

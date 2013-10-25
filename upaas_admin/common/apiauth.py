@@ -11,7 +11,8 @@ from tastypie.authentication import Authentication
 
 class UpaasApiKeyAuthentication(Authentication):
 
-    def get_user(self, request):
+    @staticmethod
+    def get_user(request):
         apikey = request.META.get('HTTP_X_UPAAS_APIKEY')
         login = request.META.get('HTTP_X_UPAAS_LOGIN')
         return User.objects.filter(username=login, apikey=apikey,

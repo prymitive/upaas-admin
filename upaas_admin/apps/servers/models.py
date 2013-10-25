@@ -16,7 +16,7 @@ from django.conf import settings
 
 from upaas.inet import local_ipv4_addresses
 
-from upaas_admin.contrib.fields import IPv4Field
+from upaas_admin.common.fields import IPv4Field
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 
 

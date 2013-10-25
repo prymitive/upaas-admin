@@ -18,7 +18,7 @@ from tastypie.authorization import Authorization
 
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
-from upaas_admin.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
 
 
 log = logging.getLogger(__name__)

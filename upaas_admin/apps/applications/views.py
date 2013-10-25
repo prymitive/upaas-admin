@@ -15,8 +15,8 @@ from tabination.views import TabView
 from pure_pagination import Paginator, PageNotAnInteger
 from pure_pagination.mixins import PaginationMixin
 
-from upaas_admin.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
-                               DetailTabView, MongoDetailView)
+from upaas_admin.common.mixin import (
+    LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
 from upaas_admin.apps.applications.mixin import (OwnedAppsMixin,
                                                  OwnedPackagesMixin)
 from upaas_admin.apps.applications.models import Application, Package

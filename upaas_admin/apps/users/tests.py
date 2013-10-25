@@ -7,7 +7,7 @@
 
 from django.core.urlresolvers import reverse
 
-from upaas_admin.contrib.tests import MongoEngineTestCase
+from upaas_admin.common.tests import MongoEngineTestCase
 from upaas_admin.apps.users.models import User
 
 

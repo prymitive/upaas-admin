@@ -36,8 +36,8 @@ dajaxice_autodiscover()
 tasks_autodiscover()
 
 
-handler404 = 'upaas_admin.contrib.handlers.page_not_found'
-handler500 = 'upaas_admin.contrib.handlers.server_error'
+handler404 = 'upaas_admin.common.handlers.page_not_found'
+handler500 = 'upaas_admin.common.handlers.server_error'
 
 
 urlpatterns = patterns(

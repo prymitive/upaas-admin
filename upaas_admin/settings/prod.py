@@ -321,7 +321,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 # tests
 #==============================================================================
 
-TEST_RUNNER = 'upaas_admin.contrib.tests.MongoEngineTestRunner'
+TEST_RUNNER = 'upaas_admin.common.tests.MongoEngineTestRunner'
 
 
 #==============================================================================

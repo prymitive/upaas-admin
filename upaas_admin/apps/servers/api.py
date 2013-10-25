@@ -13,7 +13,7 @@ from tastypie.resources import ALL
 from tastypie.authorization import Authorization
 
 from upaas_admin.apps.servers.models import BackendServer, RouterServer
-from upaas_admin.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
 
 
 log = logging.getLogger(__name__)

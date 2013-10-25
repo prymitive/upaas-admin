@@ -11,7 +11,7 @@ from django import forms
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_admin.contrib.forms import CrispyForm, InlineCrispyForm
+from upaas_admin.common.forms import CrispyForm, InlineCrispyForm
 from upaas_admin.apps.applications.models import Application
 
 

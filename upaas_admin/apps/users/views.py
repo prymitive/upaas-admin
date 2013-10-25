@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_admin.mixin import LoginRequiredMixin, AppTemplatesDirMixin
+from upaas_admin.common.mixin import LoginRequiredMixin, AppTemplatesDirMixin
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.users.forms import ResetApiKeyForm
 
