@@ -18,6 +18,7 @@ from upaas_admin.common.forms import CrispyForm
 
 class ResetApiKeyForm(CrispyForm):
 
+    submit_label = 'Reset'
     form_action = reverse_lazy('users_apikey_reset')
     layout = ['apikey']
 
