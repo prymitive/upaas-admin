@@ -25,6 +25,9 @@
           %td
             %a{'href':'{% url "package_details" package.safe_id %}'}
               = package.date_created
+            -if app.current_package.id == package.id
+              %span.label.label-primary
+                - trans "Current"
           %td
             = package.interpreter_name
           %td

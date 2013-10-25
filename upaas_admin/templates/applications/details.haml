@@ -42,3 +42,13 @@
         .muted
           .text-muted
             - trans "None"
+
+    %dt
+      {% trans "Current package" %}:
+    %dd
+      - if app.current_package
+        %a{'href':'{% url "package_details" app.current_package.safe_id %}'}
+          = app.current_package.date_created
+      - else
+        .text-muted
+          - trans "None"
