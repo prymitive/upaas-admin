@@ -500,13 +500,13 @@ class Application(Document):
                 self.owner.budget.package_limit:]:
             if pkg.id == self.current_package.id:
                 continue
-            del pkg.filename
-            pkg.save()
             removed += 1
             if storage.exists(pkg.filename):
                 log.info(u"Removing package %s file from "
                          u"database" % pkg.safe_id)
                 storage.delete(pkg.filename)
+            del pkg.filename
+            pkg.save()
 
         if removed:
             log.info(u"Removed %d package file(s) for app %s" % (removed,
