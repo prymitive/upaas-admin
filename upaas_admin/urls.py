@@ -22,6 +22,8 @@ from upaas_admin.apps.scheduler.api import RunPlanResource
 from upaas_admin.apps.applications.views import IndexView
 from upaas_admin.apps.tasks.registry import tasks_autodiscover
 
+from upaas_admin.apps.users.forms import UserPasswordChangeForm
+
 
 v1_api = Api(api_name='v1')
 v1_api.register(ApplicationResource())
@@ -50,7 +52,8 @@ urlpatterns = patterns(
         name='site_logout'),
 
     url(r'^password$', 'django.contrib.auth.views.password_change',
-        {'template_name': 'users/password.html'}, name='password'),
+        {'template_name': 'users/password.html',
+         'password_change_form': UserPasswordChangeForm}, name='password'),
     url(r'^password/changed$',
         'django.contrib.auth.views.password_change_done',
         {'template_name': 'users/password_changed.html'},
