@@ -18,5 +18,7 @@
     - csrf_token
     = form|crispy
     .controls
-      %input.btn.btn-default{'type':'button', 'value':'{% trans "Cancel" %}', 'onClick':'javascript:history.go(-1);'}
+      %button.btn.btn-default{'type':'button', 'onClick':'javascript:history.go(-1);'}
+        %i.fa.fa-reply
+        - trans "Cancel"
       %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Create" %}'}/
