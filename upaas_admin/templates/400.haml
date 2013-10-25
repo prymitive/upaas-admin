@@ -7,7 +7,7 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb "Error 500" ""
+  - breadcrumb "Error 400" ""
 
 
 - block content
@@ -15,6 +15,6 @@
   .jumbotron.text-center
     %h1
       %p.text-danger
-        500
+        400
     %p
-      - trans "Server error"
+      - trans "Bad request"

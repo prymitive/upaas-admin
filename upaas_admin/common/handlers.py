@@ -19,5 +19,7 @@ def base_error(request, template_name=None):
     return render_to_response(template_name, context_instance=context)
 
 
+bad_request = partial(base_error, template_name='400.html')
+access_denied = partial(base_error, template_name='403.html')
 page_not_found = partial(base_error, template_name='404.html')
 server_error = partial(base_error, template_name='500.html')

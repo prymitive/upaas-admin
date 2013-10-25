@@ -5,10 +5,13 @@
 """
 
 
-from django.views.generic import ListView, CreateView, UpdateView, FormView
+from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.http import Http404
+
+from mongoengine.errors import ValidationError, DoesNotExist
 
 from tabination.views import TabView
 
@@ -24,6 +27,7 @@ from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
     UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm)
 from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
+from upaas_admin.apps.applications.http import application_error
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
@@ -148,6 +152,33 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
     slug_field = 'id'
     context_object_name = 'app'
 
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.run_plan:
+            return application_error(request, self.object,
+                                     _(u"Application is already started"))
+        elif not self.object.can_start:
+            return application_error(request, self.object,
+                                     _(u"Application cannot be started yet"))
+        return super(StartApplicationView, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.run_plan:
+            return application_error(request, self.object,
+                                     _(u"Application is already started"))
+        elif not self.object.can_start:
+            return application_error(request, self.object,
+                                     _(u"Application cannot be started yet"))
+        return super(StartApplicationView, self).post(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        try:
+            return super(StartApplicationView, self).get_object(
+                queryset=queryset)
+        except (ValidationError, DoesNotExist):
+            raise Http404
+
     def get_success_url(self):
         return reverse('app_details', args=[self.app.safe_id])
 
@@ -157,7 +188,6 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
         return context
 
     def get_form(self, form_class):
-        #TODO disallow to start if app already has run plan
         self.app = self.get_object()
         form = super(StartApplicationView, self).get_form(form_class)
         form.user = self.request.user
@@ -201,6 +231,11 @@ class StopApplicationView(AppActionView):
     slug_field = 'id'
     context_object_name = 'app'
     form_class = StopApplicationForm
+
+    def validate_action(self, request):
+        if not self.object.run_plan:
+            return application_error(request, self.object,
+                                     _(u"Application is already stopped"))
 
     def action(self, form):
         if self.object:

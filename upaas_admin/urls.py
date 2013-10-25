@@ -38,6 +38,8 @@ dajaxice_autodiscover()
 tasks_autodiscover()
 
 
+handler400 = 'upaas_admin.common.handlers.bad_request'
+handler403 = 'upaas_admin.common.handlers.access_denied'
 handler404 = 'upaas_admin.common.handlers.page_not_found'
 handler500 = 'upaas_admin.common.handlers.server_error'
 

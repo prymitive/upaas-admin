@@ -30,11 +30,11 @@
               %i.fa.fa-cog
               - trans "Build new package"
           %li{'class':'{% if not app.can_start %}disabled{% endif %}'}
-            %a{'href':'{% url "app_start" app.safe_id %}'}
+            %a{'href':'{% if app.can_start %}{% url "app_start" app.safe_id %}{% else %}#{% endif %}'}
               %i.fa.fa-play
               - trans "Run application"
           %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
-            %a{'href':'{% url "app_stop" app.safe_id %}'}
+            %a{'href':'{% if app.run_plan %}{% url "app_stop" app.safe_id %}{% else %}#{% endif %}'}
               %i.fa.fa-stop
               - trans "Stop application"
 

@@ -7,6 +7,9 @@
 
 from django.views.generic import FormView
 from django.core.urlresolvers import reverse
+from django.http import Http404
+
+from mongoengine.errors import ValidationError, DoesNotExist
 
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.common.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
@@ -34,7 +37,7 @@ class OwnedPackagesMixin(object):
 
 
 class AppActionView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
-                    MongoDetailView, FormView):
+                    FormView, MongoDetailView):
 
     def get_success_url(self):
         return reverse('app_details', args=[self.object.safe_id])
@@ -43,15 +46,20 @@ class AppActionView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
         form_class = self.get_form_class()
         form = self.get_form(form_class)
         self.object = self.get_object()
-        return self.render_to_response(self.get_context_data(form=form))
+        return self.validate_action(request) or self.render_to_response(
+            self.get_context_data(form=form))
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
-        return super(AppActionView, self).post(request, *args, **kwargs)
+        return self.validate_action(request) or super(
+            AppActionView, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
         self.action(form)
         return super(AppActionView, self).form_valid(form)
 
     def action(self, form):
+        pass
+
+    def validate_action(self, request):
         pass

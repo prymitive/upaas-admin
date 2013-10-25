@@ -1,0 +1,27 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb app.name "app_details" app.safe_id
+  - breadcrumb_for ""
+    Error ={ status_code }
+  - endbreadcrumb_for
+
+
+- block content
+
+
+  .jumbotron.text-center
+
+    %h1
+      %p.text-danger
+        = error
+
+    %p
+      = status_code
+      - trans "Not Acceptable"
