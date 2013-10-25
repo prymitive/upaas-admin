@@ -17,12 +17,12 @@ from pure_pagination.mixins import PaginationMixin
 
 from upaas_admin.common.mixin import (
     LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
-from upaas_admin.apps.applications.mixin import (OwnedAppsMixin,
-                                                 OwnedPackagesMixin)
+from upaas_admin.apps.applications.mixin import (
+    OwnedAppsMixin, OwnedPackagesMixin, AppActionView)
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
-    UpdateApplicationMetadataInlineForm, BuildPackageForm)
+    UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm)
 from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 
 
@@ -180,30 +180,28 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
     context_object_name = 'pkg'
 
 
-class BuildPackageView(LoginRequiredMixin, OwnedAppsMixin,
-                       AppTemplatesDirMixin, MongoDetailView, FormView):
+class BuildPackageView(AppActionView):
+
     template_name = 'build.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
     form_class = BuildPackageForm
 
-    def get_success_url(self):
-        return reverse(ApplicationDetailView.tab_id,
-                       args=[self.object.safe_id])
-
-    def get(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        self.object = self.get_object()
-        return self.render_to_response(self.get_context_data(form=form))
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super(BuildPackageView, self).post(request, *args, **kwargs)
-
-    def form_valid(self, form):
+    def action(self, form):
         if self.object and self.object.metadata:
             self.object.build_package(
                 force_fresh=form.cleaned_data['force_fresh'])
-        return super(BuildPackageView, self).form_valid(form)
+
+
+class StopApplicationView(AppActionView):
+
+    template_name = 'stop.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    form_class = StopApplicationForm
+
+    def action(self, form):
+        if self.object:
+            self.object.stop_application()

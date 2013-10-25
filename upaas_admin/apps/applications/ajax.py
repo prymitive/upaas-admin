@@ -19,15 +19,6 @@ from upaas_admin.common.uwsgi import fetch_json_stats
 
 @login_required
 @dajaxice_register
-def stop_app(request, app_id):
-    app = Application.objects.filter(id=app_id, owner=request.user).first()
-    if app and app.metadata:
-        app.stop_application()
-    return dumps({})
-
-
-@login_required
-@dajaxice_register
 @cache_page(3)  # TODO make it configurable?
 def stats(request, app_id):
     data = []

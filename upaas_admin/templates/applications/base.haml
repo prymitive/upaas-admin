@@ -34,7 +34,7 @@
               %i.fa.fa-play
               - trans "Run application"
           %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
-            %a{'href':'#', 'onclick':'Dajaxice.upaas_admin.apps.applications.stop_app(function(){}, {"app_id":"{{ app.safe_id }}"});'}
+            %a{'href':'{% url "app_stop" app.safe_id %}'}
               %i.fa.fa-stop
               - trans "Stop application"
 

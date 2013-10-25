@@ -72,3 +72,11 @@ class BuildPackageForm(CrispyForm):
     layout = ['force_fresh']
 
     force_fresh = forms.BooleanField(required=False)
+
+
+class StopApplicationForm(CrispyForm):
+
+    submit_label = 'Stop'
+    layout = ['confirm']
+
+    confirm = forms.BooleanField(required=True)

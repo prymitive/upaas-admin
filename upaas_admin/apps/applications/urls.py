@@ -26,6 +26,8 @@ urlpatterns = patterns(
         name=ApplicationMetadataView.tab_id),
     url(r'^(?P<slug>[-_\w]+)/start$', StartApplicationView.as_view(),
         name='app_start'),
+    url(r'^(?P<slug>[-_\w]+)/stop$', StopApplicationView.as_view(),
+        name='app_stop'),
     url(r'^(?P<slug>[-_\w]+)/packages$', ApplicationPackagesView.as_view(),
         name=ApplicationPackagesView.tab_id),
     url(r'^(?P<slug>[-_\w]+)/instances$', ApplicationInstancesView.as_view(),
