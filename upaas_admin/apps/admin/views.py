@@ -14,7 +14,9 @@ from upaas_admin.mixin import (LoginRequiredMixin, SuperUserRequiredMixin,
                                AppTemplatesDirMixin)
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
-from upaas_admin.apps.admin.forms import *
+from upaas_admin.apps.admin.forms import (AdminCreateUserForm,
+                                          AdminEditUserForm, AdminRouterForm,
+                                          AdminBackendForm)
 
 
 class AdminCreateUserView(LoginRequiredMixin, SuperUserRequiredMixin,

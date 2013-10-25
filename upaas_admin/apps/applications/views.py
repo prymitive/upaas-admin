@@ -5,7 +5,7 @@
 """
 
 
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -16,7 +16,7 @@ from pure_pagination import Paginator, PageNotAnInteger
 from pure_pagination.mixins import PaginationMixin
 
 from upaas_admin.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
-                               DetailTabView)
+                               DetailTabView, MongoDetailView)
 from upaas_admin.apps.applications.mixin import (OwnedAppsMixin,
                                                  OwnedPackagesMixin)
 from upaas_admin.apps.applications.models import Application, Package
@@ -34,7 +34,8 @@ class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
 
 
 class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
-                            AppTemplatesDirMixin, DetailView, DetailTabView):
+                            AppTemplatesDirMixin, MongoDetailView,
+                            DetailTabView):
 
     template_name = 'details.html'
     model = Application
@@ -46,7 +47,8 @@ class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
 
 
 class ApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
-                              AppTemplatesDirMixin, DetailView, DetailTabView):
+                              AppTemplatesDirMixin, MongoDetailView,
+                              DetailTabView):
 
     template_name = 'metadata.html'
     model = Application
@@ -67,7 +69,8 @@ class ApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
 
 
 class ApplicationPackagesView(LoginRequiredMixin, AppTemplatesDirMixin,
-                              PaginationMixin, DetailView, TabView):
+                              PaginationMixin, MongoDetailView,
+                              TabView):
 
     template_name = 'packages.html'
     model = Application
@@ -96,7 +99,7 @@ class ApplicationPackagesView(LoginRequiredMixin, AppTemplatesDirMixin,
 
 
 class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
-                               AppTemplatesDirMixin, DetailView,
+                               AppTemplatesDirMixin, MongoDetailView,
                                DetailTabView):
 
     template_name = 'instances.html'
@@ -168,7 +171,7 @@ class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
 
 
 class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
-                        AppTemplatesDirMixin, DetailView):
+                        AppTemplatesDirMixin, MongoDetailView):
 
     template_name = 'package_details.html'
     model = Package

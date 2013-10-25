@@ -10,9 +10,13 @@ import inspect
 
 from tabination.views import TabView
 
+from mongoengine.errors import ValidationError, DoesNotExist
+
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.core.exceptions import PermissionDenied
+from django.views.generic import DetailView
+from django.http import Http404
 
 
 class AppTemplatesDirMixin(object):
@@ -48,3 +52,12 @@ class DetailTabView(TabView):
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)
+
+
+class MongoDetailView(DetailView):
+
+    def get_object(self, queryset=None):
+        try:
+            return super(MongoDetailView, self).get_object(queryset=queryset)
+        except (ValidationError, DoesNotExist):
+            raise Http404
