@@ -16,7 +16,11 @@ from upaas_admin.apps.users.models import User
 from upaas_admin.common.forms import CrispyForm
 
 
-class ResetApiKeyForm(forms.Form):
+class ResetApiKeyForm(CrispyForm):
+
+    form_action = reverse_lazy('users_apikey_reset')
+    layout = ['apikey']
+
     apikey = forms.CharField(widget=forms.HiddenInput, required=True)
 
     def clean_apikey(self):
