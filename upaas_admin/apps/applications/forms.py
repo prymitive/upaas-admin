@@ -11,7 +11,8 @@ from django import forms
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_admin.common.forms import CrispyForm, InlineCrispyForm
+from upaas_admin.common.forms import (CrispyForm, CrispyMongoForm,
+                                      InlineCrispyMongoForm)
 from upaas_admin.apps.applications.models import Application
 
 
@@ -28,7 +29,7 @@ class _MetadataForm(object):
         return metadata
 
 
-class RegisterApplicationForm(CrispyForm, _MetadataForm):
+class RegisterApplicationForm(CrispyMongoForm, _MetadataForm):
 
     submit_label = 'Register'
     form_action = reverse_lazy('app_register')
@@ -41,7 +42,7 @@ class RegisterApplicationForm(CrispyForm, _MetadataForm):
     metadata = forms.FileField()
 
 
-class UpdateApplicationMetadataForm(CrispyForm, _MetadataForm):
+class UpdateApplicationMetadataForm(CrispyMongoForm, _MetadataForm):
 
     submit_label = 'Update'
     layout = ['metadata']
@@ -53,7 +54,8 @@ class UpdateApplicationMetadataForm(CrispyForm, _MetadataForm):
     metadata = forms.FileField()
 
 
-class UpdateApplicationMetadataInlineForm(InlineCrispyForm, _MetadataForm):
+class UpdateApplicationMetadataInlineForm(InlineCrispyMongoForm,
+                                          _MetadataForm):
 
     submit_label = 'Update'
 
@@ -62,3 +64,11 @@ class UpdateApplicationMetadataInlineForm(InlineCrispyForm, _MetadataForm):
         fields = ('metadata',)
 
     metadata = forms.FileField()
+
+
+class BuildPackageForm(CrispyForm):
+
+    submit_label = 'Build'
+    layout = ['force_fresh']
+
+    force_fresh = forms.BooleanField(required=False)

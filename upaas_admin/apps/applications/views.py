@@ -5,7 +5,7 @@
 """
 
 
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import ListView, CreateView, UpdateView, FormView
 from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -22,7 +22,7 @@ from upaas_admin.apps.applications.mixin import (OwnedAppsMixin,
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
-    UpdateApplicationMetadataInlineForm)
+    UpdateApplicationMetadataInlineForm, BuildPackageForm)
 from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 
 
@@ -123,8 +123,8 @@ class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
         return super(RegisterApplicationView, self).form_valid(form)
 
 
-class UpdateApplicationMetadataView(LoginRequiredMixin, AppTemplatesDirMixin,
-                                    UpdateView):
+class UpdateApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
+                                    AppTemplatesDirMixin, UpdateView):
     template_name = 'update_metadata.html'
     model = Application
     slug_field = 'id'
@@ -139,8 +139,9 @@ class UpdateApplicationMetadataView(LoginRequiredMixin, AppTemplatesDirMixin,
         return super(UpdateApplicationMetadataView, self).form_valid(form)
 
 
-class StartApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
-                           CreateView, SingleObjectMixin):
+class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
+                           AppTemplatesDirMixin, CreateView,
+                           SingleObjectMixin):
     template_name = 'start.html'
     model = Application
     form_class = ApplicationRunPlanForm
@@ -177,3 +178,32 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
     model = Package
     slug_field = 'id'
     context_object_name = 'pkg'
+
+
+class BuildPackageView(LoginRequiredMixin, OwnedAppsMixin,
+                       AppTemplatesDirMixin, MongoDetailView, FormView):
+    template_name = 'build.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    form_class = BuildPackageForm
+
+    def get_success_url(self):
+        return reverse(ApplicationDetailView.tab_id,
+                       args=[self.object.safe_id])
+
+    def get(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        self.object = self.get_object()
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(BuildPackageView, self).post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.object and self.object.metadata:
+            self.object.build_package(
+                force_fresh=form.cleaned_data['force_fresh'])
+        return super(BuildPackageView, self).form_valid(form)

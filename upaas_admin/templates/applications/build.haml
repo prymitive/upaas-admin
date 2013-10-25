@@ -1,0 +1,30 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb app.name "app_details" app.safe_id
+  - breadcrumb "Build package" "build_package" app.safe_id
+
+
+- block content
+
+  - if app.pending_build_tasks
+    %h3.text-center
+      - trans "Build task is already queued"
+      - include "partials/button_go_back.html"
+
+  - else
+
+    .well
+
+      %p
+        - trans "Forcing fresh package will result in package created from scratch, using empty system image."
+        - trans "All required system packages will be reinstalled."
+
+      - crispy form

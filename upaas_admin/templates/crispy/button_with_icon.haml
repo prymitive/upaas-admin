@@ -1,0 +1,5 @@
+<button {{ button.flat_attrs|safe }}>
+  - if button.icon_class
+    %i{'class':'{{ button.icon_class }}'}
+  = button.content|safe
+</button>

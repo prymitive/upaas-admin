@@ -19,15 +19,6 @@ from upaas_admin.common.uwsgi import fetch_json_stats
 
 @login_required
 @dajaxice_register
-def build_package(request, app_id):
-    app = Application.objects.filter(id=app_id, owner=request.user).first()
-    if app and app.metadata:
-        app.build_package()
-    return dumps({})
-
-
-@login_required
-@dajaxice_register
 def stop_app(request, app_id):
     app = Application.objects.filter(id=app_id, owner=request.user).first()
     if app and app.metadata:

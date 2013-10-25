@@ -14,8 +14,12 @@ urlpatterns = patterns(
     'upaas_admin.apps.applications.views',
     url(r'^register$', RegisterApplicationView.as_view(),
         name='app_register'),
+
     url(r'^update/metadata/(?P<slug>[-_\w]+)$',
         UpdateApplicationMetadataView.as_view(), name='app_update_metadata'),
+    url(r'^build/(?P<slug>[-_\w]+)$', BuildPackageView.as_view(),
+        name='build_package'),
+
     url(r'^show/(?P<slug>[-_\w]+)$', ApplicationDetailView.as_view(),
         name=ApplicationDetailView.tab_id),
     url(r'^metadata/(?P<slug>[-_\w]+)$', ApplicationMetadataView.as_view(),

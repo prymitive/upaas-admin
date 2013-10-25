@@ -1,7 +1,13 @@
-- extends 'base.html'
+- extends 'site.html'
 
 
 - load i18n
+- load django_bootstrap_breadcrumbs
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "Error 403" ""
 
 
 - block content
