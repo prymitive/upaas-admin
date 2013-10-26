@@ -16,6 +16,7 @@ from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
 
 
+#FIXME patch crispy form-horizontal to support checkboxes and move to crispy
 class AdminCreateUserForm(MongoForm):
 
     class Meta:

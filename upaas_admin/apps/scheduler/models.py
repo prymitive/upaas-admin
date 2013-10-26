@@ -50,6 +50,8 @@ class ApplicationRunPlan(BudgetLimits):
     application = ReferenceField('Application', dbref=False, required=True)
     #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
     backends = ListField(ReferenceField('BackendServer', dbref=False))
+    ha_enabled = BooleanField(default=False, required=False,
+                              verbose_name=_('high availability'))
 
     meta = {
         'indexes': ['application'],

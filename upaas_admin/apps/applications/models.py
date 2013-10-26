@@ -442,6 +442,7 @@ class Application(Document):
                 log.error(u"Trying to start '%s' without run plan" % self.name)
                 return
 
+            #FIXME add support for meta tasks
             backend = select_best_backend(run_plan.backends)
             if not backend:
                 log.error(u"Can't start '%s', no backend "
@@ -464,6 +465,7 @@ class Application(Document):
         if self.current_package:
             if not self.run_plan:
                 return
+            #FIXME add support for meta tasks
             for backend in self.run_plan.backends:
                 task = Task.put('StopPackageTask',
                                 title=u'Stooping application %s' % self.name,
@@ -476,6 +478,7 @@ class Application(Document):
         if self.current_package:
             if not self.run_plan:
                 return
+            #FIXME add support for meta tasks
             for backend in self.run_plan.backends:
                 task = Task.put('UpdatePackageTask',
                                 title=u'Updating application %s' % self.name,

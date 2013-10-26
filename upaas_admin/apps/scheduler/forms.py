@@ -15,7 +15,11 @@ from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 class ApplicationRunPlanForm(CrispyMongoForm):
 
     submit_label = 'Start'
-    layout = ['worker_limit', 'memory_limit']
+    #FIXME patch crispy form-horizontal to support checkboxes
+    form_class = ''
+    label_class = ''
+    field_class = ''
+    layout = ['ha_enabled', 'worker_limit', 'memory_limit']
 
     class Meta:
         document = ApplicationRunPlan
