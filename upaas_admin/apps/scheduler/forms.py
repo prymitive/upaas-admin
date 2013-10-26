@@ -37,8 +37,12 @@ class ApplicationRunPlanForm(CrispyMongoForm):
     def clean_worker_limit(self):
         worker_limit = self.cleaned_data['worker_limit']
         budget_limit = self.user.budget['worker_limit']
+        ha_enabled = self.cleaned_data['ha_enabled']
         if worker_limit > budget_limit:
             raise forms.ValidationError(_(u"User total workers limit is only "
                                           u"%d, can't set higher application "
                                           u"workers limit" % budget_limit))
+        if ha_enabled and worker_limit < 2:
+            raise forms.ValidationError(_(u"Enabling high availability mode "
+                                          u"requires at least 2 workers"))
         return worker_limit

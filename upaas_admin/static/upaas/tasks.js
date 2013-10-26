@@ -56,14 +56,37 @@ function tasks_callback(data) {
             menu.push('<a href="' + Django.url('app_details', task.application.id) + '">');
             menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
-            if (!task.pending && task.progress >= 0) {
+            if (!task.pending || task.pending) {
                 menu.push('<div class="progress upaas-task-progressbar">')
-                menu.push('<div class="progress-bar" role="progressbar" aria-valuenow="'
+                if (task.subtasks.length > 0) {
+                    $.each(task.subtasks, function(j, subtask) {
+                        var bar_class = 'progress-bar-default';
+                        switch (j % 3) {
+                            case 1:
+                                bar_class = 'progress-bar-success';
+                                break;
+                            case 2:
+                                bar_class = 'progress-bar-warning';
+                                break;
+                        }
+                        menu.push('<div class="progress-bar ' + bar_class
+                                  + '" role="progressbar" aria-valuenow="'
+                                  + subtask.progress
+                                  + '" aria-valuemin="0" aria-valuemax="100" style="width: '
+                                  + subtask.progress + '%;">');
+                        menu.push('<span class="sr-only">' + task.progress + '% Complete</span>');
+                        menu.push('</div>');
+                    });
+                    menu.push('</div>');
+
+                } else {
+                    menu.push('<div class="progress-bar progress-bar-default" role="progressbar" aria-valuenow="'
                               + task.progress
                               + '" aria-valuemin="0" aria-valuemax="100" style="width: '
                               + task.progress + '%;">');
-                menu.push('<span class="sr-only">' + task.progress + '% Complete</span>');
-                menu.push('</div></div>');
+                    menu.push('<span class="sr-only">' + task.progress + '% Complete</span>');
+                    menu.push('</div></div>');
+                }
             }
             menu.push('</a>');
             menu.push('</li>');

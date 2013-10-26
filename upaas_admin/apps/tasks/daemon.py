@@ -79,8 +79,9 @@ class DaemonCommand(BaseCommand):
         while True:
             if self.is_exiting:
                 break
+            self.task_class.cleanup_local_tasks()
+            self.task_class.cleanup_remote_tasks()
             if len(results) < workers_count:
-                self.task_class.cleanup_local_tasks()
                 task = self.pop_task()
                 if task:
                     log.info(u"Got task '%s' - %s" % (task.id,

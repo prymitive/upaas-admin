@@ -10,6 +10,17 @@ from mongoengine import ReferenceField
 from upaas_admin.apps.tasks.models import Task
 
 
+class VirtualTask(Task):
+    """
+    Task group, doesn't do anything, only tracks progress of subtasks.
+    All tasks in the group must have the same class.
+    """
+
+    meta = {
+        'collection': 'tasks',
+    }
+
+
 class BackendTask(Task):
     """
     Generic task that will run on specific backend server.

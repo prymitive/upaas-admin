@@ -13,8 +13,7 @@ import time
 from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
-                         BooleanField, ReferenceField, ListField, CASCADE,
-                         QuerySetManager)
+                         ReferenceField, ListField, CASCADE, QuerySetManager)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -31,9 +30,10 @@ from upaas import processes
 from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
-from upaas_admin.apps.scheduler.base import select_best_backend
+from upaas_admin.apps.scheduler.base import select_best_backends
 from upaas_admin.apps.servers.constants import PortsNames
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.tasks.base import VirtualTask
 from upaas_admin.apps.tasks.constants import TaskStatus
 
 
@@ -442,49 +442,78 @@ class Application(Document):
                 log.error(u"Trying to start '%s' without run plan" % self.name)
                 return
 
-            #FIXME add support for meta tasks
-            backend = select_best_backend(run_plan.backends)
-            if not backend:
-                log.error(u"Can't start '%s', no backend "
-                          u"available" % self.name)
+            kwargs = {}
+            if run_plan.ha_enabled:
+                vtask = VirtualTask(
+                    title=_(u"Starting application {name}").format(
+                        name=self.name))
+                vtask.save()
+                kwargs['parent'] = vtask
+
+            backends = select_best_backends(run_plan)
+            if not backends:
+                log.error(_(u"Can't start '{name}', no backend "
+                            u"available").format(name=self.name))
+                run_plan.delete()
                 return
 
-            log.info(u"Setting backend '%s' in '%s' run plan" % (backend.name,
-                                                                 self.name))
-
-            run_plan.backends += [backend]
+            run_plan.backends = backends
             run_plan.save()
 
-            task = Task.put('StartPackageTask',
-                            title=u'Starting application %s' % self.name,
-                            backend=backend, application=self,
-                            package=self.current_package)
-            log.info(u"Created start task: %s" % task.safe_id)
+            for backend in backends:
+                log.info(_(u"Set backend '{backend}' in '{name}' run "
+                           u"plan".format(backend=backend.name,
+                                          name=self.name)))
+                Task.put('StartPackageTask',
+                         title=_(u'Starting application {name}').format(
+                             name=self.name),
+                         backend=backend, application=self,
+                         package=self.current_package, **kwargs)
 
     def stop_application(self):
         if self.current_package:
             if not self.run_plan:
                 return
-            #FIXME add support for meta tasks
+            if self.run_plan and not self.run_plan.backends:
+                # no backends in run plan, just delete it
+                self.run_plan.delete()
+                return
+
+            kwargs = {}
+            if len(self.run_plan.backends) > 1:
+                vtask = VirtualTask(
+                    title=_(u"Stopping application {name}").format(
+                        name=self.name))
+                vtask.save()
+                kwargs['parent'] = vtask
+
             for backend in self.run_plan.backends:
-                task = Task.put('StopPackageTask',
-                                title=u'Stooping application %s' % self.name,
-                                backend=backend, application=self,
-                                package=self.current_package)
-                log.info(u"Created stop task: %s" % task.safe_id)
-                #TODO rewrite for task group (?)
+                Task.put('StopPackageTask',
+                         title=_(u"Stopping application {name}").format(
+                             name=self.name),
+                         backend=backend, application=self,
+                         package=self.current_package, **kwargs)
 
     def update_application(self):
         if self.current_package:
             if not self.run_plan:
                 return
-            #FIXME add support for meta tasks
+
+            kwargs = {}
+            if len(self.run_plan.backends) > 1:
+                vtask = VirtualTask(
+                    title=_(u"Updating application {name}").format(
+                        name=self.name))
+                vtask.save()
+                kwargs['parent'] = vtask
+
+            #TODO add wait for subscription
             for backend in self.run_plan.backends:
-                task = Task.put('UpdatePackageTask',
-                                title=u'Updating application %s' % self.name,
-                                backend=backend, application=self,
-                                package=self.current_package)
-                log.info(u"Created update task: %s" % task.safe_id)
+                Task.put('UpdatePackageTask',
+                         title=_(u"Updating application {name}").format(
+                             name=self.name),
+                         backend=backend, application=self,
+                         package=self.current_package, **kwargs)
 
     def trim_package_files(self):
         """

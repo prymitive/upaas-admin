@@ -21,7 +21,7 @@ def select_best_backend(exclude=[]):
     #FIXME make it aware of each backend resources
     scores = {}
     for backend in BackendServer.objects(is_enabled=True,
-                                         name__nin=[b.name for b in exclude]):
+                                         id__nin=[b.id for b in exclude]):
         if backend.run_plans:
             for run_plan in backend.run_plans:
                 scores = dict(scores.items() +
@@ -40,4 +40,35 @@ def select_best_backend(exclude=[]):
     else:
         # no run plans, just return first backend
         return BackendServer.objects(
-            is_enabled=True, name__nin=[b.name for b in exclude]).first()
+            is_enabled=True, id__nin=[b.id for b in exclude]).first()
+
+
+def select_best_backends(run_plan):
+    """
+    Select best backends for given application run plan. Returns a list of
+    backends where application should be running. If there are no backends to
+    run empty list will be returned.
+    """
+    #TODO needs better scheduling of the number of backends application should
+    # use
+
+    available_backends = len(BackendServer.objects(is_enabled=True))
+    if available_backends == 0:
+        return []
+
+    if run_plan.ha_enabled:
+        num_backends = min(2, available_backends)
+    else:
+        num_backends = 1
+
+    backends = []
+    for i in xrange(0, num_backends):
+        backend = select_best_backend(exclude=backends)
+        if backend:
+            backends.append(backend)
+        else:
+            log.warning(u"Can find more available backends, got %d, needed "
+                        u"%d" % (i+1, num_backends))
+            break
+
+    return backends
