@@ -41,9 +41,7 @@ paths:
 
 storage:
   # class implementing storage access
-  handler: upaas.storage.local.LocalStorage
-  settings:
-    dir: /var/upaas/storage
+  handler: upaas.storage.mongodb.MongoDBStorage
 
 
 # commands used to create empty system image
