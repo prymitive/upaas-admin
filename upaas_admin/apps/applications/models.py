@@ -462,8 +462,8 @@ class Application(Document):
 
             for backend in backends:
                 log.info(_(u"Set backend '{backend}' in '{name}' run "
-                           u"plan".format(backend=backend.name,
-                                          name=self.name)))
+                           u"plan").format(backend=backend.name,
+                                           name=self.name))
                 Task.put('StartPackageTask',
                          title=_(u'Starting application {name}').format(
                              name=self.name),
