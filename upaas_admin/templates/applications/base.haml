@@ -27,7 +27,7 @@
         %ul.nav.nav-pills.nav-stacked
           %li
             %a{'href':'{% url "build_package" app.safe_id %}'}
-              %i.fa.fa-gift
+              %i.fa.fa-rocket
               - trans "Build new package"
           %li{'class':'{% if not app.can_start %}disabled{% endif %}'}
             %a{'href':'{% if app.can_start %}{% url "app_start" app.safe_id %}{% else %}#{% endif %}'}
