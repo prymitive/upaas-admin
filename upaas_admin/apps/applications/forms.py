@@ -80,3 +80,11 @@ class StopApplicationForm(CrispyForm):
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)
+
+
+class RollbackApplicationForm(CrispyForm):
+
+    submit_label = 'Rollback'
+    layout = ['confirm']
+
+    confirm = forms.BooleanField(required=True)

@@ -1,0 +1,23 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb pkg.application.name "app_details" pkg.application.safe_id
+  - breadcrumb "Rollback package" "rollback_package" pkg.safe_id
+
+
+- block content
+
+  .well
+
+    %p
+      - blocktrans
+        Are you sure you want to rollback application {{ pkg.application.name }} to package {{ pkg.id }}?
+
+    - crispy form

@@ -25,7 +25,8 @@ from upaas_admin.apps.applications.mixin import (
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
-    UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm)
+    UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm,
+    RollbackApplicationForm)
 from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 from upaas_admin.apps.applications.http import application_error
 
@@ -240,3 +241,28 @@ class StopApplicationView(AppActionView):
     def action(self, form):
         if self.object:
             self.object.stop_application()
+
+
+class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
+
+    template_name = 'rollback.html'
+    model = Package
+    slug_field = 'id'
+    context_object_name = 'pkg'
+    form_class = RollbackApplicationForm
+
+    def get_success_url(self):
+        return reverse('app_details', args=[self.object.application.safe_id])
+
+    def validate_action(self, request):
+        if self.object == self.object.application.current_package:
+            return application_error(
+                request, self.object, _(u"Selected package is already current "
+                                        u"for this application"))
+
+    def action(self, form):
+        if self.object:
+            app = self.object.application
+            app.current_package = self.object
+            app.save()
+            app.update_application()

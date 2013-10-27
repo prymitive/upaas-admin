@@ -17,7 +17,6 @@
         %th
           - trans "Interpreter version"
         %th
-          - trans "Size"
 
     %tbody
       - for package in packages
@@ -33,11 +32,10 @@
           %td
             = package.interpreter_version
           %td
-            - if package.filename
-              = package.bytes|filesizeformat
-            - else
-              %span.text-muted
-                - trans "Removed"
+            -if package.filename and app.current_package.id != package.id
+              %a.btn.btn-xs.btn-default{'href':'{% url "package_rollback" package.safe_id %}'}
+                %i.fa.fa-undo
+                - trans "Rollback"
       - empty
         %tr
           %td{'colspan':'4'}
