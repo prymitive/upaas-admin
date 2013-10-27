@@ -47,12 +47,9 @@ class ApplicationRunPlan(BudgetLimits):
     """
     Where should application run and how much resources can given app consume.
     """
-    application = ReferenceField('Application', dbref=False, required=True)
+    application = ReferenceField('Application', dbref=False, required=True,
+                                 unique=True)
     #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
     backends = ListField(ReferenceField('BackendServer', dbref=False))
     ha_enabled = BooleanField(default=False, required=False,
                               verbose_name=_('high availability'))
-
-    meta = {
-        'indexes': ['application'],
-    }
