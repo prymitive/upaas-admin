@@ -8,7 +8,7 @@ admin:
   # secret key, must be set to some random value
   # each node in single cluster must have the same value for it!
   secretkey: changeme
-  # list of domains this site can server, any domain will be allowed if not
+  # list of domains this site can serve, any domain will be allowed if not
   # specified, details can be found in django docs:
   # https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
   domains:
