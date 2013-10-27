@@ -164,6 +164,7 @@ class StopPackageTask(PackageTask):
 
 @register
 class UpdatePackageTask(PackageTask):
+    #TODO add graceful update
 
     def job(self):
         try:
