@@ -41,9 +41,11 @@ class RunPlanResource(MongoEngineResource):
         #FIXME handle reference field properly using mongoengine-tastypie
         log.debug(u"Going to create new run plan for user "
                   u"'%s'" % bundle.request.user.username)
-        app = Application.objects(id=bundle.data['application']).first()
+        app = Application.objects(id=bundle.data['application'],
+                                  owner=bundle.request.user).first()
         if not app or not app.current_package:
-            msg = u"Can't create new run plan, no packages built"
+            msg = u"Can't create new run plan, app not found, or no " \
+                  u"packages built yet"
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
