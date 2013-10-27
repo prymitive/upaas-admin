@@ -116,10 +116,7 @@ class ApplicationResource(MongoEngineResource):
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
-            if app.run_plan:
-                return HttpResponseBadRequest(
-                    _(u"Application is already started"))
-            elif app.metadata and app.current_package:
+            if app.metadata and app.current_package:
                 return self.create_response(
                     request, app.start_application())
             else:

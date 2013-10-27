@@ -104,12 +104,14 @@ class Task(Document):
             self.save()
 
         if not self.parent:
+            log.info(u"Stand alone task, calling cleanup")
             self.cleanup()
 
         # if there are no more unfinished task for our parent we mark it as
         # finished
         if self.parent and not self.__class__.objects(
                 parent=self.parent, status__in=ACTIVE_TASK_STATUSES):
+            log.info(u"Last task in group, calling cleanup")
             self.cleanup()
             statuses = self.__class__.objects(parent=self.parent).distinct(
                 'status')
