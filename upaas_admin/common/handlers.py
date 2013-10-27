@@ -5,21 +5,24 @@
 """
 
 
-from django.shortcuts import render_to_response
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.template import RequestContext, Context
 from functools import partial
 
 
 # code from https://forrst.com/posts/Django_404_and_500_with_RequestContext-m8U
-def base_error(request, template_name=None):
+def base_error(request, status=500, template_name=None):
     try:
         context = RequestContext(request)
     except Exception, e:
         context = Context()
-    return render_to_response(template_name, context_instance=context)
+    return HttpResponse(
+        content=render_to_string(template_name, context_instance=context),
+        status=status)
 
 
-bad_request = partial(base_error, template_name='400.html')
-access_denied = partial(base_error, template_name='403.html')
-page_not_found = partial(base_error, template_name='404.html')
-server_error = partial(base_error, template_name='500.html')
+bad_request = partial(base_error, status=400, template_name='400.html')
+access_denied = partial(base_error, status=403, template_name='403.html')
+page_not_found = partial(base_error, status=404, template_name='404.html')
+server_error = partial(base_error, status=500, template_name='500.html')
