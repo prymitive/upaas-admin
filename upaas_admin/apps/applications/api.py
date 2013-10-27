@@ -12,6 +12,7 @@ import mongoengine
 from django.core import exceptions
 from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.conf.urls import url
+from django.utils.translation import ugettext_lazy as _
 
 from tastypie_mongoengine.resources import MongoEngineResource
 
@@ -45,23 +46,23 @@ class ApplicationResource(MongoEngineResource):
         return bundle
 
     def obj_create(self, bundle, request=None, **kwargs):
-        log.debug(u"Going to create new application for user "
-                  u"'%s'" % bundle.request.user.username)
+        log.debug(_(u"Going to create new application for user "
+                    u"'{name}'").format(name=bundle.request.user.username))
         try:
             return super(MongoEngineResource, self).obj_create(
                 bundle, request=request, owner=bundle.request.user, **kwargs)
         except mongoengine.ValidationError, e:
-            log.warning(u"Can't create new application, invalid data payload: "
-                        "%s" % e.message)
+            log.warning(_(u"Can't create new application, invalid data "
+                          u"payload: {msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
         except mongoengine.NotUniqueError, e:
-            log.warning(u"Can't create new application, duplicated fields: "
-                        "%s" % e.message)
+            log.warning(_(u"Can't create new application, duplicated fields: "
+                          u"{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
 
     def apply_authorization_limits(self, request, object_list):
-        log.debug(u"Limiting query to user owned apps "
-                  u"(length: %d)" % len(object_list))
+        log.debug(_(u"Limiting query to user owned apps (length: "
+                    u"{length})").format(length=len(object_list)))
         return object_list.filter(owner=request.user)
 
     def prepend_urls(self):
@@ -90,10 +91,10 @@ class ApplicationResource(MongoEngineResource):
                     request, app.build_package())
             else:
                 return HttpResponseBadRequest(
-                    "No metadata registered for app '%s' with id '%s'" % (
-                        app.name, app.id))
+                    _(u"No metadata registered for app '{name}' with id "
+                      u"'{id}'").format(name=app.name, id=app.id))
         else:
-            return HttpResponseNotFound("No such application")
+            return HttpResponseNotFound(_(u"No such application"))
 
     def build_fresh_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
@@ -105,40 +106,48 @@ class ApplicationResource(MongoEngineResource):
                     request, app.build_package(force_fresh=True))
             else:
                 return HttpResponseBadRequest(
-                    "No metadata registered for app '%s' with id '%s'" % (
-                        app.name, app.id))
+                    _(u"No metadata registered for app '{name}' with id "
+                      u"'{id}'").format(name=app.name, id=app.id))
         else:
-            return HttpResponseNotFound("No such application")
+            return HttpResponseNotFound(_(u"No such application"))
 
     def start_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
-            if app.metadata and app.current_package:
+            if app.run_plan:
+                return HttpResponseBadRequest(
+                    _(u"Application is already started"))
+            elif app.metadata and app.current_package:
                 return self.create_response(
                     request, app.start_application())
             else:
                 return HttpResponseBadRequest(
-                    "No package built or no metadata registered for app '%s' "
-                    "with id '%s'" % (app.name, app.id))
+                    _(u"No package built or no metadata registered for app "
+                      u"'{name}' with id '{id}'").format(name=app.name,
+                                                         id=app.id))
         else:
-            return HttpResponseNotFound("No such application")
+            return HttpResponseNotFound(_(u"No such application"))
 
     def stop_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
+            if not app.run_plan:
+                return HttpResponseBadRequest(_(
+                    u"Application is already stopped"))
             if app.metadata and app.current_package:
                 return self.create_response(
                     request, app.stop_application())
             else:
                 return HttpResponseBadRequest(
-                    "No package built or no metadata registered for app '%s' "
-                    "with id '%s'" % (app.name, app.id))
+                    _(u"No package built or no metadata registered for app "
+                      u"'{name}' with id '{id}'").format(name=app.name,
+                                                         id=app.id))
         else:
-            return HttpResponseNotFound("No such application")
+            return HttpResponseNotFound(_(u"No such application"))
 
 
 class PackageResource(MongoEngineResource):
