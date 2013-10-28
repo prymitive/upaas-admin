@@ -13,11 +13,13 @@ from upaas_admin.apps.servers.models import BackendServer
 log = logging.getLogger(__name__)
 
 
-def select_best_backend(exclude=[]):
+def select_best_backend(exclude=None):
     """
     Return backend server that is the least loaded one or None if there is no
     enabled backend.
     """
+    if exclude is None:
+        exclude = []
     #FIXME make it aware of each backend resources
     scores = {}
     for backend in BackendServer.objects(is_enabled=True,
