@@ -33,6 +33,9 @@ class Task(Document):
     progress = IntField(min_value=0, max_value=100, default=0)
     messages = ListField(StringField())
 
+    #TODO tasks should expire, we don;t want start task for backend hanging
+    # forever
+
     # virtual tasks are used to aggregate progress of group of tasks
     # for example: starting application on multiple backends
     is_virtual = BooleanField(default=False)
