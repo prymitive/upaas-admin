@@ -1,0 +1,36 @@
+- extends 'applications/base.html'
+
+
+- load i18n
+
+
+- block app_content
+
+  %table.table.table-striped
+
+    %thead
+      %tr
+        %th
+          - trans "Created"
+        %th
+          - trans "Title"
+        %th
+          - trans "Status"
+
+    %tbody
+      - for task in app.active_tasks
+        %tr
+          %td
+            = task.date_created
+          %td
+            = task.title
+          %td
+            = task.status
+
+      - empty
+        %tr
+          %td{'colspan':'4'}
+            .text-center
+              - trans "No active tasks"
+
+  - include "partials/pagination_footer.html"

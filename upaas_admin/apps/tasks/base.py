@@ -5,9 +5,12 @@
 """
 
 
+import logging
+
 from mongoengine import ReferenceField
 
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.common.logger import MongoLogHandler
 
 
 class VirtualTask(Task):
@@ -47,6 +50,16 @@ class ApplicationTask(Task):
         'indexes': ['application'],
         'collection': 'tasks',
     }
+
+    def before_execute(self):
+        self.log_handler = MongoLogHandler(self)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.log_handler)
+
+    def after_execute(self):
+        self.log_handler.flush()
+        root_logger = logging.getLogger()
+        root_logger.removeHandler(self.log_handler)
 
 
 class PackageTask(BackendTask, ApplicationTask):

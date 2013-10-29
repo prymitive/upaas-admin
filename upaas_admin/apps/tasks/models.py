@@ -10,7 +10,8 @@ import logging
 from socket import gethostname
 
 from mongoengine import (StringField, DateTimeField, IntField, ListField,
-                         BooleanField, ReferenceField, Document)
+                         BooleanField, ReferenceField, Document,
+                         EmbeddedDocument, EmbeddedDocumentField)
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,14 +25,24 @@ from upaas_admin.apps.tasks.registry import find_task_class
 log = logging.getLogger(__name__)
 
 
+class TaskMessage(EmbeddedDocument):
+
+    timestamp = DateTimeField(required=True, default=datetime.datetime.now)
+    source = StringField(required=True)
+    level = IntField(required=True)
+    message = StringField(required=True)
+
+
 class Task(Document):
+
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     date_finished = DateTimeField()
     title = StringField(required=True)
     status = StringField(required=True, choices=STATUS_CHOICES,
                          default=TaskStatus.pending)
     progress = IntField(min_value=0, max_value=100, default=0)
-    messages = ListField(StringField())
+
+    messages = ListField(EmbeddedDocumentField(TaskMessage))
 
     #TODO tasks should expire, we don;t want start task for backend hanging
     # forever
@@ -94,10 +105,12 @@ class Task(Document):
                 set__locked_since=datetime.datetime.now(),
                 set__status=TaskStatus.running)
         try:
+            self.before_execute()
             for progress in self.job():
                 if progress is not None:
                     log.info(u"Task progress: %d%%" % progress)
                     self.update(set__progress=progress)
+            self.after_execute()
         except Exception, e:
             log.error(u"Task %s failed: %s" % (self.id, e))
             self.fail_task()
@@ -140,6 +153,18 @@ class Task(Document):
         """
         pass
 
+    def before_execute(self):
+        """
+        Hook that can be used by task class to prepare for execution.
+        """
+        pass
+
+    def after_execute(self):
+        """
+        Hook that can be used by task class to cleanup after execution.
+        """
+        pass
+
     @classmethod
     def find(cls, task_class, **kwargs):
         """
@@ -149,6 +174,8 @@ class Task(Document):
         klass = find_task_class(task_class)
         if klass:
             ret = klass.objects(**kwargs)
+        else:
+            log.error(u"Task class not found: %s" % task_class)
         return ret
 
     @classmethod

@@ -34,7 +34,7 @@ from upaas_admin.apps.scheduler.base import select_best_backends
 from upaas_admin.apps.servers.constants import PortsNames
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.tasks.base import VirtualTask
-from upaas_admin.apps.tasks.constants import TaskStatus
+from upaas_admin.apps.tasks.constants import TaskStatus, ACTIVE_TASK_STATUSES
 
 
 log = logging.getLogger(__name__)
@@ -398,6 +398,14 @@ class Application(Document):
         Returns True only if package is not started but it can be.
         """
         return bool(self.current_package and self.run_plan is None)
+
+    @property
+    def active_tasks(self):
+        """
+        Return list of all active (pending or running) application tasks.
+        """
+        return Task.find('ApplicationTask', application=self,
+                         status__in=ACTIVE_TASK_STATUSES)
 
     @property
     def pending_build_tasks(self):

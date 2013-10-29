@@ -9,6 +9,7 @@ import logging
 
 from django.utils.importlib import import_module
 
+
 REGISTERED_TASKS = {}
 LOADING_TASKS = False
 
@@ -17,7 +18,12 @@ log = logging.getLogger(__name__)
 
 
 def register(cls):
-    REGISTERED_TASKS[cls.__name__] = cls
+    global REGISTERED_TASKS
+    if cls.__name__ not in REGISTERED_TASKS:
+        log.debug(u"Registering task class: %s" % cls.__name__)
+        REGISTERED_TASKS[cls.__name__] = cls
+        for bcls in cls.__bases__:
+            register(bcls)
     return cls
 
 

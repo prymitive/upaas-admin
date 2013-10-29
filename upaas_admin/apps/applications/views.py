@@ -116,6 +116,19 @@ class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
     tab_label = _('Instances')
 
 
+class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
+                           AppTemplatesDirMixin, MongoDetailView,
+                           DetailTabView):
+
+    template_name = 'tasks.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    tab_id = 'app_tasks'
+    tab_group = 'app_navigation'
+    tab_label = _('Tasks')
+
+
 class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
                               CreateView):
     template_name = 'register.html'

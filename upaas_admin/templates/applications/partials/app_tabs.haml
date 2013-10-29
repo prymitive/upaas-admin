@@ -13,5 +13,8 @@
           - if tab.tab_id == 'app_instances' and app.run_plan
             %span.badge
               = app.run_plan.backends|length
+          - if tab.tab_id == 'app_tasks' and app.active_tasks
+            %span.badge
+              = app.active_tasks|length
 
   .tab-content
