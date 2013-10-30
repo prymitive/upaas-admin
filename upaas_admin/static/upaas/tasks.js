@@ -53,7 +53,7 @@ function tasks_callback(data) {
             } else {
                 menu.push('<li>');
             }
-            menu.push('<a href="' + Django.url('app_details', task.application.id) + '">');
+            menu.push('<a href="' + Django.url('app_task_details', task.task_id) + '">');
             menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
             if (!task.pending || task.pending) {
@@ -102,7 +102,7 @@ function tasks_callback(data) {
 
     window.setTimeout(
         function() {
-            Dajaxice.upaas_admin.apps.tasks.user_tasks(tasks_callback);
+            Dajaxice.upaas_admin.apps.applications.user_tasks(tasks_callback);
         },
         3000
     );
@@ -111,6 +111,6 @@ function tasks_callback(data) {
 
 $(document).ready(function(){
     if (Django.user.is_authenticated) {
-        Dajaxice.upaas_admin.apps.tasks.user_tasks(tasks_callback);
+        Dajaxice.upaas_admin.apps.applications.user_tasks(tasks_callback);
     }
 });

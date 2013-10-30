@@ -442,6 +442,7 @@ class Application(Document):
                             metadata=self.metadata,
                             system_filename=system_filename)
             log.info(u"Created start task: %s" % task.safe_id)
+            return task
 
     def start_application(self):
         if self.current_package:

@@ -21,7 +21,7 @@ from pure_pagination.mixins import PaginationMixin
 from upaas_admin.common.mixin import (
     LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
 from upaas_admin.apps.applications.mixin import (
-    OwnedAppsMixin, OwnedPackagesMixin, AppActionView)
+    OwnedAppsMixin, OwnedPackagesMixin, OwnedAppTasksMixin, AppActionView)
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
@@ -129,6 +129,15 @@ class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
     tab_label = _('Tasks')
 
 
+class ApplicationTaskDetailsView(LoginRequiredMixin, OwnedAppTasksMixin,
+                                 AppTemplatesDirMixin, MongoDetailView):
+
+    template_name = 'task_details.html'
+    model = 'ApplicationTask'
+    slug_field = 'id'
+    context_object_name = 'task'
+
+
 class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
                               CreateView):
     template_name = 'register.html'
@@ -231,10 +240,14 @@ class BuildPackageView(AppActionView):
     slug_field = 'id'
     context_object_name = 'app'
     form_class = BuildPackageForm
+    task = None
+
+    def get_success_url(self):
+        return reverse('app_task_details', args=[self.task.safe_id])
 
     def action(self, form):
         if self.object and self.object.metadata:
-            self.object.build_package(
+            self.task = self.object.build_package(
                 force_fresh=form.cleaned_data['force_fresh'])
 
 

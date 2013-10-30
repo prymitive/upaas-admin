@@ -7,11 +7,9 @@
 
 from django.views.generic import FormView
 from django.core.urlresolvers import reverse
-from django.http import Http404
-
-from mongoengine.errors import ValidationError, DoesNotExist
 
 from upaas_admin.apps.applications.models import Application, Package
+from upaas_admin.apps.tasks.models import Task
 from upaas_admin.common.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                       MongoDetailView)
 
@@ -34,6 +32,17 @@ class OwnedPackagesMixin(object):
         return Package.objects.filter(
             application__in=Application.objects.filter(
                 owner=self.request.user))
+
+
+class OwnedAppTasksMixin(object):
+    """
+    Limits query to application tasks for applications owned by current user.
+    """
+
+    def get_queryset(self):
+        return Task.find('ApplicationTask',
+                         application__in=Application.objects.filter(
+                             owner=self.request.user))
 
 
 class AppActionView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,

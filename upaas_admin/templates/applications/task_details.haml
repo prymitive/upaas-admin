@@ -1,0 +1,63 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load gravatar
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb task.application.name "app_details" task.application.safe_id
+  - breadcrumb "Tasks" "app_tasks" task.application.safe_id
+  - breadcrumb task.title "task_details" task.safe_id
+
+
+- block content
+
+  .progress
+    #task-progress.progress-bar{'role':'progressbar', 'aria-valuenow':'{{ task.progress }}', 'aria-valuemin':'0', 'aria-valuemax':'100', 'style':'width: {{ task.progress }}%;'}
+      %span.sr-only
+
+  %form{'role':'form'}
+    %textarea#task-messages{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
+
+
+  :javascript
+    var offset = 0;
+    var progress = {{ task.progress }};
+
+    function messages_callback(data) {
+      if (progress != data.progress) {
+        $('#task-progress').attr('aria-valuenow', data.progress).attr('style', 'width: ' + data.progress + '%;');;
+        progress = data.progress;
+      }
+
+      var elems = new Array();
+      $.each(data.messages, function(i, item) {
+        offset++;
+        elem = new Array();
+        elem.push(moment(item.timestamp).format('DD-MM-YYYY HH:mm:ss'));
+        elem.push(' - ');
+        elem.push(item.level);
+        elem.push(' - ');
+        elem.push(item.message);
+        elems.push(elem.join(''));
+      });
+      $('#task-messages').append(elems.join('\n'));
+      $('#task-messages').animate({
+        scrollTop:$('#task-messages')[0].scrollHeight - $('#task-messages').height()
+      }, 300);
+    }
+
+    function update_messages() {
+      Dajaxice.upaas_admin.apps.applications.task_messages(messages_callback, {
+        "task_id":"{{ task.safe_id }}",
+        "offset": offset
+      });
+    }
+
+    $(document).ready(function(){
+      window.setTimeout(update_messages, 1000);
+      window.setInterval(update_messages, 3000);
+    });

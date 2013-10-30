@@ -40,4 +40,7 @@ urlpatterns = patterns(
         name='package_details'),
     url(r'^pkg/(?P<slug>[-_\w]+)/rollback$', RollbackApplicationView.as_view(),
         name='package_rollback'),
+
+    url(r'^task/(?P<slug>[-_\w]+)$', ApplicationTaskDetailsView.as_view(),
+        name='app_task_details'),
 )
