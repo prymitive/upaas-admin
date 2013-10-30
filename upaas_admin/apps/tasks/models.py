@@ -78,6 +78,7 @@ class Task(Document):
         Set all attributes needed when unlocking locked task. Unlocking happens
         when worker finishes running task or it has failed.
         """
+        self.remove_logger()
         self.reload()
         self.date_finished = datetime.datetime.now()
         del self.locked_by_backend
@@ -121,13 +122,13 @@ class Task(Document):
             self.parent.__class__.objects(id=self.parent.id).update_one(
                 set__locked_since=datetime.datetime.now(),
                 set__status=TaskStatus.running)
+
+        self.add_logger()
         try:
-            self.before_execute()
             for progress in self.job():
                 if progress is not None:
                     log.info(u"Task progress: %d%%" % progress)
                     self.update(set__progress=progress)
-            self.after_execute()
         except Exception, e:
             log.error(u"Task %s failed: %s" % (self.id, e))
             self.fail_task()
@@ -167,18 +168,6 @@ class Task(Document):
         Executed when task finishes. In case of group of tasks it will be
         executed by last virtual task subtask, once it has finished executing
         its job. If task is parentless it will call cleanup by itself.
-        """
-        pass
-
-    def before_execute(self):
-        """
-        Hook that can be used by task class to prepare for execution.
-        """
-        pass
-
-    def after_execute(self):
-        """
-        Hook that can be used by task class to cleanup after execution.
         """
         pass
 
