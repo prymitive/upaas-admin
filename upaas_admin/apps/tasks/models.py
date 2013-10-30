@@ -20,6 +20,7 @@ from upaas.processes import is_pid_running
 from upaas_admin.apps.tasks.constants import (
     STATUS_CHOICES, ACTIVE_TASK_STATUSES, TaskStatus)
 from upaas_admin.apps.tasks.registry import find_task_class
+from upaas_admin.common.logger import MongoLogHandler
 
 
 log = logging.getLogger(__name__)
@@ -90,6 +91,22 @@ class Task(Document):
         self.unlock_task()
         self.status = TaskStatus.failed
         self.save()
+
+    def add_logger(self):
+        """
+        Add log handler that will store all logs in mongo.
+        """
+        self.log_handler = MongoLogHandler(self)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.log_handler)
+
+    def remove_logger(self):
+        """
+        Remove mongo log handler.
+        """
+        self.log_handler.flush()
+        root_logger = logging.getLogger()
+        root_logger.removeHandler(self.log_handler)
 
     def execute(self):
         """
