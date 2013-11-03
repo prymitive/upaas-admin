@@ -9,7 +9,7 @@ from django.views.generic import FormView
 from django.core.urlresolvers import reverse
 
 from upaas_admin.apps.applications.models import Application, Package
-from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.tasks.base import ApplicationTask
 from upaas_admin.common.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                       MongoDetailView)
 
@@ -29,9 +29,7 @@ class OwnedPackagesMixin(object):
     """
 
     def get_queryset(self):
-        return Package.objects.filter(
-            application__in=Application.objects.filter(
-                owner=self.request.user))
+        return Package.objects(application__in=self.request.user.applications)
 
 
 class OwnedAppTasksMixin(object):
@@ -40,9 +38,8 @@ class OwnedAppTasksMixin(object):
     """
 
     def get_queryset(self):
-        return Task.find('ApplicationTask',
-                         application__in=Application.objects.filter(
-                             owner=self.request.user))
+        return ApplicationTask.objects(
+            application__in=self.request.user.applications)
 
 
 class AppActionView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,

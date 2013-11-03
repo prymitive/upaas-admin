@@ -53,7 +53,11 @@ function tasks_callback(data) {
             } else {
                 menu.push('<li>');
             }
-            menu.push('<a href="' + Django.url('app_task_details', task.task_id) + '">');
+            if (task.subtasks.length > 0) {
+                menu.push('<a href="' + Django.url('app_tasks', task.application.id) + '">');
+            } else {
+                menu.push('<a href="' + Django.url('app_task_details', task.task_id) + '">');
+            }
             menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
             if (!task.pending || task.pending) {

@@ -133,9 +133,9 @@ class ApplicationTaskDetailsView(LoginRequiredMixin, OwnedAppTasksMixin,
                                  AppTemplatesDirMixin, MongoDetailView):
 
     template_name = 'task_details.html'
-    model = 'ApplicationTask'
     slug_field = 'id'
     context_object_name = 'task'
+    #TODO add support for virtual tasks
 
 
 class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
