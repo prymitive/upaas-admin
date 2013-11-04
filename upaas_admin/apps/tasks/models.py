@@ -97,6 +97,8 @@ class Task(Document):
     can_retry = False
     max_retries = 2
 
+    log_handler = None
+
     meta = {
         'abstract': True,
         'ordering': ['-locked_since', '-date_finished', '-date_created'],
@@ -114,7 +116,8 @@ class Task(Document):
         Set all attributes needed when unlocking locked task. Unlocking happens
         when worker finishes running task or it has failed.
         """
-        self.remove_logger()
+        if self.log_handler:
+            self.remove_logger()
         self.reload()
         self.date_finished = datetime.datetime.now()
         del self.locked_by_backend
