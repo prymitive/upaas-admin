@@ -1,1 +1,16 @@
-add bootstrap-os command
+# ADMIN
+* add bootstrap-os command
+* carbon stats
+* custom domains (dns auth)
+* task retries
+* finish app task views
+* finish scheduler limits
+* cgroups
+
+# CLIENT
+* track task logs
+* edit run plans
+
+# METADATA
+* adding files
+* cron tasks
