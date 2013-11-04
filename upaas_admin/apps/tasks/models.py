@@ -91,6 +91,12 @@ class Task(Document):
     worker_hostname = gethostname()
     worker_pid = os.getpid()
 
+    #TODO add retry support
+    retries = IntField()
+
+    can_retry = False
+    max_retries = 2
+
     meta = {
         'abstract': True,
         'ordering': ['-locked_since', '-date_finished', '-date_created'],
