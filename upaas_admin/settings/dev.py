@@ -82,7 +82,7 @@ DEBUG_TOOLBAR_PANELS = (
     'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
     'debug_toolbar.panels.template.TemplateDebugPanel',
     'debug_toolbar.panels.signals.SignalDebugPanel',
-    'debug_toolbar.panels.logger.LoggingPanel',
+    #'debug_toolbar.panels.logger.LoggingPanel',
     'template_timings_panel.panels.TemplateTimings.TemplateTimings',
     'debug_toolbar.panels.sql.SQLDebugPanel',
     'debug_toolbar_mongo.panel.MongoDebugPanel',
