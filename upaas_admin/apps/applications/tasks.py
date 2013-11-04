@@ -163,7 +163,7 @@ class StopPackageTask(PackageTask):
 
 
 @register
-class UpdatePackageTask(PackageTask):
+class UpgradePackageTask(PackageTask):
     #TODO add graceful update
 
     def job(self):
@@ -174,6 +174,17 @@ class UpdatePackageTask(PackageTask):
             raise
         yield 50
 
+        self.package.save_vassal_config(self.backend)
+        yield 75
+        self.package.cleanup_application_packages()
+        yield 100
+
+
+@register
+class UpdateVassalTask(PackageTask):
+    #TODO add graceful update
+
+    def job(self):
         self.package.save_vassal_config(self.backend)
         yield 75
         self.package.cleanup_application_packages()

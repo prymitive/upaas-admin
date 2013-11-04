@@ -1,0 +1,18 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb app.name "app_details" app.safe_id
+  - breadcrumb "Edit application" "app_edit_run_plan"
+
+
+- block content
+
+  .well
+    - crispy form

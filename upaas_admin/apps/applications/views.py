@@ -176,22 +176,22 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
     context_object_name = 'app'
 
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.run_plan:
-            return application_error(request, self.object,
+        self.app = self.get_object()
+        if self.app.run_plan:
+            return application_error(request, self.app,
                                      _(u"Application is already started"))
-        elif not self.object.can_start:
-            return application_error(request, self.object,
+        elif not self.app.can_start:
+            return application_error(request, self.app,
                                      _(u"Application cannot be started yet"))
         return super(StartApplicationView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if self.object.run_plan:
-            return application_error(request, self.object,
+        self.app = self.get_object()
+        if self.app.run_plan:
+            return application_error(request, self.app,
                                      _(u"Application is already started"))
-        elif not self.object.can_start:
-            return application_error(request, self.object,
+        elif not self.app.can_start:
+            return application_error(request, self.app,
                                      _(u"Application cannot be started yet"))
         return super(StartApplicationView, self).post(request, *args, **kwargs)
 
@@ -211,7 +211,6 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
         return context
 
     def get_form(self, form_class):
-        self.app = self.get_object()
         form = super(StartApplicationView, self).get_form(form_class)
         form.user = self.request.user
         form.helper.form_action = reverse('app_start', args=[self.app.safe_id])
@@ -221,6 +220,65 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
         form.instance.application = self.app
         ret = super(StartApplicationView, self).form_valid(form)
         self.app.start_application()
+        return ret
+
+
+class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
+                                 AppTemplatesDirMixin, UpdateView,
+                                 SingleObjectMixin):
+    template_name = 'edit_run_plan.html'
+    model = Application
+    form_class = ApplicationRunPlanForm
+    slug_field = 'id'
+    context_object_name = 'app'
+
+    def get(self, request, *args, **kwargs):
+        self.app = self.get_object()
+        if not self.app.run_plan:
+            return application_error(request, self.app,
+                                     _(u"Application is stopped"))
+        return super(EditApplicationRunPlanView, self).get(request, *args,
+                                                           **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.app = self.get_object()
+        if not self.app.run_plan:
+            return application_error(request, self.app,
+                                     _(u"Application is stopped"))
+        return super(EditApplicationRunPlanView, self).post(request, *args,
+                                                            **kwargs)
+
+    def get_object(self, queryset=None):
+        try:
+            return super(EditApplicationRunPlanView, self).get_object(
+                queryset=queryset)
+        except (ValidationError, DoesNotExist):
+            raise Http404
+
+    def get_success_url(self):
+        return reverse('app_details', args=[self.app.safe_id])
+
+    def get_context_data(self, **kwargs):
+        context = super(EditApplicationRunPlanView, self).get_context_data(
+            **kwargs)
+        context['app'] = self.app
+        return context
+
+    def get_form_kwargs(self):
+        ret = super(EditApplicationRunPlanView, self).get_form_kwargs()
+        ret['instance'] = self.app.run_plan
+        return ret
+
+    def get_form(self, form_class):
+        form = super(EditApplicationRunPlanView, self).get_form(form_class)
+        form.user = self.request.user
+        form.helper.form_action = reverse('app_edit_run_plan',
+                                          args=[self.app.safe_id])
+        return form
+
+    def form_valid(self, form):
+        ret = super(EditApplicationRunPlanView, self).form_valid(form)
+        self.app.update_application()
         return ret
 
 
@@ -291,4 +349,4 @@ class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
             app = self.object.application
             app.current_package = self.object
             app.save()
-            app.update_application()
+            app.upgrade_application()

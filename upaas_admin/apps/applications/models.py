@@ -503,11 +503,29 @@ class Application(Document):
                          backend=backend, application=self,
                          package=self.current_package, **kwargs)
 
-    def update_application(self):
+    def upgrade_application(self):
         if self.current_package:
             if not self.run_plan:
                 return
 
+            kwargs = {}
+            if len(self.run_plan.backends) > 1:
+                vtask = VirtualTask(
+                    title=_(u"Upgrading application {name}").format(
+                        name=self.name))
+                vtask.save()
+                kwargs['parent'] = vtask
+
+            #TODO add wait for subscription
+            for backend in self.run_plan.backends:
+                Task.put('UpgradePackageTask',
+                         title=_(u"Upgrading application {name}").format(
+                             name=self.name),
+                         backend=backend, application=self,
+                         package=self.current_package, **kwargs)
+
+    def update_application(self):
+        if self.run_plan:
             kwargs = {}
             if len(self.run_plan.backends) > 1:
                 vtask = VirtualTask(
@@ -518,8 +536,8 @@ class Application(Document):
 
             #TODO add wait for subscription
             for backend in self.run_plan.backends:
-                Task.put('UpdatePackageTask',
-                         title=_(u"Updating application {name}").format(
+                Task.put('UpdateVassalTask',
+                         title=_(u"Updating application {name} config").format(
                              name=self.name),
                          backend=backend, application=self,
                          package=self.current_package, **kwargs)

@@ -33,6 +33,8 @@ urlpatterns = patterns(
 
     url(r'^(?P<slug>[-_\w]+)/start$', StartApplicationView.as_view(),
         name='app_start'),
+    url(r'^(?P<slug>[-_\w]+)/edit$', EditApplicationRunPlanView.as_view(),
+        name='app_edit_run_plan'),
     url(r'^(?P<slug>[-_\w]+)/stop$', StopApplicationView.as_view(),
         name='app_stop'),
 

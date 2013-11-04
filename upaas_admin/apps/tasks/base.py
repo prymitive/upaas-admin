@@ -59,5 +59,4 @@ class PackageTask(BackendTask, ApplicationTask):
     meta = {
         'allow_inheritance': True,
         'indexes': ['application', 'backend'],
-        'collection': 'tasks',
     }
