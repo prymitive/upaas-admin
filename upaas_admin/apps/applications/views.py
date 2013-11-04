@@ -224,6 +224,24 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
         return ret
 
 
+class StopApplicationView(AppActionView):
+
+    template_name = 'stop.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    form_class = StopApplicationForm
+
+    def validate_action(self, request):
+        if not self.object.run_plan:
+            return application_error(request, self.object,
+                                     _(u"Application is already stopped"))
+
+    def action(self, form):
+        if self.object:
+            self.object.stop_application()
+
+
 class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
                         AppTemplatesDirMixin, MongoDetailView):
 
@@ -249,24 +267,6 @@ class BuildPackageView(AppActionView):
         if self.object and self.object.metadata:
             self.task = self.object.build_package(
                 force_fresh=form.cleaned_data['force_fresh'])
-
-
-class StopApplicationView(AppActionView):
-
-    template_name = 'stop.html'
-    model = Application
-    slug_field = 'id'
-    context_object_name = 'app'
-    form_class = StopApplicationForm
-
-    def validate_action(self, request):
-        if not self.object.run_plan:
-            return application_error(request, self.object,
-                                     _(u"Application is already stopped"))
-
-    def action(self, form):
-        if self.object:
-            self.object.stop_application()
 
 
 class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
