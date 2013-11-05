@@ -549,11 +549,18 @@ class Application(Document):
 
             #TODO add wait for subscription
             for backend in self.run_plan.backends:
-                Task.put('UpdateVassalTask',
-                         title=_(u"Updating application {name} config").format(
-                             name=self.name),
-                         backend=backend, application=self,
-                         package=self.current_package, **kwargs)
+                if backend in current_backends:
+                    Task.put('UpdateVassalTask',
+                             title=_(u"Updating application {name} "
+                                     u"config").format(name=self.name),
+                             backend=backend, application=self,
+                             package=self.current_package, **kwargs)
+                else:
+                    Task.put('StartPackageTask',
+                             title=_(u'Starting application {name}').format(
+                                 name=self.name),
+                             backend=backend, application=self,
+                             package=self.current_package, **kwargs)
 
             for backend in current_backends:
                 if backend not in new_backends:
