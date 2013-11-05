@@ -14,8 +14,8 @@
       - for page in page_obj.pages
         - if page
           - ifequal page page_obj.number
-            %li
-              %a#upaas-pagination-active{'href':'#'}
+            %li.active
+              %a{'href':'#'}
                 = page
           - else
             %li

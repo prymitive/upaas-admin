@@ -23,10 +23,8 @@ body {
 }
 
 
-// spacelab theme seems to have ugly active item
-#upaas-pagination-active {
-  border-color: @label-info-bg;
-  background-color: @label-info-bg;
-  color: @label-color;
-  font-weight: bold;
+// this seems to be missing/overriden for some reason
+.pagination .active > a,
+.pagination .active > a:hover {
+  border-color: @pagination-border;
 }
