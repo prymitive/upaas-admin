@@ -21,6 +21,7 @@ from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.applications.models import Package
 from upaas_admin.apps.tasks.base import ApplicationTask, PackageTask
+from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.tasks.registry import register
 
 
@@ -153,13 +154,17 @@ class StopPackageTask(PackageTask):
             if os.path.isdir(oldpkg.package_path):
                 _remove_pkg_dir(oldpkg.package_path)
 
+        ApplicationRunPlan.objects(id=self.application.run_plan.id).update_one(
+            pull__backends=self.backend)
+
         log.info(u"Application '%s' stopped" % self.application.name)
         yield 100
 
     def cleanup(self):
-        if self.application.run_plan:
+        run_plan = self.application.run_plan
+        if run_plan and not run_plan.backends:
             log.info(u"Removing '%s' run plan" % self.application.name)
-            self.application.run_plan.delete()
+            run_plan.delete()
 
 
 @register
