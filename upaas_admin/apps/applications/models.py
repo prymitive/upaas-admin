@@ -540,7 +540,7 @@ class Application(Document):
                 set__backends=new_backends)
 
             kwargs = {}
-            if len(self.run_plan.backends) > 1:
+            if len(current_backends) > 1 or len(new_backends) > 1:
                 vtask = VirtualTask(
                     title=_(u"Updating application {name}").format(
                         name=self.name))
