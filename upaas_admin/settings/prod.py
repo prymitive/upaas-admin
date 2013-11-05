@@ -215,7 +215,8 @@ PIPELINE_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
 )
 
-PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.jsmin.JSMinCompressor'
+#FIXME disabled js compression for now, fix it and re-enable!
+PIPELINE_JS_COMPRESSOR = None
 
 PIPELINE_CSS = {
     'base': {
