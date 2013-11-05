@@ -526,6 +526,19 @@ class Application(Document):
 
     def update_application(self):
         if self.run_plan:
+
+            run_plan = self.run_plan
+
+            current_backends = list(run_plan.backends)
+            new_backends = select_best_backends(run_plan)
+            if not new_backends:
+                log.error(_(u"Can't update '{name}', no backend "
+                            u"available").format(name=self.name))
+                return
+
+            ApplicationRunPlan.objects(id=self.run_plan.id).update_one(
+                set__backends=new_backends)
+
             kwargs = {}
             if len(self.run_plan.backends) > 1:
                 vtask = VirtualTask(
@@ -541,6 +554,17 @@ class Application(Document):
                              name=self.name),
                          backend=backend, application=self,
                          package=self.current_package, **kwargs)
+
+            for backend in current_backends:
+                if backend not in new_backends:
+                    log.info(_(u"Stopping {name} on old backend "
+                               u"{backend}").format(name=self.name,
+                                                    backend=backend.name))
+                    Task.put('StopPackageTask',
+                             title=_(u"Stopping application {name}").format(
+                                 name=self.name),
+                             backend=backend, application=self,
+                             package=self.current_package, **kwargs)
 
     def trim_package_files(self):
         """
