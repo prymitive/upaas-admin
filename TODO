@@ -7,6 +7,7 @@
 * finish scheduler limits
 * cgroups
 * task workers should ping admin
+* tag (?) log messages so not everything will show up in client ui
 
 # CLIENT
 * track task logs
