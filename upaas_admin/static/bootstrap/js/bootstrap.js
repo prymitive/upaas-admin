@@ -6,6 +6,8 @@
  * Designed and built with all the love in the world by @mdo and @fat.
  */
 
+if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery") }
+
 /* ========================================================================
  * Bootstrap: transition.js v3.0.0
  * http://getbootstrap.com/javascript/#transitions

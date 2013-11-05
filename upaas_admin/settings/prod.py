@@ -215,6 +215,8 @@ PIPELINE_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
 )
 
+PIPELINE_JS_COMPRESSOR = None
+
 PIPELINE_CSS = {
     'base': {
         'source_filenames': (
