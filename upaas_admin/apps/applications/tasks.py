@@ -154,6 +154,7 @@ class StopPackageTask(PackageTask):
             if os.path.isdir(oldpkg.package_path):
                 _remove_pkg_dir(oldpkg.package_path)
 
+        self.backend.delete_application_ports(self)
         ApplicationRunPlan.objects(id=self.application.run_plan.id).update_one(
             pull__backends=self.backend)
 
