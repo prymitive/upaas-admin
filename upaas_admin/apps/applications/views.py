@@ -27,7 +27,8 @@ from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
     UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm,
     RollbackApplicationForm)
-from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
+from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
+                                              EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
 
 
@@ -228,7 +229,7 @@ class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
                                  SingleObjectMixin):
     template_name = 'edit_run_plan.html'
     model = Application
-    form_class = ApplicationRunPlanForm
+    form_class = EditApplicationRunPlanForm
     slug_field = 'id'
     context_object_name = 'app'
 

@@ -46,3 +46,12 @@ class ApplicationRunPlanForm(CrispyMongoForm):
             raise forms.ValidationError(_(u"Enabling high availability mode "
                                           u"requires at least 2 workers"))
         return worker_limit
+
+
+class EditApplicationRunPlanForm(ApplicationRunPlanForm):
+
+    submit_label = 'Save'
+
+    class Meta:
+        document = ApplicationRunPlan
+        exclude = ('application', 'backends')
