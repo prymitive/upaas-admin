@@ -8,7 +8,7 @@
 
   - if app.run_plan
     #stats-container
-      %h1.text-center
+      %h1.text-center.text-muted
         %i.fa.fa-refresh.fa-spin
   - else
     %h3.text-center
@@ -21,7 +21,7 @@
     function instances_callback(data) {
       var elems = UPAAS.instances_data_from_uwsgi_stats(data);
       if (elems.length == 0) {
-        elems.push('<h1 class="text-center">');
+        elems.push('<h1 class="text-center text-muted">');
         elems.push('<i class="fa fa-refresh fa-spin"></i>');
         elems.push('</h1>');
         elems.push('<h3 class="text-center">');
