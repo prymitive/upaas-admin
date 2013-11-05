@@ -6,6 +6,7 @@
 * finish app task views
 * finish scheduler limits
 * cgroups
+* task workers should ping admin
 
 # CLIENT
 * track task logs
