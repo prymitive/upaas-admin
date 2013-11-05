@@ -215,8 +215,6 @@ PIPELINE_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
 )
 
-PIPELINE_JS_COMPRESSOR = None
-
 PIPELINE_CSS = {
     'base': {
         'source_filenames': (
@@ -242,7 +240,6 @@ PIPELINE_JS = {
             'bootstrap/js/bootstrap.js',
             'js/djangojs/django.js',
             'moment-js/moment+langs.js',
-            'upaas/*.js',
         ),
         'output_filename': 'js/base.js',
     },
@@ -251,6 +248,12 @@ PIPELINE_JS = {
             'bootstrap/js/html5shiv.js',
         ),
         'output_filename': 'js/html5shiv.js',
+    },
+    'upaas': {
+        'source_filenames': (
+            'upaas/*.js',
+        ),
+        'output_filename': 'js/upaas.js',
     },
     'zeroclipboard': {
         'source_filenames': (
