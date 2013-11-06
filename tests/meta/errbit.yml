@@ -1,0 +1,61 @@
+os:
+  Ubuntu:
+    packages:
+      - git-core
+      - rake
+      - libxml2
+      - libxml2-dev
+      - libxslt-dev
+      - libcurl4-openssl-dev
+
+
+interpreter:
+  type: ruby
+  versions:
+    - 1.9.3
+    - 2.0.0
+
+
+repository:
+  clone: git clone --depth=10 --quiet git://github.com/errbit/errbit.git %destination%
+  update:
+    - rm -f Gemfile.lock
+    - git reset --hard
+    - git pull
+  info: git log -n 1
+  changelog: git log --no-merges %old%..%new%"
+
+
+actions:
+  setup:
+    before: |
+      cp config/config.example.yml config/config.yml
+    main:
+      - gem install bundler
+      - bundle install --without test development
+    after: |
+      if [ -n "$UPAAS_FRESH_PACKAGE" ] ; then
+        echo ">>> Generating secret token"
+        echo "Errbit::Application.config.secret_token = '$(bundle exec rake secret)'" > config/initializers/__secret_token.rb
+        echo ">>> Seeding database"
+        rake db:seed
+        echo ">>> Creating MongoDB indexes if needed"
+        rake db:mongoid:create_indexes
+      fi
+      echo ">>> Migrating database"
+      rake db:migrate
+      echo ">> Precompilling assets"
+      rake assets:precompile
+
+files:
+  config/mongoid.yml: |
+    production:
+      sessions:
+        default:
+          database: errbit
+          hosts:
+            - 'upaas-dev:27017'
+          username: errbit
+          password: errB1t
+      options:
+        identity_map_enabled: true
