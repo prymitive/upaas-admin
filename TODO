@@ -8,6 +8,7 @@
 * cgroups
 * task workers should ping admin
 * tag (?) log messages so not everything will show up in client ui
+* when backend worker starts it can check if upaas/vassal config is changed and try to update apps
 
 # CLIENT
 * track task logs
