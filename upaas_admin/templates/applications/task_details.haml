@@ -19,8 +19,15 @@
     #task-progress.progress-bar{'role':'progressbar', 'aria-valuenow':'{{ task.progress }}', 'aria-valuemin':'0', 'aria-valuemax':'100', 'style':'width: {{ task.progress }}%;'}
       %span.sr-only
 
-  %form{'role':'form'}
-    %textarea#task-messages{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
+  .upaas-messages-table-area
+    %table#upaas-task-messages-table.table.table-striped.table-condensed
+      %thead
+        %tr
+          %th
+            - trans "Created"
+          %th
+            - trans "Message"
+      %tbody.small
 
 
   :javascript
@@ -37,17 +44,28 @@
       $.each(data.messages, function(i, item) {
         offset++;
         elem = new Array();
-        elem.push(moment(item.timestamp).format('DD-MM-YYYY HH:mm:ss'));
-        elem.push(' - ');
-        elem.push(item.level);
-        elem.push(' - ');
-        elem.push(item.message);
+        var textClass = '';
+        switch(item.level) {
+          case "WARNING":
+            textClass = "warning";
+            break;
+          case "ERROR":
+            textClass = 'danger';
+            break;
+        }
+        elem.push('<tr class="' + textClass + '">');
+        elem.push('<td class="upaas-task-messages-col-created">'
+                  + moment(item.timestamp).fromNow() + '</td>');
+        elem.push('<td>' + item.message + '</td>');
+        elem.push('</tr>');
         elems.push(elem.join(''));
       });
-      $('#task-messages').append(elems.join('\n'));
-      $('#task-messages').animate({
-        scrollTop:$('#task-messages')[0].scrollHeight - $('#task-messages').height()
-      }, 300);
+      if (elems.length > 0) {
+        $('#upaas-task-messages-table tbody').append(elems.join('\n'));
+        $(".upaas-messages-table-area").animate({
+          scrollTop: $('#upaas-task-messages-table tr:last').position().top
+          }, 300);
+      }
     }
 
     function update_messages() {
