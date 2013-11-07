@@ -28,8 +28,7 @@ repository:
 
 actions:
   setup:
-    before: |
-      cp config/config.example.yml config/config.yml
+    before: cp config/config.example.yml config/config.yml
     main:
       - gem install bundler
       - bundle install --without test development
@@ -47,7 +46,7 @@ files:
       rake db:mongoid:create_indexes || exit 1
     fi
     echo ">>> Migrating database"
-    rake db:migrate || exit 1
+    rake db:migrate
     echo ">> Precompilling assets"
     rake assets:precompile || exit 1
   config/mongoid.yml: |
