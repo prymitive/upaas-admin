@@ -33,21 +33,23 @@ actions:
     main:
       - gem install bundler
       - bundle install --without test development
-    after: |
-      if [ -n "$UPAAS_FRESH_PACKAGE" ] ; then
-        echo ">>> Generating secret token"
-        echo "Errbit::Application.config.secret_token = '$(bundle exec rake secret)'" > config/initializers/__secret_token.rb
-        echo ">>> Seeding database"
-        rake db:seed
-        echo ">>> Creating MongoDB indexes if needed"
-        rake db:mongoid:create_indexes
-      fi
-      echo ">>> Migrating database"
-      rake db:migrate
-      echo ">> Precompilling assets"
-      rake assets:precompile
+    after: /bin/bash /tmp/after.sh
+
 
 files:
+  /tmp/after.sh: |
+    if [ -n "$UPAAS_FRESH_PACKAGE" ]; then
+      echo ">>> Generating secret token"
+      echo "Errbit::Application.config.secret_token = '$(bundle exec rake secret)'" > config/initializers/__secret_token.rb
+      echo ">>> Seeding database"
+      rake db:seed || exit 1
+      echo ">>> Creating MongoDB indexes if needed"
+      rake db:mongoid:create_indexes || exit 1
+    fi
+    echo ">>> Migrating database"
+    rake db:migrate || exit 1
+    echo ">> Precompilling assets"
+    rake assets:precompile || exit 1
   config/mongoid.yml: |
     production:
       sessions:

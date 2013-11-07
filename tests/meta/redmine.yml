@@ -32,17 +32,7 @@ actions:
     main:
       - gem install bundler
       - bundle install --without test development
-    after: |
-      if [ -n "$UPAAS_FRESH_PACKAGE" ] ; then
-        echo ">>> Generating secret token"
-        rake generate_secret_token
-      fi
-      echo ">>> Migrating database"
-      rake db:migrate
-      if [ -n "$UPAAS_FRESH_PACKAGE" ] ; then
-        echo ">>> Loading default data"
-        rake redmine:load_default_data
-      fi
+    after: /bin/bash /tmp/after.sh
 
 
 env:
@@ -50,6 +40,17 @@ env:
 
 
 files:
+  /tmp/after.sh: |
+    if [ -n "$UPAAS_FRESH_PACKAGE" ] ; then
+      echo ">>> Generating secret token"
+      rake generate_secret_token || exit 1
+    fi
+    echo ">>> Migrating database"
+    rake db:migrate || exit 1
+    if [ -n "$UPAAS_FRESH_PACKAGE" ] ; then
+      echo ">>> Loading default data"
+      rake redmine:load_default_data || exit 1
+    fi
   config/database.yml: |
     production:
       adapter: sqlite3
