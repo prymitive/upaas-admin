@@ -255,7 +255,7 @@ PIPELINE_JS = {
     },
     'zeroclipboard': {
         'source_filenames': (
-            'zeroclipboard/ZeroClipboard.js',
+            'zeroclipboard/ZeroClipboard.min.js',
         ),
         'output_filename': 'js/zeroclipboard.js',
     },
