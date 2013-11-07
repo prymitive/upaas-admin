@@ -241,7 +241,7 @@ PIPELINE_JS = {
         'source_filenames': (
             'jquery/jquery-2.0.3.min.js',
             'bootstrap/js/bootstrap.min.js',
-            'js/djangojs/django.js',
+            'js/djangojs/django.min.js',
             'moment-js/moment-with-langs.min.js',
             'upaas/*.js',
         ),
