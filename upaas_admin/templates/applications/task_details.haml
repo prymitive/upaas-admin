@@ -63,7 +63,7 @@
       if (elems.length > 0) {
         $('#upaas-task-messages-table tbody').append(elems.join('\n'));
         $(".upaas-messages-table-area").animate({
-          scrollTop: $('#upaas-task-messages-table tr:last').position().top
+          scrollTop: $(".upaas-messages-table-area").get(0).scrollHeight
           }, 300);
       }
     }
