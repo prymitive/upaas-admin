@@ -10,6 +10,8 @@
 * tag (?) log messages so not everything will show up in client ui
 * when backend worker starts it can check if upaas/vassal config is changed and try to update apps
 * set task titles on task classes, not as per task field
+* show metadata in package view
+* allow to set app metadata from package
 
 # CLIENT
 * track task logs
