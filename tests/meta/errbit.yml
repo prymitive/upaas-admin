@@ -17,7 +17,7 @@ interpreter:
 
 
 repository:
-  clone: git clone --depth=10 --quiet git://github.com/errbit/errbit.git %destination%
+  clone: git clone --depth=10 --quiet -b 0-2-stable git://github.com/errbit/errbit.git %destination%
   update:
     - rm -f Gemfile.lock
     - git reset --hard
