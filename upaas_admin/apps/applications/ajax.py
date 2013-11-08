@@ -120,12 +120,19 @@ def user_tasks(request):
 @dajaxice_register
 @login_required
 def task_messages(request, task_id, offset):
-    messages = []
-    progress = 0
+    ret = {'is_pending': None, 'is_running': None, 'is_finished': None,
+           'is_failed': None, 'is_successful': None, 'messages': [],
+           'progress': 0}
     task = ApplicationTask.objects(
         id=task_id, application__in=request.user.applications).first()
     if task:
-        progress = task.progress
+        ret['progress'] = task.progress
+        ret['is_pending'] = task.is_pending
+        ret['is_running'] = task.is_running
+        ret['is_finished'] = task.is_finished
+        ret['is_failed'] = task.is_failed
+        ret['is_successful'] = task.is_successful
+        messages = []
         for msg in task.messages[int(offset):]:
             messages.append({
                 'timestamp': msg.timestamp.isoformat(),
@@ -133,5 +140,6 @@ def task_messages(request, task_id, offset):
                 'level': logging.getLevelName(msg.level),
                 'message': msg.message,
             })
+        ret['messages'] = messages
 
-    return dumps({'messages': messages, 'progress': progress})
+    return dumps(ret)

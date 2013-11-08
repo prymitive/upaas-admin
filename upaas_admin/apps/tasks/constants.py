@@ -10,6 +10,9 @@ ICON_STARTED = 'fa fa-refresh fa-spin'
 ICON_FAILED = 'fa fa-times-circle-o'
 ICON_SUCCESSFUL = 'fa fa-check-circle-o'
 
+# fallback icon, just in case we get unsupported string as status
+ICON_UNKNOWN = 'fa fa-question-circle'
+
 
 class TaskStatus:
     pending = 'PENDING'

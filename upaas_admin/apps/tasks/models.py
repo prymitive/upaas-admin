@@ -17,8 +17,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from upaas.processes import is_pid_running
 
-from upaas_admin.apps.tasks.constants import (
-    STATUS_CHOICES, ACTIVE_TASK_STATUSES, TaskStatus)
+from upaas_admin.apps.tasks.constants import *
 from upaas_admin.apps.tasks.registry import find_task_class
 
 
@@ -110,6 +109,38 @@ class Task(Document):
     @property
     def safe_id(self):
         return str(self.id)
+
+    @property
+    def icon_class(self):
+        if self.is_pending:
+            return ICON_PENDING
+        elif self.is_running:
+            return ICON_STARTED
+        elif self.is_failed:
+            return ICON_FAILED
+        elif self.is_successful:
+            return ICON_SUCCESSFUL
+        return ICON_UNKNOWN
+
+    @property
+    def is_pending(self):
+        return self.status == TaskStatus.pending
+
+    @property
+    def is_running(self):
+        return self.status == TaskStatus.running
+
+    @property
+    def is_finished(self):
+        return self.status in FINISHED_TASKS_STATUSES
+
+    @property
+    def is_failed(self):
+        return self.status == TaskStatus.failed
+
+    @property
+    def is_successful(self):
+        return self.status == TaskStatus.successful
 
     def unlock_task(self):
         """

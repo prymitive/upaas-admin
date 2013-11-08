@@ -15,7 +15,8 @@
 
 - block content
 
-  .progress.upaas-task-details-progressbar
+
+  .progress.upaas-task-details-progressbar.active.progress-striped
     #task-progress.progress-bar{'role':'progressbar', 'aria-valuenow':'{{ task.progress }}', 'aria-valuemin':'0', 'aria-valuemax':'100', 'style':'width: {{ task.progress }}%;'}
       %span.sr-only
 
@@ -24,20 +25,30 @@
       %thead
         %tr
           %th
-            - trans "Created"
+            - trans "Date"
           %th
             - trans "Message"
       %tbody.small
+        - if task.is_pending
+          %tr
+            %td.text-center{'colspan':'2'}
+              %h1.text-muted
+                %i#help-icon-pending{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
 
 
   :javascript
+    var timer;
     var offset = 0;
     var progress = {{ task.progress }};
+    var pending = true;
 
     function messages_callback(data) {
       if (progress != data.progress) {
         $('#task-progress').attr('aria-valuenow', data.progress).attr('style', 'width: ' + data.progress + '%;');;
         progress = data.progress;
+      }
+      if (offset == 0 && data.messages.length > 0) {
+        $('#upaas-task-messages-table tbody').html('');
       }
 
       var elems = new Array();
@@ -55,16 +66,27 @@
         }
         elem.push('<tr class="' + textClass + '">');
         elem.push('<td class="upaas-task-messages-col-created">'
-                  + moment(item.timestamp).fromNow() + '</td>');
+                  + moment(item.timestamp).calendar() + '</td>');
         elem.push('<td>' + item.message + '</td>');
         elem.push('</tr>');
         elems.push(elem.join(''));
       });
       if (elems.length > 0) {
         $('#upaas-task-messages-table tbody').append(elems.join('\n'));
-        $(".upaas-messages-table-area").animate({
-          scrollTop: $(".upaas-messages-table-area").get(0).scrollHeight
+        $('.upaas-messages-table-area').animate({
+          scrollTop: $('.upaas-messages-table-area').get(0).scrollHeight
           }, 300);
+      }
+
+      if (data.is_finished) {
+        window.clearInterval(timer);
+        $('.upaas-task-details-progressbar').removeClass('active progress-striped');
+        if (data.is_failed) {
+          $('#task-progress').addClass('progress-bar-danger');
+        }
+        if (data.is_successful) {
+          $('#task-progress').addClass('progress-bar-success');
+        }
       }
     }
 
@@ -76,6 +98,7 @@
     }
 
     $(document).ready(function(){
+      $('#help-icon-pending').tooltip({container:'.upaas-content'});
       window.setTimeout(update_messages, 1000);
-      window.setInterval(update_messages, 3000);
+      timer = window.setInterval(update_messages, 3000);
     });
