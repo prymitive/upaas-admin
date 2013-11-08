@@ -17,3 +17,7 @@
 # METADATA
 * cron tasks
 * database management
+
+# BUILDER
+* add repository info to results
+* add system info to results (installed packages?)
