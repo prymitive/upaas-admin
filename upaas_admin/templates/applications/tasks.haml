@@ -21,7 +21,10 @@
       - for task in app.active_tasks
         %tr
           %td
-            %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
+            - if task.is_pending
+              %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
+            - else
+              %i{'class':'={ task.icon_class }'}
           %td
             %a{'href':'{% url "app_task_details" task.safe_id %}'}
               = task.date_created
