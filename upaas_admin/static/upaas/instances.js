@@ -4,7 +4,7 @@
 */
 
 
-var UPAAS = {
+UPAAS = {
 
     instances_data_from_uwsgi_stats: function (data) {
         var elems = new Array();
