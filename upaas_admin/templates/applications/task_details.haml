@@ -33,9 +33,10 @@
           %tr
             %td.text-center{'colspan':'2'}
               %h1.text-muted
-                %i#help-icon-pending{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
+                %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
 
 
+- block js_bottom
   :javascript
     var timer;
     var offset = 0;
@@ -98,7 +99,6 @@
     }
 
     $(document).ready(function(){
-      $('#help-icon-pending').tooltip({container:'.upaas-content'});
       window.setTimeout(update_messages, 1000);
       timer = window.setInterval(update_messages, 3000);
     });

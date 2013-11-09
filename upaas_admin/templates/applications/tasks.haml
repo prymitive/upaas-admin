@@ -11,26 +11,25 @@
     %thead
       %tr
         %th
+          - trans "Status"
+        %th
           - trans "Created"
         %th
           - trans "Title"
-        %th
-          - trans "Status"
 
     %tbody
       - for task in app.active_tasks
         %tr
           %td
-            = task.date_created
+            %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
+          %td
+            %a{'href':'{% url "app_task_details" task.safe_id %}'}
+              = task.date_created
           %td
             = task.title
-          %td
-            = task.status
-
       - empty
         %tr
-          %td{'colspan':'4'}
-            .text-center
-              - trans "No active tasks"
+          %td.text-center{'colspan':'4'}
+            - trans "No active tasks"
 
   - include "partials/pagination_footer.html"
