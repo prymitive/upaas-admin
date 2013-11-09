@@ -400,28 +400,61 @@ class Application(Document):
         return bool(self.current_package and self.run_plan is None)
 
     @property
+    def tasks(self):
+        """
+        List of all tasks for this application.
+        """
+        return Task.find('ApplicationTask', application=self)
+
+    @property
     def active_tasks(self):
         """
-        Return list of all active (pending or running) application tasks.
+        List of all active (pending or running) application tasks.
         """
-        return Task.find('ApplicationTask', application=self,
-                         status__in=ACTIVE_TASK_STATUSES)
+        return self.tasks.filter(status__in=ACTIVE_TASK_STATUSES)
+
+    @property
+    def pending_tasks(self):
+        """
+        List of all pending tasks for this application.
+        """
+        return self.tasks.filter(status=TaskStatus.pending)
+
+    @property
+    def running_tasks(self):
+        """
+        List of all running tasks for this application.
+        """
+        return self.tasks.filter(status=TaskStatus.running)
+
+    @property
+    def build_tasks(self):
+        """
+        List of all build tasks for this application.
+        """
+        return Task.find('BuildPackageTask', application=self)
+
+    @property
+    def active_build_tasks(self):
+        """
+        List of all active (pending or running) build tasks for this
+        application.
+        """
+        return self.build_tasks.filter(status__in=ACTIVE_TASK_STATUSES)
 
     @property
     def pending_build_tasks(self):
         """
-        Returns list of pending build tasks for this application.
+        List of pending build tasks for this application.
         """
-        return Task.find('BuildPackageTask', application=self,
-                         status=TaskStatus.pending)
+        return self.build_tasks.filter(status=TaskStatus.pending)
 
     @property
     def running_build_tasks(self):
         """
         Returns list of running build tasks for this application.
         """
-        return Task.find('BuildPackageTask', application=self,
-                         status=TaskStatus.running)
+        return self.build_tasks.filter(status=TaskStatus.running)
 
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])
