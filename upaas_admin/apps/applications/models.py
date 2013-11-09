@@ -474,7 +474,6 @@ class Application(Document):
             task = Task.put('BuildPackageTask', title=title, application=self,
                             metadata=self.metadata,
                             system_filename=system_filename)
-            log.info(u"Created start task: %s" % task.safe_id)
             return task
 
     def start_application(self):
