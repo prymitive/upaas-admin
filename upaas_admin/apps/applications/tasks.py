@@ -57,7 +57,7 @@ class BuildPackageTask(ApplicationTask):
             builder = Builder(upaas_config, metadata_obj)
             for result in builder.build_package(
                     system_filename=self.system_filename):
-                log.info("Build progress: %d%%" % result.progress)
+                log.debug("Build progress: %d%%" % result.progress)
                 yield result.progress
                 build_result = result
         except exceptions.BuildError:

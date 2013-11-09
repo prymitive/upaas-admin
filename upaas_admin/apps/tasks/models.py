@@ -197,7 +197,7 @@ class Task(Document):
         try:
             for progress in self.job():
                 if progress is not None:
-                    log.info(u"Task progress: %d%%" % progress)
+                    log.debug(u"Task progress: %d%%" % progress)
                     self.update(set__progress=progress)
         except Exception, e:
             log.error(u"Task %s failed: %s" % (self.id, e))
