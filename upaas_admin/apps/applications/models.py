@@ -198,8 +198,7 @@ class Package(Document):
         # enable cheaper mode if we have multiple workers
         if self.application.run_plan.worker_limit > 1:
             options.append('\n# enabling cheaper mode')
-            options.append(
-                'cheaper = %d' % self.application.run_plan.worker_limit)
+            options.append('cheaper = 1')
 
         options.append('\n# starting base template')
         options.extend(_load_template(base_template))
