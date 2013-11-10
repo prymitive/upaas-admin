@@ -13,7 +13,7 @@ from upaas_admin.apps.servers.models import BackendServer
 log = logging.getLogger(__name__)
 
 
-def select_best_backend(exclude=None):
+def select_best_backend(exclude=None, application=None):
     """
     Return backend server that is the least loaded one or None if there is no
     enabled backend.
@@ -26,6 +26,10 @@ def select_best_backend(exclude=None):
                                          id__nin=[b.id for b in exclude]):
         if backend.run_plans:
             for run_plan in backend.run_plans:
+                if application and run_plan.application.id == application.id:
+                    # if this run plan is for application we are trying to find
+                    # backends than ignore it, prevents jumping apps on update
+                    continue
                 scores = dict(scores.items() +
                               {backend: run_plan.memory_limit}.items())
             log.debug(u"Backend %s has %d run plans, with final score %d" % (
@@ -65,7 +69,8 @@ def select_best_backends(run_plan):
 
     backends = []
     for i in xrange(0, num_backends):
-        backend = select_best_backend(exclude=backends)
+        backend = select_best_backend(exclude=backends,
+                                      application=run_plan.application)
         if backend:
             backends.append(backend)
         else:
