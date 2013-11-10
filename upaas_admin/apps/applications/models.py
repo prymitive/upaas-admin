@@ -195,6 +195,12 @@ class Package(Document):
         for key, value in envs.items():
             options.append('env = %s=%s' % (key, value))
 
+        # enable cheaper mode if we have multiple workers
+        if self.application.run_plan.worker_limit > 1:
+            options.append('\n# enabling cheaper mode')
+            options.append(
+                'cheaper = %d' % self.application.run_plan.worker_limit)
+
         options.append('\n# starting base template')
         options.extend(_load_template(base_template))
 
