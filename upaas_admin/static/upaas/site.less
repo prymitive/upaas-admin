@@ -28,3 +28,34 @@ body {
 .pagination .active > a:hover {
   border-color: @pagination-border;
 }
+
+
+// adds tip to dropdowns
+@upaas-dropdown-tip-size  : 8px;
+@upaas-dropdown-tip-offset: @upaas-dropdown-tip-size + 4;
+
+.dropdown-menu:before {
+  position: absolute;
+  top: -@upaas-dropdown-tip-size;
+  right: @upaas-dropdown-tip-offset;
+  display: inline-block;
+  border-right: @upaas-dropdown-tip-size solid transparent;
+  border-bottom: @upaas-dropdown-tip-size solid @dropdown-border;
+  border-left: @upaas-dropdown-tip-size solid transparent;
+  content: '';
+  left: auto;
+}
+
+.dropdown-menu:after {
+  @upaas-dropdown-tip-content-size: @upaas-dropdown-tip-size - 1;
+
+  position: absolute;
+  top: -@upaas-dropdown-tip-content-size;
+  left: auto;
+  display: inline-block;
+  border-right: @upaas-dropdown-tip-content-size solid transparent;
+  border-bottom: @upaas-dropdown-tip-content-size solid @dropdown-bg;
+  border-left: @upaas-dropdown-tip-content-size solid transparent;
+  content: '';
+  right: @upaas-dropdown-tip-offset + 1;
+}
