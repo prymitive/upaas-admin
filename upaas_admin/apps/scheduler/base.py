@@ -37,7 +37,7 @@ def select_best_backend(exclude=None, application=None):
         else:
             scores[backend] = 0
             log.debug(u"Backend %s has no run plans" % backend.name)
-    if scores:
+    if sum(scores.values()):
         log.debug(u"Backend scores: %s" % scores)
         score = sorted(scores.values())[0]
         for (backend, backend_score) in scores.items():
