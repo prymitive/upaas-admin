@@ -12,8 +12,8 @@ admin:
   # specified, details can be found in django docs:
   # https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
   domains:
-    - "upaas.org"
-    - "*.upaas.org"
+    - "upaas.io"
+    - "*.upaas.io"
 
 
 mongodb:
@@ -121,7 +121,7 @@ interpreters:
         - echo "exit 101\n" >> /usr/sbin/policy-rc.d
         - chmod 755 /usr/sbin/policy-rc.d
         - apt-add-repository -y ppa:brightbox/ruby-ng
-        - apt-get update
+        - apt-get update -qq
         - apt-get dist-upgrade -y
       finalize:
         - apt-get clean
