@@ -33,7 +33,7 @@ def select_best_backend(exclude=None, application=None):
                 scores = dict(scores.items() +
                               {backend: run_plan.memory_limit}.items())
             log.debug(u"Backend %s has %d run plans, with final score %d" % (
-                backend.name, len(backend.run_plans), scores[backend]))
+                backend.name, len(backend.run_plans), scores.get(backend, 0)))
         else:
             scores[backend] = 0
             log.debug(u"Backend %s has no run plans" % backend.name)
