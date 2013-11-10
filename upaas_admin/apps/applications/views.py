@@ -30,6 +30,7 @@ from upaas_admin.apps.applications.forms import (
 from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
                                               EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
+from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
@@ -74,9 +75,9 @@ class ApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
         return context
 
 
-class ApplicationPackagesView(LoginRequiredMixin, AppTemplatesDirMixin,
-                              PaginationMixin, MongoDetailView,
-                              TabView):
+class ApplicationPackagesView(LoginRequiredMixin, OwnedAppsMixin,
+                              AppTemplatesDirMixin, PaginationMixin,
+                              MongoDetailView, TabView):
 
     template_name = 'packages.html'
     model = Application
@@ -118,16 +119,33 @@ class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
 
 
 class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
-                           AppTemplatesDirMixin, MongoDetailView,
-                           DetailTabView):
+                           AppTemplatesDirMixin, PaginationMixin,
+                           MongoDetailView, DetailTabView):
 
     template_name = 'tasks.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
+    paginate_by = 10
     tab_id = 'app_tasks'
     tab_group = 'app_navigation'
     tab_label = _('Tasks')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        self.object = self.get_object()
+        self.object_list = self.object.tasks.order_by('-date_created')
+        paginator = Paginator(self.object_list, self.paginate_by,
+                              request=request)
+        tasks = paginator.page(page)
+        context = self.get_context_data(object=self.object,
+                                        tasks=tasks.object_list,
+                                        task_statuses=TaskStatus,
+                                        page_obj=tasks)
+        return self.render_to_response(context)
 
 
 class ApplicationTaskDetailsView(LoginRequiredMixin, OwnedAppTasksMixin,

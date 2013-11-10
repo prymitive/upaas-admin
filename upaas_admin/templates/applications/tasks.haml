@@ -6,7 +6,7 @@
 
 - block app_content
 
-  %table.table.table-striped
+  %table.table
 
     %thead
       %tr
@@ -18,8 +18,8 @@
           - trans "Title"
 
     %tbody
-      - for task in app.active_tasks
-        %tr
+      - for task in tasks
+        %tr{'id':'upaas-task-id-={ task.safe_id }', 'class':'{% if task.status == task_statuses.failed %}danger{% elif task.status == task_statuses.successful %}success{% elif task.status == task_statuses.running %}active{% endif %}'}
           %td
             - if task.is_pending
               %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
@@ -33,6 +33,6 @@
       - empty
         %tr
           %td.text-center{'colspan':'4'}
-            - trans "No active tasks"
+            - trans "No tasks"
 
   - include "partials/pagination_footer.html"
