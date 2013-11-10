@@ -61,7 +61,7 @@ function tasks_callback(data) {
             menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
             if (!task.pending || task.pending) {
-                menu.push('<div class="progress upaas-task-progressbar">')
+                menu.push('<div class="progress active progress-striped upaas-task-progressbar">')
                 if (task.subtasks.length > 0) {
                     $.each(task.subtasks, function(j, subtask) {
                         var bar_class = 'progress-bar-default';
