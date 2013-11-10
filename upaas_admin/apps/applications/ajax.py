@@ -52,6 +52,7 @@ def task_to_json(task, application, already_running):
         'status': task.status,
         'pending': task.status == TaskStatus.pending,
         'failed': task.status == TaskStatus.failed,
+        'finished': task.status in FINISHED_TASKS_STATUSES,
         'progress': task.progress,
         'icon': icon,
         'application': {'name': application.name, 'id': application.safe_id},
