@@ -66,6 +66,7 @@ class UPaaSConfig(base.Config):
         },
         "admin": {
             "secretkey": base.StringEntry(required=True),
+            "loglevel": base.StringEntry(default='info'),
             "debug": base.BooleanEntry(default=False),
             "domains": base.ListEntry(value_type=basestring),
         },

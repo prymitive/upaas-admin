@@ -270,6 +270,11 @@ ADMINS = (('UPAAS Admin', 'root@localhost'),)
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+loglevel = UPAAS_CONFIG.admin['loglevel'].upper()
+if not logging.getLevelName(loglevel):
+    log.error(u"Invalid log level name '%s', ignoring" % loglevel)
+    loglevel = 'INFO'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -282,7 +287,7 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'INFO',
+            'level': loglevel,
             'class': 'logging.StreamHandler',
             'formatter': 'standard',
         },
@@ -290,7 +295,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': loglevel,
             'propagate': False,
         },
     },
