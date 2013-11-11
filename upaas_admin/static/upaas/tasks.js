@@ -4,7 +4,10 @@
 */
 
 
-function tasks_callback(data) {
+var UPAAS = UPAAS || {};
+
+
+UPAAS.tasks_callback = function (data) {
     $('#upaas-tasks-badge').text(data.running);
 
     if (data.running > 0) {
@@ -109,7 +112,7 @@ function tasks_callback(data) {
 
     window.setTimeout(
         function() {
-            Dajaxice.upaas_admin.apps.applications.user_tasks(tasks_callback);
+            Dajaxice.upaas_admin.apps.applications.user_tasks(UPAAS.tasks_callback);
         },
         3000
     );
@@ -118,6 +121,6 @@ function tasks_callback(data) {
 
 $(document).ready(function(){
     if (Django.user.is_authenticated) {
-        Dajaxice.upaas_admin.apps.applications.user_tasks(tasks_callback);
+        Dajaxice.upaas_admin.apps.applications.user_tasks(UPAAS.tasks_callback);
     }
 });
