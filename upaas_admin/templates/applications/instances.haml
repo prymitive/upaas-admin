@@ -2,6 +2,7 @@
 
 
 - load i18n
+- load compressed
 
 
 - block app_content
@@ -14,25 +15,25 @@
     %h3.text-center
       - trans "Application is stopped, no instances are running"
 
+
 - block js_bottom
   = block.super
 
+  - compressed_js "haml"
+
   :javascript
     function instances_callback(data) {
-      var elems = UPAAS.instances_data_from_uwsgi_stats(data);
-      if (elems.length == 0) {
-        elems.push('<h1 class="text-center text-muted">');
-        elems.push('<i class="fa fa-refresh fa-spin"></i>');
-        elems.push('</h1>');
-        elems.push('<h3 class="text-center text-warning">');
-        elems.push("{% trans "Couldn't fetch any stats" %}");
-        elems.push('</h3>');
-      }
-      $('#stats-container').html(elems.join('\n'));
+      var instances = new Array();
+      $.each(data.stats, function (i, item) {
+         instances.push(
+          haml.compileHaml('upaas-haml-template-instance')({instance: item})
+         );
+      });
+      $('#stats-container').html(instances.join('\n'));
     }
 
     function update_instances() {
-      Dajaxice.upaas_admin.apps.applications.stats(instances_callback, {
+      Dajaxice.upaas_admin.apps.applications.instances(instances_callback, {
         "app_id":"{{ app.safe_id }}"
       });
     }
@@ -41,3 +42,8 @@
       window.setTimeout(update_instances, 1000);
       window.setInterval(update_instances, 3000);
     });
+
+
+- block haml_templates
+  = block.super
+  - include "applications/partials/instance.js.haml"

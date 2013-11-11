@@ -65,7 +65,7 @@ def task_to_json(task, application, already_running):
 @login_required
 @dajaxice_register
 @cache_page(3)  # TODO make it configurable?
-def stats(request, app_id):
+def instances(request, app_id):
     data = []
     app = Application.objects.filter(id=app_id, owner=request.user).first()
     if app.run_plan:
@@ -74,11 +74,10 @@ def stats(request, app_id):
             if ports_data and ports_data.ports.get(PortsNames.stats):
                 s = fetch_json_stats(str(backend.ip),
                                      ports_data.ports[PortsNames.stats])
-                if s:
-                    data.append(
-                        {'backend': {'name': backend.name,
-                                     'ip': str(backend.ip)},
-                         'stats': s})
+                data.append(
+                    {'backend': {'name': backend.name,
+                                 'ip': str(backend.ip)},
+                     'stats': s})
     return dumps({'stats': data})
 
 

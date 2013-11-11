@@ -26,7 +26,7 @@ def fetch_json_stats(addr, port, timeout=5):
             js += data
         s.close()
     except Exception, e:
-        log.warning(u"Couldn't get stats from %s:%s: %s" % (addr, port, e))
+        log.debug(u"Couldn't get stats from %s:%s: %s" % (addr, port, e))
     else:
         if js:
             try:

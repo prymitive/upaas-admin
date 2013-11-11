@@ -259,6 +259,14 @@ PIPELINE_JS = {
         ),
         'output_filename': 'js/zeroclipboard.js',
     },
+    'haml': {
+        'source_filenames': (
+            'underscore/underscore-min.js',
+            'underscore/underscore.string.min.js',
+            'haml/haml.min.js',
+        ),
+        'output_filename': 'js/haml.js',
+    }
 }
 
 

@@ -1,0 +1,90 @@
+:plain
+  <script type="text/haml-template" id="upaas-haml-template-instance">
+
+  - var total_workers = 0;
+  - var total_rss = 0;
+  - var total_harakiri = 0;
+  - var total_requests = 0;
+  - var total_avg_rt = 0;
+  - var total_avg_rt_summary = '';
+  - var total_tx = 0;
+
+  .panel.panel-default
+    .panel-heading
+      = instance.backend.name
+      - if (instance.stats != null) {
+        = instance.stats.version
+    .panel-body.upaas-instance-panel
+      %table.table.table-bordered.table-condensed.upaas-instance-table
+        %thead
+          %tr
+            %th
+              #
+            %th
+              = gettext("State")
+            %th
+              = gettext("Memory")
+            %th
+              = gettext("Restarts")
+            %th
+              = gettext("Harakiri")
+            %th
+              = gettext("Requests")
+            %th
+              = gettext("Avg response time")
+            %th
+              = gettext("Bytes out")
+          %tbody
+            - if (instance.stats != null) {
+              - instance.stats.workers.each(function(worker) {
+                - total_harakiri += worker.harakiri_count;
+                - total_requests += worker.requests;
+                - total_tx += worker.tx;
+                - if (worker.status != 'cheap') {
+                  - total_workers += 1;
+                  - total_rss += worker.rss;
+                  - total_avg_rt += worker.avg_rt;
+                  %tr{class: worker.status}
+                    %td
+                      = worker.id
+                    %td
+                      = worker.status
+                    %td
+                      = UPAAS.bytes_to_human(worker.rss)
+                    %td
+                      = worker.respawn_count
+                    %td
+                      = worker.harakiri_count
+                    %td
+                      = worker.requests
+                    %td
+                      = Math.round(worker.avg_rt / 1000)
+                    %td
+                      = UPAAS.bytes_to_human(worker.tx)
+              - if (total_workers == 0) {
+                %tr
+                  %td.text-center{colspan: 8}
+                    - gettext("All workers are stopped due to inactivity")
+              - else {
+                - total_avg_rt_summary = Math.round(total_avg_rt / total_workers / 1000) + ' ms';
+                    %tr
+                      %td
+                        = total_workers
+                      %td
+                      %td
+                        = UPAAS.bytes_to_human(total_rss)
+                      %td
+                        = total_harakiri
+                      %td
+                      %td
+                        = total_requests
+                      %td
+                        = total_avg_rt_summary
+                      %td
+                        = UPAAS.bytes_to_human(total_tx)
+            - else {
+              %tr.danger
+                %td.text-center{colspan: 8}
+                  = gettext("Instance is not running")
+
+  </script>
