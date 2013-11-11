@@ -26,7 +26,9 @@
       var instances = new Array();
       $.each(data.stats, function (i, item) {
          instances.push(
-          haml.compileHaml('upaas-haml-template-instance')({instance: item})
+          haml.compileHaml('upaas-haml-template-instance')({
+            instance: item
+          })
          );
       });
       $('#stats-container').html(instances.join('\n'));
