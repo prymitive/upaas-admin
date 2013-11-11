@@ -4,10 +4,10 @@ http://blog.jbstrickler.com/2011/02/bytes-to-a-human-readable-string/
  */
 
 
-var UPAAS = UPAAS || {};
+window.UPAAS = window.UPAAS || {};
 
 
-UPAAS.bytes_to_human = function (size) {
+window.UPAAS.bytes_to_human = function (size) {
     var suffix = ["bytes", "KB", "MB", "GB", "TB", "PB"],
         tier = 0;
 

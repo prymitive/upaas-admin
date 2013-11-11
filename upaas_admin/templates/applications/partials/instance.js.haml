@@ -50,7 +50,7 @@
                     %td
                       = worker.status
                     %td
-                      - window.UPAAS.bytes_to_human(worker.rss);
+                      = window.UPAAS.bytes_to_human(worker.rss);
                     %td
                       = worker.respawn_count
                     %td
@@ -58,13 +58,13 @@
                     %td
                       = worker.requests
                     %td
-                      - Math.round(worker.avg_rt / 1000);
+                      = Math.round(worker.avg_rt / 1000);
                     %td
-                      - window.UPAAS.bytes_to_human(worker.tx);
+                      = window.UPAAS.bytes_to_human(worker.tx);
               - if (total_workers == 0) {
                 %tr
                   %td.text-center{colspan: 8}
-                    - gettext("All workers are stopped due to inactivity")
+                    = gettext("All workers are stopped due to inactivity")
               - else {
                 - total_avg_rt_summary = Math.round(total_avg_rt / total_workers / 1000) + ' ms';
                 %tr
@@ -72,7 +72,7 @@
                     = total_workers
                   %td
                   %td
-                    - window.UPAAS.bytes_to_human(total_rss);
+                    = window.UPAAS.bytes_to_human(total_rss);
                   %td
                     = total_harakiri
                   %td
@@ -81,7 +81,7 @@
                   %td
                     = total_avg_rt_summary
                   %td
-                    - window.UPAAS.bytes_to_human(total_tx);
+                    = window.UPAAS.bytes_to_human(total_tx);
             - else {
               %tr.danger
                 %td.text-center{colspan: 8}
