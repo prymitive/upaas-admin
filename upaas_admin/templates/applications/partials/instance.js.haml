@@ -11,9 +11,11 @@
 
   .panel.panel-default
     .panel-heading
-      = instance.backend.name
+      %strong
+        = instance.backend.name
       - if (instance.stats != null) {
-        = instance.stats.version
+        %span.label.label-primary
+          = instance.stats.version
     .panel-body.upaas-instance-panel
       %table.table.table-bordered.table-condensed.upaas-instance-table
         %thead
@@ -69,6 +71,7 @@
                 - total_avg_rt_summary = Math.round(total_avg_rt / total_workers / 1000) + ' ms';
                 %tr
                   %td
+                    ∑
                     = total_workers
                   %td
                   %td
