@@ -12,7 +12,7 @@
       %h1.text-center.text-muted
         %i.fa.fa-refresh.fa-spin
   - else
-    %h3.text-center
+    %h3.text-center.text-muted
       - trans "Application is stopped, no instances are running"
 
 
@@ -31,6 +31,11 @@
           })
          );
       });
+      if (instances.length == 0) {
+        instances.push(
+          haml.compileHaml('upaas-haml-template-stopped')()
+        );
+      }
       $('#stats-container').html(instances.join('\n'));
     }
 
@@ -49,3 +54,4 @@
 - block haml_templates
   = block.super
   - include "applications/partials/instance.js.haml"
+  - include "applications/partials/stopped.js.haml"
