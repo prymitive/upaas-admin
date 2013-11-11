@@ -1,4 +1,5 @@
-include stdeb.cfg
 include requirements*.txt
+include stdeb.cfg
+recursive-include debian *
 recursive-include upaas_admin/templates *
 recursive-include upaas_admin/var *

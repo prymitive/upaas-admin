@@ -1,0 +1,6 @@
+upaas_admin/var/etc/config/upaas.yml etc/upaas/
+upaas_admin/var/etc/uwsgi/base.ini etc/upaas/
+upaas_admin/var/etc/uwsgi/interpreters/* etc/upaas/interpreters/
+upaas_admin/var/etc/uwsgi/upaas_admin.ini etc/uwsgi-emperor/vassals/
+upaas_admin/var/etc/uwsgi/upaas_admin_local.ini etc/upaas/
+upaas_admin/var/etc/uwsgi/upaas_tasks.ini etc/uwsgi-emperor/vassals/
