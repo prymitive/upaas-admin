@@ -132,6 +132,7 @@ interpreters:
     any:
       env:
         RAILS_ENV: production
+        RACK_ENV: production
       uwsgi:
         template: interpreters/ruby.ini
       packages:
