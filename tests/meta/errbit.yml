@@ -39,7 +39,7 @@ files:
   /tmp/after.sh: |
     if [ -n "$UPAAS_FRESH_PACKAGE" ]; then
       echo ">>> Generating secret token"
-      echo "Errbit::Application.config.secret_token = '$(bundle exec rake secret)'" > config/initializers/__secret_token.rb
+      echo "Errbit::Application.config.secret_token = '$(bundle exec rake secret)'" > config/initializers/secret_token.rb
       echo ">>> Seeding database"
       rake db:seed || exit 1
       echo ">>> Creating MongoDB indexes if needed"
