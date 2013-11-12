@@ -1,0 +1,18 @@
+:plain
+  <script type="text/haml-template" id="upaas-haml-template-task-messages">
+  - var tr_class = '';
+  - switch(task.level) {
+    - case "WARNING": tr_class = "warning"; break;
+    - case "ERROR": tr_class = 'danger'; break;
+  %tr{class: tr_class}
+    %td.upaas-task-messages-col-created
+      = moment(task.timestamp).calendar()
+    %td
+      = task.message
+  </script>
+
+  <script type="text/haml-template" id="upaas-haml-template-task-no-messages">
+  %tr
+    %td.text-center.text-muted{colspan: 2}
+        = gettext("No messages")
+  </script>

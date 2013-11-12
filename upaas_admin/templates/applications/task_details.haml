@@ -4,6 +4,7 @@
 - load i18n
 - load django_bootstrap_breadcrumbs
 - load gravatar
+- load compressed
 
 
 - block breadcrumbs
@@ -27,7 +28,7 @@
             - trans "Date"
           %th
             - trans "Message"
-      %tbody.small
+      %tbody
         - if task.is_pending
           %tr
             %td.text-center{'colspan':'2'}
@@ -36,6 +37,9 @@
 
 
 - block js_bottom
+
+  - compressed_js "haml"
+
   :javascript
     var timer;
     var offset = 0;
@@ -51,28 +55,17 @@
         $('#upaas-task-messages-table tbody').html('');
       }
 
-      var elems = new Array();
-      $.each(data.messages, function(i, item) {
+      var tasks = new Array();
+      $.each(data.messages, function(i, task) {
         offset++;
-        elem = new Array();
-        var textClass = '';
-        switch(item.level) {
-          case "WARNING":
-            textClass = "warning";
-            break;
-          case "ERROR":
-            textClass = 'danger';
-            break;
-        }
-        elem.push('<tr class="' + textClass + '">');
-        elem.push('<td class="upaas-task-messages-col-created">'
-                  + moment(item.timestamp).calendar() + '</td>');
-        elem.push('<td>' + item.message + '</td>');
-        elem.push('</tr>');
-        elems.push(elem.join(''));
+        tasks.push(
+          haml.compileHaml('upaas-haml-template-task-messages')({
+            task: task
+          })
+        );
       });
-      if (elems.length > 0) {
-        $('#upaas-task-messages-table tbody').append(elems.join('\n'));
+      if (tasks.length > 0) {
+        $('#upaas-task-messages-table tbody').append(tasks.join('\n'));
         $('.upaas-messages-table-area').animate({
           scrollTop: $('.upaas-messages-table-area').get(0).scrollHeight
           }, 300);
@@ -86,6 +79,11 @@
         }
         if (data.is_successful) {
           $('#task-progress').addClass('progress-bar-success');
+        }
+        if (tasks.length == 0) {
+          $('#upaas-task-messages-table tbody').append(
+            haml.compileHaml('upaas-haml-template-task-no-messages')()
+          );
         }
       }
     }
@@ -101,3 +99,8 @@
       window.setTimeout(update_messages, 1000);
       timer = window.setInterval(update_messages, 3000);
     });
+
+
+- block haml_templates
+  = block.super
+  - include "applications/partials/task_messages.js.haml"
