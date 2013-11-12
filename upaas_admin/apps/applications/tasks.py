@@ -11,6 +11,8 @@ from socket import gethostname
 
 from mongoengine import StringField, ReferenceField
 
+from django.utils.translation import ugettext_lazy as _
+
 from upaas.config.metadata import MetadataConfig
 from upaas.builder.builder import Builder
 from upaas.builder import exceptions
@@ -34,6 +36,14 @@ class BuildPackageTask(ApplicationTask):
     application = ReferenceField('Application', dbref=False, required=True)
     metadata = StringField(required=True)
     system_filename = StringField()
+
+    def generate_title(self):
+        if self.system_filename:
+            return _(u"Building new package for {name}").format(
+                name=self.application.name)
+        else:
+            return _(u"Building new fresh package for {name}").format(
+                name=self.application.name)
 
     def job(self):
 
@@ -92,6 +102,10 @@ class BuildPackageTask(ApplicationTask):
 @register
 class StartPackageTask(PackageTask):
 
+    def generate_title(self):
+        return _(u"Starting {name} on {backend}").format(
+            name=self.application.name, backend=self.backend.name)
+
     def job(self):
 
         if not self.application.run_plan:
@@ -117,6 +131,10 @@ class StartPackageTask(PackageTask):
 
 @register
 class StopPackageTask(PackageTask):
+
+    def generate_title(self):
+        return _(u"Stopping {name} on {backend}").format(
+            name=self.application.name, backend=self.backend.name)
 
     def job(self):
         def _remove_pkg_dir(directory):
@@ -172,6 +190,10 @@ class StopPackageTask(PackageTask):
 class UpgradePackageTask(PackageTask):
     #TODO add graceful update
 
+    def generate_title(self):
+        return _(u"Upgrading {name} on {backend}").format(
+            name=self.application.name, backend=self.backend.name)
+
     def job(self):
         try:
             self.package.unpack()
@@ -189,6 +211,10 @@ class UpgradePackageTask(PackageTask):
 @register
 class UpdateVassalTask(PackageTask):
     #TODO add graceful update
+
+    def generate_title(self):
+        return _(u"Updating {name} configuration on {backend}").format(
+            name=self.application.name, backend=self.backend.name)
 
     def job(self):
         self.package.save_vassal_config(self.backend)

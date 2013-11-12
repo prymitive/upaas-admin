@@ -470,13 +470,9 @@ class Application(Document):
                        u"building").format(name=self.name))
         else:
             system_filename = None
-            title = _(u"Building new fresh package for {name}").format(
-                name=self.name)
             if not force_fresh and self.current_package:
                 system_filename = self.current_package.filename
-                title = _(u"Building new package for {name}").format(
-                    name=self.name)
-            task = Task.put('BuildPackageTask', title=title, application=self,
+            task = Task.put('BuildPackageTask', application=self,
                             metadata=self.metadata,
                             system_filename=system_filename)
             return task
@@ -510,10 +506,7 @@ class Application(Document):
                 log.info(_(u"Set backend '{backend}' in '{name}' run "
                            u"plan").format(backend=backend.name,
                                            name=self.name))
-                Task.put('StartPackageTask',
-                         title=_(u'Starting application {name}').format(
-                             name=self.name),
-                         backend=backend, application=self,
+                Task.put('StartPackageTask', backend=backend, application=self,
                          package=self.current_package, **kwargs)
 
     def stop_application(self):
@@ -534,10 +527,7 @@ class Application(Document):
                 kwargs['parent'] = vtask
 
             for backend in self.run_plan.backends:
-                Task.put('StopPackageTask',
-                         title=_(u"Stopping application {name}").format(
-                             name=self.name),
-                         backend=backend, application=self,
+                Task.put('StopPackageTask', backend=backend, application=self,
                          package=self.current_package, **kwargs)
 
     def upgrade_application(self):
@@ -555,11 +545,9 @@ class Application(Document):
 
             #TODO add wait for subscription
             for backend in self.run_plan.backends:
-                Task.put('UpgradePackageTask',
-                         title=_(u"Upgrading application {name}").format(
-                             name=self.name),
-                         backend=backend, application=self,
-                         package=self.current_package, **kwargs)
+                Task.put('UpgradePackageTask', backend=backend,
+                         application=self, package=self.current_package,
+                         **kwargs)
 
     def update_application(self):
         if self.run_plan:
@@ -587,28 +575,22 @@ class Application(Document):
             #TODO add wait for subscription
             for backend in self.run_plan.backends:
                 if backend in current_backends:
-                    Task.put('UpdateVassalTask',
-                             title=_(u"Updating application {name} "
-                                     u"config").format(name=self.name),
-                             backend=backend, application=self,
-                             package=self.current_package, **kwargs)
+                    Task.put('UpdateVassalTask', backend=backend,
+                             application=self, package=self.current_package,
+                             **kwargs)
                 else:
-                    Task.put('StartPackageTask',
-                             title=_(u'Starting application {name}').format(
-                                 name=self.name),
-                             backend=backend, application=self,
-                             package=self.current_package, **kwargs)
+                    Task.put('StartPackageTask', backend=backend,
+                             application=self, package=self.current_package,
+                             **kwargs)
 
             for backend in current_backends:
                 if backend not in new_backends:
                     log.info(_(u"Stopping {name} on old backend "
                                u"{backend}").format(name=self.name,
                                                     backend=backend.name))
-                    Task.put('StopPackageTask',
-                             title=_(u"Stopping application {name}").format(
-                                 name=self.name),
-                             backend=backend, application=self,
-                             package=self.current_package, **kwargs)
+                    Task.put('StopPackageTask', backend=backend,
+                             application=self, package=self.current_package,
+                             **kwargs)
 
     def trim_package_files(self):
         """

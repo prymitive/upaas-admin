@@ -245,6 +245,13 @@ class Task(Document):
         """
         pass
 
+    def generate_title(self):
+        """
+        Task classes can implement this method to generate task title,
+        generated title will be used when user did not provided it.
+        """
+        return _(u"Unnamed task")
+
     @classmethod
     def find(cls, task_class, **kwargs):
         """
@@ -267,6 +274,8 @@ class Task(Document):
         klass = find_task_class(task_class)
         if klass:
             task = klass(*args, **kwargs)
+            if not task.title:
+                task.title = task.generate_title()
             task.save()
             return task
         else:
