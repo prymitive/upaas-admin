@@ -46,7 +46,7 @@ files:
       rake db:mongoid:create_indexes || exit 1
     fi
     echo ">>> Migrating database"
-    rake db:migrate
+    rake db:migrate || exit 1
     echo ">> Precompilling assets"
     rake assets:precompile || exit 1
   config/mongoid.yml: |
