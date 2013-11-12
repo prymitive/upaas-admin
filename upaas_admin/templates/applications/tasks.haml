@@ -19,7 +19,7 @@
 
     %tbody
       - for task in tasks
-        %tr{'id':'upaas-task-id-={ task.safe_id }', 'class':'{% if task.status == task_statuses.failed %}danger{% elif task.status == task_statuses.successful %}success{% elif task.status == task_statuses.running %}active{% endif %}'}
+        %tr{'id':'={ task.safe_id }', 'class':'{% if task.is_active %}upaas-task-active {% endif %}{% if task.status == task_statuses.failed %}danger{% elif task.status == task_statuses.successful %}success{% elif task.status == task_statuses.running %}active{% endif %}'}
           %td
             - if task.is_pending
               %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}

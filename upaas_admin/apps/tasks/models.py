@@ -131,16 +131,20 @@ class Task(Document):
         return self.status == TaskStatus.running
 
     @property
-    def is_finished(self):
-        return self.status in FINISHED_TASKS_STATUSES
-
-    @property
     def is_failed(self):
         return self.status == TaskStatus.failed
 
     @property
     def is_successful(self):
         return self.status == TaskStatus.successful
+
+    @property
+    def is_active(self):
+        return self.status in ACTIVE_TASK_STATUSES
+
+    @property
+    def is_finished(self):
+        return self.status in FINISHED_TASKS_STATUSES
 
     def unlock_task(self):
         """
