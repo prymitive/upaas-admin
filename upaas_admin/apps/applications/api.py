@@ -79,6 +79,9 @@ class ApplicationResource(MongoEngineResource):
             url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/stop%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('stop_application'), name="stop"),
+            url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/update%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('update_application'), name="update"),
         ]
 
     def build_package(self, request, **kwargs):
@@ -87,8 +90,7 @@ class ApplicationResource(MongoEngineResource):
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
-                return self.create_response(
-                    request, app.build_package())
+                return self.create_response(request, app.build_package())
             else:
                 return HttpResponseBadRequest(
                     _(u"No metadata registered for app '{name}' with id "
@@ -117,8 +119,7 @@ class ApplicationResource(MongoEngineResource):
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata and app.current_package:
-                return self.create_response(
-                    request, app.start_application())
+                return self.create_response(request, app.start_application())
             else:
                 return HttpResponseBadRequest(
                     _(u"No package built or no metadata registered for app "
@@ -136,13 +137,24 @@ class ApplicationResource(MongoEngineResource):
                 return HttpResponseBadRequest(_(
                     u"Application is already stopped"))
             if app.metadata and app.current_package:
-                return self.create_response(
-                    request, app.stop_application())
+                return self.create_response(request, app.stop_application())
             else:
                 return HttpResponseBadRequest(
                     _(u"No package built or no metadata registered for app "
                       u"'{name}' with id '{id}'").format(name=app.name,
                                                          id=app.id))
+        else:
+            return HttpResponseNotFound(_(u"No such application"))
+
+    def update_application(self, request, **kwargs):
+        self.method_check(request, allowed=['put'])
+        app = Application.objects(
+            **self.remove_api_resource_names(kwargs)).first()
+        if app:
+            if app.run_plan:
+                return self.create_response(request, app.update_application())
+            else:
+                return HttpResponseBadRequest(_(u"Application is stopped"))
         else:
             return HttpResponseNotFound(_(u"No such application"))
 

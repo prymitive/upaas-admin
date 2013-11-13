@@ -19,7 +19,9 @@ from tastypie.authorization import Authorization
 
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
+from upaas_admin.apps.scheduler.forms import ApplicationRunPlanForm
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.api_validation import MongoCleanedDataFormValidation
 
 
 log = logging.getLogger(__name__)
@@ -30,13 +32,15 @@ class RunPlanResource(MongoEngineResource):
     class Meta:
         queryset = ApplicationRunPlan.objects.all()
         resource_name = 'run_plan'
-        excludes = ['owner', 'current_package', 'packages']
+        excludes = ['application', 'backends']
         filtering = {
             'id': ALL,
             'application': ALL,
         }
         authentication = UpaasApiKeyAuthentication()
         authorization = Authorization()
+        validation = MongoCleanedDataFormValidation(
+            form_class=ApplicationRunPlanForm)
 
     def obj_create(self, bundle, request=None, **kwargs):
         #FIXME handle reference field properly using mongoengine-tastypie
