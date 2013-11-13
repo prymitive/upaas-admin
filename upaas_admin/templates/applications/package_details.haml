@@ -3,7 +3,7 @@
 
 - load i18n
 - load django_bootstrap_breadcrumbs
-- load gravatar
+- load crispy_forms_tags
 
 
 - block breadcrumbs
@@ -15,44 +15,86 @@
 
 - block content
 
-  %dl.dl-horizontal
+  .tabbable
 
-    %dt
-      {% trans "Created" %}:
-    %dd
-      = pkg.date_created
+    %ul.nav.nav-tabs
+      %li.active
+        %a{'href':'#details', 'data-toggle':'tab'}
+          - trans "Details"
+      %li
+        %a{'href':'#metadata', 'data-toggle':'tab'}
+          - trans "Metadata"
+      - if metadiff
+        %li
+          %a{'href':'#metadiff', 'data-toggle':'tab'}
+            - trans "Metadata diff"
 
-    %dt
-      {% trans "Interpreter name" %}:
-    %dd
-      = pkg.interpreter_name
+    .tab-content
 
-    %dt
-      {% trans "Interpreter version" %}:
-    %dd
-      = pkg.interpreter_version
+      #details.tab-pane.active
+        %dl.dl-horizontal
 
-    %dt
-      {% trans "Size" %}:
-    %dd
-      = pkg.bytes|filesizeformat
+          %dt
+            {% trans "Created" %}:
+          %dd
+            = pkg.date_created
 
-    %dt
-      {% trans "Builder" %}:
-    %dd
-      = pkg.builder
+          %dt
+            {% trans "Interpreter name" %}:
+          %dd
+            = pkg.interpreter_name
 
-    %dt
-      {% trans "Distribution name" %}:
-    %dd
-      = pkg.distro_name
+          %dt
+            {% trans "Interpreter version" %}:
+          %dd
+            = pkg.interpreter_version
 
-    %dt
-      {% trans "Distribution version" %}:
-    %dd
-      = pkg.distro_version
+          %dt
+            {% trans "Size" %}:
+          %dd
+            = pkg.bytes|filesizeformat
 
-    %dt
-      {% trans "Architecture" %}:
-    %dd
-      = pkg.distro_arch
+          %dt
+            {% trans "Builder" %}:
+          %dd
+            = pkg.builder
+
+          %dt
+            {% trans "Distribution name" %}:
+          %dd
+            = pkg.distro_name
+
+          %dt
+            {% trans "Distribution version" %}:
+          %dd
+            = pkg.distro_version
+
+          %dt
+            {% trans "Architecture" %}:
+          %dd
+            = pkg.distro_arch
+
+      #metadata.tab-pane
+        %p
+          - if metadiff
+            {% trans "Package metadata differs from current application metadata" %}:
+          - else
+            {% trans "Package metadata is identical to current application metadata" %}:
+        %form{'role':'form'}
+          %textarea{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
+            = pkg.metadata
+        - if metadiff
+          %p
+          %a.btn.btn-primary{'href':'{% url "app_meta_from_pkg" pkg.safe_id %}'}
+            - trans "Set as app metadata"
+
+      - if metadiff
+        #metadiff.tab-pane
+          %p
+            {% trans "Differences between package and current application metadata" %}:
+          %form{'role':'form'}
+            %textarea{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
+              {% for line in metadiff %}{{ line }}{% endfor %}
+          %p
+          %a.btn.btn-primary{'href':'{% url "app_meta_from_pkg" pkg.safe_id %}'}
+            - trans "Set as app metadata"

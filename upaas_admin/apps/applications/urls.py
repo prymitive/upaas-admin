@@ -42,6 +42,9 @@ urlpatterns = patterns(
         name='package_details'),
     url(r'^pkg/(?P<slug>[-_\w]+)/rollback$', RollbackApplicationView.as_view(),
         name='package_rollback'),
+    url(r'^pkg/(?P<slug>[-_\w]+)/metadata/restore$',
+        ApplicatiomMetadataFromPackageView.as_view(),
+        name='app_meta_from_pkg'),
 
     url(r'^task/(?P<slug>[-_\w]+)$', ApplicationTaskDetailsView.as_view(),
         name='app_task_details'),

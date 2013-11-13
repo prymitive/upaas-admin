@@ -5,10 +5,13 @@
 """
 
 
+from difflib import unified_diff
+
 from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as __
 from django.http import Http404
 
 from mongoengine.errors import ValidationError, DoesNotExist
@@ -26,7 +29,7 @@ from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
     UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm,
-    RollbackApplicationForm)
+    RollbackApplicationForm, ApplicatiomMetadataFromPackageForm)
 from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
                                               EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
@@ -327,6 +330,14 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
     slug_field = 'id'
     context_object_name = 'pkg'
 
+    def get_context_data(self, **kwargs):
+        context = super(PackageDetailView, self).get_context_data(**kwargs)
+        context['metadiff'] = list(unified_diff(
+            self.object.application.metadata.splitlines(1),
+            self.object.metadata.splitlines(1), fromfile=__(u"Application"),
+            tofile=__(u"Package")))
+        return context
+
 
 class BuildPackageView(AppActionView):
 
@@ -369,3 +380,21 @@ class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
             app.current_package = self.object
             app.save()
             app.upgrade_application()
+
+
+class ApplicatiomMetadataFromPackageView(OwnedPackagesMixin, AppActionView):
+
+    template_name = 'app_meta_from_pkg.html'
+    model = Package
+    slug_field = 'id'
+    context_object_name = 'pkg'
+    form_class = ApplicatiomMetadataFromPackageForm
+
+    def get_success_url(self):
+        return reverse('app_details', args=[self.object.application.safe_id])
+
+    def action(self, form):
+        if self.object:
+            app = self.object.application
+            app.metadata = self.object.metadata
+            app.save()

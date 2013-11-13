@@ -1,0 +1,25 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb pkg.application.name "app_details" pkg.application.safe_id
+  - breadcrumb "Update metadata" "app_meta_from_pkg" pkg.safe_id
+
+
+- block content
+
+  .well
+
+    %p
+      - trans "Are you sure you want to overwrite application metadata using version from package"
+      %a{'href':'{% url "package_details" pkg.safe_id %}'}
+        = pkg.date_created
+      ?
+
+    - crispy form

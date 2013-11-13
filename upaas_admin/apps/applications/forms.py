@@ -88,3 +88,11 @@ class RollbackApplicationForm(CrispyForm):
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)
+
+
+class ApplicatiomMetadataFromPackageForm(CrispyForm):
+
+    submit_label = 'Save'
+    layout = ['confirm']
+
+    confirm = forms.BooleanField(required=True)
