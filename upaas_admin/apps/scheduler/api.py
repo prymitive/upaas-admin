@@ -54,10 +54,9 @@ class RunPlanResource(MongoEngineResource):
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
-        bundle.data['application'] = app
         try:
             return super(MongoEngineResource, self).obj_create(
-                bundle, request=request, **kwargs)
+                bundle, request=request, application=app, **kwargs)
         except mongoengine.ValidationError, e:
             log.warning(_(u"Can't create new run plan, invalid data payload: "
                         "{msg}").format(msg=e.message))
