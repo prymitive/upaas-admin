@@ -7,9 +7,8 @@
 
 - block app_content
 
-  %form{'role':'form'}
-    %textarea{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
-      = app.metadata
+  %pre.upaas-metadata-textarea<
+    = app.metadata
 
   %p
 

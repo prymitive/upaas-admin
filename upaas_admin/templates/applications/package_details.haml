@@ -80,9 +80,8 @@
             {% trans "Package metadata differs from current application metadata" %}:
           - else
             {% trans "Package metadata is identical to current application metadata" %}:
-        %form{'role':'form'}
-          %textarea{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
-            = pkg.metadata
+        %pre.upaas-metadata-textarea<
+          = pkg.metadata
         - if metadiff
           %p
           %a.btn.btn-primary{'href':'{% url "app_meta_from_pkg" pkg.safe_id %}'}
@@ -92,8 +91,7 @@
         #metadiff.tab-pane
           %p
             {% trans "Differences between package and current application metadata" %}:
-          %form{'role':'form'}
-            %textarea{'readonly':'true', 'class':'form-control upaas-metadata-textarea', 'rows':'25'}<
+            %pre.upaas-metadata-textarea<
               {% for line in metadiff %}{{ line }}{% endfor %}
           %p
           %a.btn.btn-primary{'href':'{% url "app_meta_from_pkg" pkg.safe_id %}'}
