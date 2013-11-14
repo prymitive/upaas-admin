@@ -30,9 +30,8 @@
               = task.date_created
           %td
             = task.title
-            - if task.is_virtual
-              %span.badge.badge.badge-default
-                = task.subtasks|length
+            - if task.parent
+              %i.upaas-help-tooltip.pull-right.fa.fa-sitemap{'title':'{% trans "Task is part of a group of tasks" %}'}
 
       - empty
         %tr

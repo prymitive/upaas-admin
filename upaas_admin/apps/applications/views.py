@@ -140,8 +140,8 @@ class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
         except PageNotAnInteger:
             page = 1
         self.object = self.get_object()
-        self.object_list = self.object.tasks.filter(
-            parent__exists=False).order_by('-date_created')
+        self.object_list = self.object.tasks.order_by('-date_created',
+                                                      'parent')
         paginator = Paginator(self.object_list, self.paginate_by,
                               request=request)
         tasks = paginator.page(page)

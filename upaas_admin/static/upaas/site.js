@@ -5,5 +5,5 @@
 
 
 $(document).ready(function(){
-    $('.upaas-help-tooltip').tooltip({container:'.upaas-content'});
+    $('.upaas-help-tooltip').tooltip({container: '.upaas-content'});
 });
