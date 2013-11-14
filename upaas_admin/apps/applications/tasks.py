@@ -113,7 +113,8 @@ class StartPackageTask(PackageTask):
         if not self.application.run_plan:
             log.error(u"Missing run plan, cannot start "
                       u"'%s'" % self.application.name)
-            raise(u"Missing run plan for '%s'" % self.application.name)
+            raise Exception(u"Missing run plan for "
+                            u"'%s'" % self.application.name)
 
         log.info(u"Starting application '%s' using package '%s'" % (
             self.application.name, self.package.safe_id))
