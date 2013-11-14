@@ -225,16 +225,15 @@ class Task(Document):
             statuses = self.__class__.__base__.objects(
                 parent=self.parent).distinct('status')
             if TaskStatus.failed in statuses:
-                log.info(u"Marking parent as failed, child status matrix: "
-                         u"%s" % statuses)
-                self.parent.__class__.__base__.objects(
-                    id=self.parent.id).update_one(
+                log.info(u"Marking parent (%s) as failed, subtasks distinct "
+                         u"statuses: %s" % (self.parent.safe_id, statuses))
+                self.parent.__class__.objects(id=self.parent.id).update_one(
                     set__status=TaskStatus.failed)
             else:
-                log.info(u"Marking parent as successful, child status matrix: "
-                         u"%s" % statuses)
-                self.parent.__class__.__base__.objects(
-                    id=self.parent.id).update_one(
+                log.info(u"Marking parent (%s) as successful, subtasks "
+                         u"distinct statuses: %s" % (self.parent.safe_id,
+                                                     statuses))
+                self.parent.__class__.objects(id=self.parent.id).update_one(
                     set__status=TaskStatus.successful)
 
     def job(self):
