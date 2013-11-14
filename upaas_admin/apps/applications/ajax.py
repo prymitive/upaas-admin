@@ -101,11 +101,12 @@ def user_tasks(request):
         elif task.parent:
             running, data = task_to_json(task.parent, task.application,
                                          running)
-            subtasks = ApplicationTask.objects(parent=task.parent)
+            subtasks = task.parent.subtasks
+            subtasks_count = len(subtasks)
             subtasks_data = []
             for subtask in subtasks:
                 _, subdata = task_to_json(subtask, task.application, 0)
-                subdata['progress'] = int(subdata['progress'] / len(subtasks))
+                subdata['progress'] = int(subdata['progress'] / subtasks_count)
                 subtasks_data.append(subdata)
             data['subtasks'] = subtasks_data
             skip_vtasks.append(task.parent.id)

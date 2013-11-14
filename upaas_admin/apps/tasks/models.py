@@ -253,6 +253,13 @@ class Task(Document):
         """
         return _(u"Unnamed task")
 
+    @property
+    def subtasks(self):
+        """
+        Returns list of sub tasks if current task is virtual or empty list.
+        """
+        return self.__class__.objects(parent=self.id)
+
     @classmethod
     def find(cls, task_class, **kwargs):
         """
