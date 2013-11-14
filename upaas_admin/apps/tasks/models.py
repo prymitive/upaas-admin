@@ -222,13 +222,19 @@ class Task(Document):
                 parent=self.parent, status__in=ACTIVE_TASK_STATUSES):
             log.info(u"Last task in group, calling cleanup")
             self.cleanup()
-            statuses = self.__class__.objects(parent=self.parent).distinct(
-                'status')
+            statuses = self.__class__.__base__.objects(
+                parent=self.parent).distinct('status')
             if TaskStatus.failed in statuses:
-                self.parent.__class__.objects(id=self.parent.id).update_one(
+                log.info(u"Marking parent as failed, child status matrix: "
+                         u"%s" % statuses)
+                self.parent.__class__.__base__.objects(
+                    id=self.parent.id).update_one(
                     set__status=TaskStatus.failed)
             else:
-                self.parent.__class__.objects(id=self.parent.id).update_one(
+                log.info(u"Marking parent as successful, child status matrix: "
+                         u"%s" % statuses)
+                self.parent.__class__.__base__.objects(
+                    id=self.parent.id).update_one(
                     set__status=TaskStatus.successful)
 
     def job(self):
