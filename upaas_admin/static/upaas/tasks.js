@@ -64,7 +64,7 @@ window.UPAAS.tasks_callback = function (data) {
             menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
             if (task.subtasks.length > 0) {
-                menu.push('<span class="badge pull-right upaas-task-tooltip">');
+                menu.push('<span class="badge upaas-task-tooltip">');
                 menu.push(task.subtasks.length);
                 menu.push('</span> ');
             }

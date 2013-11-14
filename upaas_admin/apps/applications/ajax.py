@@ -24,15 +24,7 @@ from upaas_admin.common.uwsgi import fetch_json_stats
 
 
 def task_to_json(task, application, already_running):
-    if task.status == TaskStatus.pending:
-        icon = ICON_PENDING
-        already_running += 1
-    elif task.status == TaskStatus.failed:
-        icon = ICON_FAILED
-    elif task.status == TaskStatus.successful:
-        icon = ICON_SUCCESSFUL
-    else:
-        icon = ICON_STARTED
+    if task.is_active:
         already_running += 1
 
     date_finished = None
@@ -50,11 +42,12 @@ def task_to_json(task, application, already_running):
         'date_finished': date_finished,
         'locked_since': locked_since,
         'status': task.status,
-        'pending': task.status == TaskStatus.pending,
-        'failed': task.status == TaskStatus.failed,
-        'finished': task.status in FINISHED_TASKS_STATUSES,
+        'pending': task.is_pending,
+        'failed': task.is_failed,
+        'running': task.is_running,
+        'finished': task.is_finished,
         'progress': task.progress,
-        'icon': icon,
+        'icon': task.icon_class,
         'application': {'name': application.name, 'id': application.safe_id},
         'subtasks': [],
     }
