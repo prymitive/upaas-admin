@@ -30,9 +30,9 @@
               = task.date_created
           %td
             = task.title
-            - if task.parent
+            - if task.is_virtual
               %span.badge.badge.badge-default
-                = task.parent.subtasks|length
+                = task.subtasks|length
 
       - empty
         %tr
