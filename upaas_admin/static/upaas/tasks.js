@@ -42,12 +42,17 @@ window.UPAAS.tasks_callback = function (data) {
                 menu.push('<li role="presentation" class="dropdown-header">');
             }
 
-            if (task.date_finished) {
+            if (task.finished) {
                 menu.push(gettext('Finished') + ': ' + moment(task.date_finished).fromNow());
             } else if (task.pending) {
                 menu.push(gettext('Queued') + ': ' + moment(task.date_created).fromNow());
             } else {
                 menu.push(gettext('Started') + ': ' + moment(task.locked_since).fromNow());
+            }
+            if (task.subtasks.length > 0) {
+                menu.push('<span class="badge pull-right">');
+                menu.push(task.subtasks.length);
+                menu.push('</span> ');
             }
             menu.push('</li>');
 
@@ -63,11 +68,6 @@ window.UPAAS.tasks_callback = function (data) {
             }
             menu.push('<i class="' + task.icon + '"></i>');
             menu.push(task.title);
-            if (task.subtasks.length > 0) {
-                menu.push('<span class="badge upaas-task-tooltip">');
-                menu.push(task.subtasks.length);
-                menu.push('</span> ');
-            }
             if (!task.pending) {
                 menu.push('<div class="progress');
                 if (!task.finished) menu.push(' active progress-striped');
