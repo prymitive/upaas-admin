@@ -217,7 +217,8 @@ class Task(Document):
 
         # if there are no more unfinished task for our parent we mark it as
         # finished
-        if self.parent and not self.__class__.objects(
+        # search is done on base class to catch all inherited classes
+        if self.parent and not self.__class__.__base__.objects(
                 parent=self.parent, status__in=ACTIVE_TASK_STATUSES):
             log.info(u"Last task in group, calling cleanup")
             self.cleanup()
