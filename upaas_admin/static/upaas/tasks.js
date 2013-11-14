@@ -51,6 +51,7 @@ window.UPAAS.tasks_callback = function (data) {
             }
             if (task.subtasks.length > 0) {
                 menu.push('<span class="badge pull-right">');
+                menu.push('<i class="fa fa-sitemap"></i>');
                 menu.push(task.subtasks.length);
                 menu.push('</span> ');
             }
