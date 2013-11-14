@@ -30,6 +30,8 @@ from upaas_admin.apps.tasks.registry import register
 log = logging.getLogger(__name__)
 
 
+#TODO translations
+
 @register
 class BuildPackageTask(ApplicationTask):
 
@@ -116,13 +118,16 @@ class StartPackageTask(PackageTask):
         log.info(u"Starting application '%s' using package '%s'" % (
             self.application.name, self.package.safe_id))
 
-        try:
-            self.package.unpack()
-        except UnpackError, e:
-            log.error(u"Unpacking failed: %s" % e)
-            raise Exception(u"Unpacking package failed: %s" % e)
+        if not os.path.exists(self.package.package_path):
+            try:
+                self.package.unpack()
+            except UnpackError, e:
+                log.error(u"Unpacking failed: %s" % e)
+                raise Exception(u"Unpacking package failed: %s" % e)
         else:
-            yield 75
+            log.warning(u"Package already exists: "
+                        u"%s" % self.package.package_path)
+        yield 75
 
         self.package.save_vassal_config(self.backend)
         # TODO handle backend start task failure with rescue code
@@ -155,16 +160,16 @@ class StopPackageTask(PackageTask):
                     self.application.vassal_path, e))
                 raise
         else:
-            log.error(u"Vassal config file for application '%s' not found at "
-                      u"'%s" % (self.application.safe_id,
-                                self.application.vassal_path))
+            log.warning(u"Vassal config file for application '%s' not found "
+                        u"at '%s" % (self.application.safe_id,
+                                     self.application.vassal_path))
         yield 10
 
         if os.path.isdir(self.package.package_path):
             _remove_pkg_dir(self.package.package_path)
         else:
-            log.info(u"Package directory not found at "
-                     u"'%s'" % self.package.package_path)
+            log.warning(u"Package directory not found at "
+                        u"'%s'" % self.package.package_path)
         yield 75
 
         log.info(u"Checking for old application packages")
