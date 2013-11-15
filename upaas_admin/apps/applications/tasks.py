@@ -128,10 +128,12 @@ class StartPackageTask(PackageTask):
         else:
             log.warning(u"Package already exists: "
                         u"%s" % self.package.package_path)
-        yield 75
+        yield 50
 
         self.package.save_vassal_config(self.backend)
         # TODO handle backend start task failure with rescue code
+
+        self.wait_until_running()
         yield 100
 
 
@@ -194,7 +196,6 @@ class StopPackageTask(PackageTask):
 
 @register
 class UpgradePackageTask(PackageTask):
-    #TODO add graceful update
 
     def generate_title(self):
         return _(u"Upgrading {name} on {backend}").format(
@@ -206,17 +207,20 @@ class UpgradePackageTask(PackageTask):
         except UnpackError:
             log.error(u"Unpacking failed")
             raise
-        yield 50
+        yield 40
 
         self.package.save_vassal_config(self.backend)
         yield 75
+
+        self.wait_until_running()
+        yield 95
+
         self.package.cleanup_application_packages()
         yield 100
 
 
 @register
 class UpdateVassalTask(PackageTask):
-    #TODO add graceful update
 
     def generate_title(self):
         return _(u"Updating {name} configuration on {backend}").format(
@@ -224,6 +228,10 @@ class UpdateVassalTask(PackageTask):
 
     def job(self):
         self.package.save_vassal_config(self.backend)
-        yield 75
+        yield 50
+
+        self.wait_until_running()
+        yield 95
+
         self.package.cleanup_application_packages()
         yield 100

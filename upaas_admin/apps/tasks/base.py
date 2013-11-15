@@ -5,9 +5,20 @@
 """
 
 
+from datetime import datetime, timedelta
+from time import sleep
+import logging
+
 from mongoengine import ReferenceField
 
+from django.utils.translation import ugettext_lazy as _
+
 from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.servers.constants import PortsNames
+from upaas_admin.common.uwsgi import fetch_json_stats
+
+
+log = logging.getLogger(__name__)
 
 
 class VirtualTask(Task):
@@ -56,7 +67,31 @@ class PackageTask(BackendTask, ApplicationTask):
 
     package = ReferenceField('Package', dbref=False, required=True)
 
+    # time limit for graceful operations, how long should we wait for app to
+    # start before giving up
+    graceful_timeout = 300
+
     meta = {
         'allow_inheritance': True,
         'indexes': ['application', 'backend'],
     }
+
+    def wait_until_running(self, timelimit=None):
+        if timelimit is None:
+            timelimit = self.graceful_timeout
+
+        ports_data = self.backend.application_ports(self.application)
+        if ports_data and ports_data.ports.get(PortsNames.stats):
+            ip = str(self.backend.ip)
+            name = self.application.name
+            #FIXME track pid change instead of initial sleep (?)
+            sleep(3)
+            timeout = datetime.now() + timedelta(seconds=timelimit)
+            while datetime.now() <= timeout:
+                s = fetch_json_stats(ip, ports_data.ports[PortsNames.stats])
+                if s:
+                    return True
+                log.debug(_(u"Waiting for {name} to start").format(name=name))
+                sleep(2)
+
+        return False
