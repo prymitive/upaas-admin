@@ -578,7 +578,7 @@ class Application(Document):
                     # add backend to run plan if not already there
                     ApplicationRunPlan.objects(
                         id=self.run_plan.id,
-                        backends__not=self.backend).update_one(
+                        backends__not=backend).update_one(
                         push__backends=backend)
                     Task.put('StartPackageTask', backend=backend,
                              application=self, package=self.current_package,
