@@ -561,9 +561,6 @@ class Application(Document):
                             u"available").format(name=self.name))
                 return
 
-            ApplicationRunPlan.objects(id=self.run_plan.id).update_one(
-                set__backends=new_backends)
-
             kwargs = {}
             if len(current_backends) > 1 or len(new_backends) > 1:
                 vtask = VirtualTask(
@@ -579,6 +576,11 @@ class Application(Document):
                              application=self, package=self.current_package,
                              **kwargs)
                 else:
+                    # add backend to run plan if not already there
+                    ApplicationRunPlan.objects(
+                        id=self.run_plan.id,
+                        backends__not=self.backend).update_one(
+                        push__backends=new_backends)
                     Task.put('StartPackageTask', backend=backend,
                              application=self, package=self.current_package,
                              **kwargs)
