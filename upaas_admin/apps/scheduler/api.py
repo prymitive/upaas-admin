@@ -62,12 +62,11 @@ class RunPlanResource(MongoEngineResource):
                         "{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
         except mongoengine.NotUniqueError:
-            msg = _(u"Application '{name}' is already running").format(
-                name=bundle.data['application'].name)
+            msg = _(u"Application is already running")
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
     def apply_authorization_limits(self, request, object_list):
         log.debug(_(u"Limiting query to user owned apps (length: "
                     u"{length})").format(length=len(object_list)))
-        return object_list.filter(application=request.user.applications)
+        return object_list.filter(application__in=request.user.applications)
