@@ -235,6 +235,9 @@ class Task(Document):
                                                      statuses))
                 self.parent.__class__.objects(id=self.parent.id).update_one(
                     set__status=TaskStatus.successful)
+            # remove parent_started mark on all subtask
+            self.__class__.objects(parent=self.parent).update(
+                set__parent_started=False)
 
     def job(self):
         """
