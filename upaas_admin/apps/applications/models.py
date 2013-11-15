@@ -579,7 +579,7 @@ class Application(Document):
                     ApplicationRunPlan.objects(
                         id=self.run_plan.id,
                         backends__not=self.backend).update_one(
-                        push__backends=new_backends)
+                        push__backends=backend)
                     Task.put('StartPackageTask', backend=backend,
                              application=self, package=self.current_package,
                              **kwargs)
