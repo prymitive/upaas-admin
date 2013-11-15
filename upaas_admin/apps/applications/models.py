@@ -569,8 +569,7 @@ class Application(Document):
                 vtask.save()
                 kwargs['parent'] = vtask
 
-            #TODO add wait for subscription
-            for backend in self.run_plan.backends:
+            for backend in new_backends:
                 if backend in current_backends:
                     Task.put('UpdateVassalTask', backend=backend,
                              application=self, package=self.current_package,
