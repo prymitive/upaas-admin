@@ -50,7 +50,7 @@ class Command(DaemonCommand):
         ).distinct("application")
         return super(Command, self).pop_task(
             backend=self.backend,
-            __raw__={'application': {'$nin': [a.id for a in locked_apps]}})
+            __raw__={'application': {'$nin': locked_apps}})
 
     def handle(self, *args, **options):
         name = gethostname()
