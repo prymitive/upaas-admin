@@ -211,10 +211,13 @@ class Task(Document):
             self.status = TaskStatus.successful
             self.save()
 
-        if not self.parent:
+        if self.parent:
+            self.cleanup_parent()
+        else:
             log.info(u"Stand alone task, calling cleanup")
             self.cleanup()
 
+    def cleanup_parent(self):
         # if there are no more unfinished task for our parent we mark it as
         # finished
         # search is done on base class to catch all inherited classes

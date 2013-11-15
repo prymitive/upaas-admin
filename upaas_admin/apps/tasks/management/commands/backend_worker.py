@@ -39,13 +39,16 @@ class Command(DaemonCommand):
         locked_apps = self.task_class.objects(
             Q(is_virtual=False)
             & (
-                (Q(parent__exists=True, parent_started=True)
-                    & (
-                        Q(status__ne=TaskStatus.pending, backend=self.backend),
-                        Q(status=TaskStatus.pending, backend__ne=self.backend)
-                    ))
-                | Q(parent__exists=False, status=TaskStatus.running,
+                Q(parent__exists=False, status=TaskStatus.running,
                     backend=self.backend)
+                | (
+                    Q(parent__exists=True, parent_started=True)
+                    & (
+                        Q(status__ne=TaskStatus.pending, backend=self.backend)
+                        |
+                        Q(status=TaskStatus.pending, backend__ne=self.backend)
+                    )
+                )
             )
         ).distinct("application")
         return super(Command, self).pop_task(
