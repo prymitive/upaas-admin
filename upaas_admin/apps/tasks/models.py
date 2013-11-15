@@ -190,7 +190,7 @@ class Task(Document):
         """
         if self.parent:
             # mark all subtask as part of started parent
-            self.__class__.objects(parent=self.parent).update(
+            self.__class__.__base__.objects(parent=self.parent).update(
                 set__parent_started=True)
             # mark parent as started
             self.parent.__class__.objects(id=self.parent.id).update_one(
@@ -236,7 +236,7 @@ class Task(Document):
                 self.parent.__class__.objects(id=self.parent.id).update_one(
                     set__status=TaskStatus.successful)
             # remove parent_started mark on all subtask
-            self.__class__.objects(parent=self.parent).update(
+            self.__class__.__base__.objects(parent=self.parent).update(
                 set__parent_started=False)
 
     def job(self):
