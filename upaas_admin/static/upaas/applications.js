@@ -68,8 +68,8 @@ window.UPAAS.apps_updates_callback = function (data) {
         menu.push('<a href="#">' + gettext('No running tasks') + '</a>');
         menu.push('</li>');
     }
-    if ($('#upaas-tasks-menu').html() != menu.join('\n')) {
-        $('#upaas-tasks-menu').html(menu.join('\n'));
+    if ($('#upaas-tasks-menu').html() != menu.join('')) {
+        $('#upaas-tasks-menu').html(menu.join(''));
     }
 
     window.setTimeout(
