@@ -1,0 +1,64 @@
+:plain
+  <script type="text/haml-template" id="upaas-tasks-dropdown-details">
+  - var task_header_li_class = 'dropdown-header';
+  - var task_body_li_class = '';
+  - if (task.is_failed) {
+    - task_header_li_class += ' upaas-task-failed';
+    - task_body_li_class += ' upaas-task-failed';
+
+  %li{role: "presentation", class: task_header_li_class}
+    - if (task.is_finished) {
+      = gettext("Finished")
+      :
+      = moment(task.date_finished).fromNow()
+    - else if (task.is_pending) {
+      = gettext("Queued")
+      :
+      = moment(task.date_created).fromNow()
+    - else {
+      = gettext("Started")
+      :
+      = moment(task.locked_since).fromNow()
+    - if (task.subtasks.length > 0) {
+      %span.badge.pull-right
+        %i.fa.fa-sitemap
+        = task.subtasks.length
+
+    %li{class: task_body_li_class}
+      - var task_url;
+      - if (task.subtasks.length > 0) {
+        - task_url = Django.url('app_tasks', task.application.id);
+      - else {
+        - task_url = Django.url('app_task_details', task.task_id);
+      %a{href: task_url}
+        %i{class: task.icon}
+        = task.title
+        - if (!task.pending) {
+          - var progressbar_class = 'progress upaas-task-progressbar';
+          - if (!task.is_finished) {
+            - progressbar_class += ' active progress-striped';
+          %div{class: progressbar_class}
+            - if (task.subtasks.length > 0) {
+              - _(task.subtasks).each(function(subtask, i) {
+                - var subbar_class = 'progress-bar-default';
+                - if (task.is_successful) {
+                  - subbar_class = "progress-bar-success";
+                - else if (task.is_failed) {
+                  - subbar_class = "progress-bar-danger";
+                - else {
+                  - switch (i % 3) {
+                    - case 1:
+                      - subbar_class = 'progress-bar-info'; break;
+                    - case 2:
+                      - subbar_class = 'progress-bar-warning'; break;
+                - var subbar_style = "width: " + subtask.progress + "%;";
+                .progress-bar{role: "progressbar", class: subbar_class, "aria-valuenow": subtask.progress, "aria-valuemin": 0, "aria-valuemax": 100, style: subbar_style}
+            - else {
+              - var bar_style = "width: " + task.progress + "%;";
+              - var bar_class = "progress-bar-default";
+              - if (task.is_successful) {
+                - bar_class = "progress-bar-success";
+              - else if (task.is_failed) {
+                - bar_class = "progress-bar-danger";
+              .progress-bar{class: bar_class, role: "progressbar",  "aria-valuenow": task.progress, "aria-valuemin": 0, "aria-valuemax": 100, style: bar_style}
+  </script>

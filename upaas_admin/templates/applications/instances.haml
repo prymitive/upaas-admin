@@ -2,7 +2,6 @@
 
 
 - load i18n
-- load compressed
 
 
 - block app_content
@@ -18,8 +17,6 @@
 
 - block js_bottom
   = block.super
-
-  - compressed_js "haml"
 
   :javascript
     function instances_callback(data) {

@@ -243,6 +243,9 @@ PIPELINE_JS = {
             'bootstrap/js/bootstrap.min.js',
             'js/djangojs/django.min.js',
             'moment-js/moment-with-langs.min.js',
+            'underscore/underscore-min.js',
+            'underscore/underscore.string.min.js',
+            'haml/haml.min.js',
             'upaas/*.js',
         ),
         'output_filename': 'js/base.js',
@@ -259,14 +262,6 @@ PIPELINE_JS = {
         ),
         'output_filename': 'js/zeroclipboard.js',
     },
-    'haml': {
-        'source_filenames': (
-            'underscore/underscore-min.js',
-            'underscore/underscore.string.min.js',
-            'haml/haml.min.js',
-        ),
-        'output_filename': 'js/haml.js',
-    }
 }
 
 

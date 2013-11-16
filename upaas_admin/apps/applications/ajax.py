@@ -42,10 +42,12 @@ def task_to_json(task, application, already_running):
         'date_finished': date_finished,
         'locked_since': locked_since,
         'status': task.status,
-        'pending': task.is_pending,
-        'failed': task.is_failed,
-        'running': task.is_running,
-        'finished': task.is_finished,
+        'is_pending': task.is_pending,
+        'is_active': task.is_active,
+        'is_successful': task.is_successful,
+        'is_failed': task.is_failed,
+        'is_running': task.is_running,
+        'is_finished': task.is_finished,
         'progress': task.progress,
         'icon': task.icon_class,
         'application': {'name': application.name, 'id': application.safe_id},
@@ -55,35 +57,14 @@ def task_to_json(task, application, already_running):
     return already_running, task_data
 
 
-@login_required
-@dajaxice_register
-@cache_page(3)  # TODO make it configurable?
-def instances(request, app_id):
-    data = []
-    app = Application.objects.filter(id=app_id, owner=request.user).first()
-    if app.run_plan:
-        for backend in app.run_plan.backends:
-            ports_data = backend.application_ports(app)
-            if ports_data and ports_data.ports.get(PortsNames.stats):
-                s = fetch_json_stats(str(backend.ip),
-                                     ports_data.ports[PortsNames.stats])
-                data.append(
-                    {'backend': {'name': backend.name,
-                                 'ip': str(backend.ip)},
-                     'stats': s})
-    return dumps({'stats': data})
-
-
-@cache_page(2)  # TODO make it configurable?
-@dajaxice_register
-@login_required
-def user_tasks(request):
+def tasks_updates(user):
     tasks = []
     skip_vtasks = []
     running = 0
+
     # look for running or pending tasks and recently finished tasks
     for task in ApplicationTask.objects(
-        Q(application__in=request.user.applications) & (
+        Q(application__in=user.applications) & (
             Q(status__in=ACTIVE_TASK_STATUSES) |
             Q(date_finished__gte=datetime.now() - timedelta(seconds=300)))):
         #TODO make that 300 seconds configurable (?)
@@ -108,7 +89,33 @@ def user_tasks(request):
             running, data = task_to_json(task, task.application, running)
             tasks.append(data)
 
-    return dumps({'tasks': tasks, 'running': running})
+    return {'list': tasks, 'running': running}
+
+
+@login_required
+@dajaxice_register
+@cache_page(3)  # TODO make it configurable?
+def instances(request, app_id):
+    data = []
+    app = Application.objects.filter(id=app_id, owner=request.user).first()
+    if app.run_plan:
+        for backend in app.run_plan.backends:
+            ports_data = backend.application_ports(app)
+            if ports_data and ports_data.ports.get(PortsNames.stats):
+                s = fetch_json_stats(str(backend.ip),
+                                     ports_data.ports[PortsNames.stats])
+                data.append(
+                    {'backend': {'name': backend.name,
+                                 'ip': str(backend.ip)},
+                     'stats': s})
+    return dumps({'stats': data})
+
+
+@cache_page(2)  # TODO make it configurable?
+@dajaxice_register
+@login_required
+def apps_updates(request):
+    return dumps({'tasks': tasks_updates(request.user)})
 
 
 @dajaxice_register

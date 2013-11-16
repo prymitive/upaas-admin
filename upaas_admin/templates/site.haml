@@ -82,5 +82,7 @@
         - block content
 
     - block haml_templates
+      - if user.is_authenticated
+        - include "applications/partials/task_dropdown_details.js.haml"
 
     - block js_bottom

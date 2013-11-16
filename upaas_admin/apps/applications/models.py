@@ -493,20 +493,20 @@ class Application(Document):
                 log.error(u"Trying to start '%s' without run plan" % self.name)
                 return
 
-            kwargs = {}
-            if run_plan.ha_enabled:
-                vtask = VirtualTask(
-                    title=_(u"Starting application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
             backends = select_best_backends(run_plan)
             if not backends:
                 log.error(_(u"Can't start '{name}', no backend "
                             u"available").format(name=self.name))
                 run_plan.delete()
                 return
+
+            kwargs = {}
+            if len(backends) > 1:
+                vtask = VirtualTask(
+                    title=_(u"Starting application {name}").format(
+                        name=self.name))
+                vtask.save()
+                kwargs['parent'] = vtask
 
             run_plan.backends = backends
             run_plan.save()

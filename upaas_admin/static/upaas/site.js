@@ -6,4 +6,9 @@
 
 $(document).ready(function(){
     $('.upaas-help-tooltip').tooltip({container: '.upaas-content'});
+    if (Django.user.is_authenticated) {
+        Dajaxice.upaas_admin.apps.applications.apps_updates(
+            window.UPAAS.apps_updates_callback
+        );
+    }
 });
