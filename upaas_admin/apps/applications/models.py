@@ -21,6 +21,7 @@ from django.conf import settings
 
 from upaas import utils
 from upaas import tar
+from upaas.checksum import calculate_file_sha256, calculate_string_sha256
 from upaas.config.base import UPAAS_CONFIG_DIRS
 from upaas.config.metadata import MetadataConfig
 from upaas.storage.utils import find_storage_handler
@@ -224,11 +225,19 @@ class Package(Document):
 
     def save_vassal_config(self, backend):
         log.info(u"Generating uWSGI vassal configuration")
-        options = self.generate_uwsgi_config(backend)
+        options = u"\n".join(self.generate_uwsgi_config(backend))
+
+        if os.path.exists(self.application.vassal_path):
+            current_hash = calculate_file_sha256(self.application.vassal_path)
+            new_hash = calculate_string_sha256(options)
+            if current_hash == new_hash:
+                log.info(u"Vassal is present and valid, skipping rewrite")
+                return
+
         log.info(u"Saving vassal configuration to "
                  u"'%s'" % self.application.vassal_path)
         with open(self.application.vassal_path, 'w') as vassal:
-            vassal.write('\n'.join(options))
+            vassal.write(options)
         log.info(u"Vassal saved")
 
     def unpack(self):
