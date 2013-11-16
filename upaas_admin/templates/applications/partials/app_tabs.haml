@@ -4,17 +4,17 @@
 
   %ul.nav.nav-tabs
     - for tab in tabs
-      %li{'class':'{% if tab.tab_id == current_tab_id %}active{% endif %}'}
+      %li{'id':'upaas-app-{{ app.safe_id }}-tab-{{ tab.tab_id }}', 'class':'{% if tab.tab_id == current_tab_id %}active{% endif %}'}
         %a{'href':'{% url tab.tab_id app.safe_id %}'}
           = tab.tab_label
           - if tab.tab_id == 'app_packages' and app.packages
-            %span.badge
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-packages'}
               = app.packages|length
           - if tab.tab_id == 'app_instances' and app.run_plan
-            %span.badge
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-instances'}
               = app.run_plan.backends|length
           - if tab.tab_id == 'app_tasks' and app.active_tasks
-            %span.badge
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks'}
               = app.active_tasks|length
 
   .tab-content

@@ -115,7 +115,26 @@ def instances(request, app_id):
 @dajaxice_register
 @login_required
 def apps_updates(request):
-    return dumps({'tasks': tasks_updates(request.user)})
+    all_apps = []
+    running_apps = []
+    for app in request.user.applications:
+        active_tasks = []
+        for task in app.active_tasks:
+            _, task_data = task_to_json(task, app, 0)
+            active_tasks.append(task_data)
+        app_data = {
+            'id': app.safe_id,
+            'name': app.name,
+            'packages': len(app.packages),
+            'is_running': app.run_plan is not None,
+            'instances': len(app.run_plan.backends) if app.run_plan else 0,
+            'active_tasks': active_tasks
+        }
+        all_apps.append(app_data)
+        if app.run_plan:
+            running_apps.append(app_data)
+    apps = {'list': all_apps, 'running': running_apps}
+    return dumps({'apps': apps, 'tasks': tasks_updates(request.user)})
 
 
 @dajaxice_register

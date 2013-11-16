@@ -10,6 +10,25 @@ window.UPAAS = window.UPAAS || {};
 window.UPAAS.apps_updates_callback = function (data) {
     $('#upaas-tasks-badge').text(data.tasks.running);
 
+    // update apps badges
+    $.each(data.apps.list, function (i, app) {
+        if (app.packages) {
+            $('.upaas-app-' + app.id + '-badge-packages').text(app.packages);
+        }
+
+        var instances_badge = '';
+        if (app.instances > 0) {
+            instances_badge = app.instances;
+        }
+        $('.upaas-app-' + app.id + '-badge-instances').text(instances_badge);
+
+        var tasks_badge = '';
+        if (app.active_tasks.length > 0) {
+            tasks_badge = app.active_tasks.length;
+        }
+        $('.upaas-app-' + app.id + '-badge-tasks').text(tasks_badge);
+    });
+
     if (data.tasks.running > 0) {
         if ($('#upaas-tasks-badge').hasClass('active') == false) {
             $('#upaas-tasks-badge').addClass('active');
