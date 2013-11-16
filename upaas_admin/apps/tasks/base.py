@@ -87,11 +87,21 @@ class PackageTask(BackendTask, ApplicationTask):
             #FIXME track pid change instead of initial sleep (?)
             sleep(3)
             timeout = datetime.now() + timedelta(seconds=timelimit)
+            logged = False
             while datetime.now() <= timeout:
                 s = fetch_json_stats(ip, ports_data.ports[PortsNames.stats])
                 if s:
                     return True
-                log.debug(_(u"Waiting for {name} to start").format(name=name))
+                if logged:
+                    log.debug(_(u"Waiting for {name} to start").format(
+                        name=name))
+                else:
+                    log.info(_(u"Waiting for {name} to start").format(
+                        name=name))
+                    logged = True
                 sleep(2)
+            else:
+                log.error(_(u"Timeout reached but {name} doesn't appear to be "
+                            u"running yet").format(name=name))
 
         return False
