@@ -84,6 +84,7 @@
         - if metadiff
           %p
           %a.btn.btn-primary{'href':'{% url "app_meta_from_pkg" pkg.safe_id %}'}
+            %i.fa.fa-undo
             - trans "Set as app metadata"
 
       - if metadiff
@@ -94,4 +95,5 @@
               {% for line in metadiff %}{{ line }}{% endfor %}
           %p
           %a.btn.btn-primary{'href':'{% url "app_meta_from_pkg" pkg.safe_id %}'}
+            %i.fa.fa-undo
             - trans "Set as app metadata"

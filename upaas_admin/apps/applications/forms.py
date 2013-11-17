@@ -58,6 +58,7 @@ class UpdateApplicationMetadataInlineForm(InlineCrispyMongoForm,
                                           _MetadataForm):
 
     submit_label = 'Update'
+    layout = ['metadata']
 
     class Meta:
         document = Application
@@ -69,6 +70,7 @@ class UpdateApplicationMetadataInlineForm(InlineCrispyMongoForm,
 class BuildPackageForm(CrispyForm):
 
     submit_label = 'Build'
+    submit_icon_class = 'fa fa-cog'
     layout = ['force_fresh']
 
     force_fresh = forms.BooleanField(required=False)
@@ -77,6 +79,7 @@ class BuildPackageForm(CrispyForm):
 class StopApplicationForm(CrispyForm):
 
     submit_label = 'Stop'
+    submit_icon_class = 'fa fa-stop'
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)
@@ -85,6 +88,7 @@ class StopApplicationForm(CrispyForm):
 class RollbackApplicationForm(CrispyForm):
 
     submit_label = 'Rollback'
+    submit_icon_class = 'fa fa-undo'
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)
@@ -93,6 +97,7 @@ class RollbackApplicationForm(CrispyForm):
 class ApplicatiomMetadataFromPackageForm(CrispyForm):
 
     submit_label = 'Save'
+    submit_icon_class = 'fa fa-undo'
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)

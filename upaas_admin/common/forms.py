@@ -49,6 +49,7 @@ class CirspyIconButton(StrictButton):
 class CrispyForm(Form):
 
     submit_label = 'Submit'
+    submit_icon_class = 'fa fa-floppy-o'
     form_action = None
     form_class = 'form-horizontal'
     label_class = 'col-md-2'
@@ -67,8 +68,9 @@ class CrispyForm(Form):
                 CirspyIconButton(_("Cancel"), css_class='btn-default',
                                  icon_class='fa fa-reply',
                                  onclick='javascript:history.go(-1);'),
-                StrictButton(_(self.submit_label), css_class='btn-primary',
-                             type='submit'),
+                CirspyIconButton(_(self.submit_label), type='submit',
+                                 css_class='btn-primary',
+                                 icon_class=self.submit_icon_class),
             ),
         ]
         self.helper.layout = Layout(*layout)
@@ -97,6 +99,7 @@ class InlineCrispyForm(Form):
 class CrispyMongoForm(MongoForm):
 
     submit_label = 'Submit'
+    submit_icon_class = 'fa fa-floppy-o'
     form_action = None
     form_class = 'form-horizontal'
     label_class = 'col-md-2'
@@ -115,8 +118,9 @@ class CrispyMongoForm(MongoForm):
                 CirspyIconButton(_("Cancel"), css_class='btn-default',
                                  icon_class='fa fa-reply',
                                  onclick='javascript:history.go(-1);'),
-                StrictButton(_(self.submit_label), css_class='btn-primary',
-                             type='submit'),
+                CirspyIconButton(_(self.submit_label), type='submit',
+                                 css_class='btn-primary',
+                                 icon_class=self.submit_icon_class),
             ),
         ]
         self.helper.layout = Layout(*layout)

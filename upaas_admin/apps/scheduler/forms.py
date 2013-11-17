@@ -15,6 +15,7 @@ from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 class ApplicationRunPlanForm(CrispyMongoForm):
 
     submit_label = 'Start'
+    submit_icon_class = 'fa fa-play'
     #FIXME patch crispy form-horizontal to support checkboxes
     form_class = ''
     label_class = ''
