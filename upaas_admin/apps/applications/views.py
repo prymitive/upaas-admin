@@ -226,7 +226,7 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
             raise Http404
 
     def get_success_url(self):
-        return reverse('app_details', args=[self.app.safe_id])
+        return reverse('app_instances', args=[self.app.safe_id])
 
     def get_context_data(self, **kwargs):
         context = super(StartApplicationView, self).get_context_data(**kwargs)
@@ -279,7 +279,7 @@ class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
             raise Http404
 
     def get_success_url(self):
-        return reverse('app_details', args=[self.app.safe_id])
+        return reverse('app_instances', args=[self.app.safe_id])
 
     def get_context_data(self, **kwargs):
         context = super(EditApplicationRunPlanView, self).get_context_data(
@@ -312,6 +312,9 @@ class StopApplicationView(AppActionView):
     slug_field = 'id'
     context_object_name = 'app'
     form_class = StopApplicationForm
+
+    def get_success_url(self):
+        return reverse('app_instances', args=[self.object.safe_id])
 
     def validate_action(self, request):
         if not self.object.run_plan:
@@ -369,7 +372,7 @@ class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
     form_class = RollbackApplicationForm
 
     def get_success_url(self):
-        return reverse('app_details', args=[self.object.application.safe_id])
+        return reverse('app_packages', args=[self.object.application.safe_id])
 
     def validate_action(self, request):
         if self.object == self.object.application.current_package:
@@ -394,7 +397,7 @@ class ApplicatiomMetadataFromPackageView(OwnedPackagesMixin, AppActionView):
     form_class = ApplicatiomMetadataFromPackageForm
 
     def get_success_url(self):
-        return reverse('app_details', args=[self.object.application.safe_id])
+        return reverse('app_metadata', args=[self.object.application.safe_id])
 
     def action(self, form):
         if self.object:
