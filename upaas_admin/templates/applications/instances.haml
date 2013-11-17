@@ -6,13 +6,9 @@
 
 - block app_content
 
-  - if app.run_plan
-    #stats-container
-      %h1.text-center.text-muted
-        %i.fa.fa-refresh.fa-spin
-  - else
-    %h3.text-center.text-muted
-      - trans "Application is stopped, no instances are running"
+  #stats-container
+    %h1.text-center.text-muted
+      %i.fa.fa-refresh.fa-spin
 
 
 - block js_bottom
