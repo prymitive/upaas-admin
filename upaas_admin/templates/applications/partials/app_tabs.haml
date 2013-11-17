@@ -7,14 +7,14 @@
       %li{'id':'upaas-app-{{ app.safe_id }}-tab-{{ tab.tab_id }}', 'class':'{% if tab.tab_id == current_tab_id %}active{% endif %}'}
         %a{'href':'{% url tab.tab_id app.safe_id %}'}
           = tab.tab_label
-          - if tab.tab_id == 'app_packages' and app.packages
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-packages'}
+          - if tab.tab_id == 'app_packages'
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-packages{% if not app.packages %} hidden{% endif %}'}
               = app.packages|length
-          - if tab.tab_id == 'app_instances' and app.run_plan
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-instances'}
+          - if tab.tab_id == 'app_instances'
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-instances{% if not app.run_plan %} hidden{% endif %}'}
               = app.run_plan.backends|length
-          - if tab.tab_id == 'app_tasks' and app.active_tasks
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks'}
+          - if tab.tab_id == 'app_tasks'
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks{% if not app.active_tasks %} hidden{% endif %}'}
               = app.active_tasks|length
 
   .tab-content
