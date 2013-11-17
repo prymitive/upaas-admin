@@ -1,4 +1,4 @@
-- extends 'site.html'
+- extends 'applications/base.html'
 
 
 - load i18n
@@ -8,12 +8,11 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb pkg.application.name "app_details" pkg.application.safe_id
   - breadcrumb "Packages" "app_packages" pkg.application.safe_id
   - breadcrumb pkg.safe_id "package_details" pkg.safe_id
 
 
-- block content
+- block app_content
 
   .tabbable
 

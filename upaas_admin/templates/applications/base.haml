@@ -14,7 +14,8 @@
 
   .col-md-9
 
-    - include "applications/partials/app_tabs.html"
+    - if tabs
+      - include "applications/partials/app_tabs.html"
 
     - block app_content
 

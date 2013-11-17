@@ -333,6 +333,8 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
 
     def get_context_data(self, **kwargs):
         context = super(PackageDetailView, self).get_context_data(**kwargs)
+        if self.object:
+            context['app'] = self.object.application
         context['metadiff'] = list(unified_diff(
             self.object.application.metadata.splitlines(1),
             self.object.metadata.splitlines(1), fromfile=__(u"Application"),
