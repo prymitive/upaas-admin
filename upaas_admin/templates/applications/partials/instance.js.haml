@@ -61,6 +61,7 @@
                       = worker.requests
                     %td
                       = Math.round(worker.avg_rt / 1000);
+                      ms
                     %td
                       = window.UPAAS.bytes_to_human(worker.tx);
               - if (total_workers == 0) {
