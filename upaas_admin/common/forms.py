@@ -71,6 +71,7 @@ class CrispyForm(Form):
                 CirspyIconButton(_(self.submit_label), type='submit',
                                  css_class='btn-primary',
                                  icon_class=self.submit_icon_class),
+                css_class="btn-toolbar",
             ),
         ]
         self.helper.layout = Layout(*layout)
@@ -121,6 +122,7 @@ class CrispyMongoForm(MongoForm):
                 CirspyIconButton(_(self.submit_label), type='submit',
                                  css_class='btn-primary',
                                  icon_class=self.submit_icon_class),
+                css_class="btn-toolbar",
             ),
         ]
         self.helper.layout = Layout(*layout)
