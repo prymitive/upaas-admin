@@ -15,7 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.forms.fields import validators
 
 from crispy_forms.helper import FormHelper, Layout
-from crispy_forms.bootstrap import StrictButton
+from crispy_forms.bootstrap import StrictButton, Div
 
 
 class IPField(GenericIPAddressField):
@@ -63,11 +63,13 @@ class CrispyForm(Form):
         self.helper.label_class = self.label_class
         self.helper.field_class = self.field_class
         layout = self.layout + [
-            CirspyIconButton(_("Cancel"), css_class='btn-default',
-                             icon_class='fa fa-reply',
-                             onclick='javascript:history.go(-1);'),
-            StrictButton(_(self.submit_label), css_class='btn-primary',
-                         type='submit'),
+            Div(
+                CirspyIconButton(_("Cancel"), css_class='btn-default',
+                                 icon_class='fa fa-reply',
+                                 onclick='javascript:history.go(-1);'),
+                StrictButton(_(self.submit_label), css_class='btn-primary',
+                             type='submit'),
+            ),
         ]
         self.helper.layout = Layout(*layout)
 
@@ -109,11 +111,13 @@ class CrispyMongoForm(MongoForm):
         self.helper.label_class = self.label_class
         self.helper.field_class = self.field_class
         layout = self.layout + [
-            CirspyIconButton(_("Cancel"), css_class='btn-default',
-                             icon_class='fa fa-reply',
-                             onclick='javascript:history.go(-1);'),
-            StrictButton(_(self.submit_label), css_class='btn-primary',
-                         type='submit'),
+            Div(
+                CirspyIconButton(_("Cancel"), css_class='btn-default',
+                                 icon_class='fa fa-reply',
+                                 onclick='javascript:history.go(-1);'),
+                StrictButton(_(self.submit_label), css_class='btn-primary',
+                             type='submit'),
+            ),
         ]
         self.helper.layout = Layout(*layout)
 
