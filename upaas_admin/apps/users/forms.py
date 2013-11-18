@@ -38,7 +38,6 @@ class SelfEditAccountForm(MongoForm):
 
 class UserPasswordChangeForm(CrispyForm, PasswordChangeForm):
 
-    submit_label = 'Change'
     form_action = reverse_lazy('django.contrib.auth.views.password_change')
     layout = ['old_password', 'new_password1', 'new_password2']
     label_class = 'col-md-3'
