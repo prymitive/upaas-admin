@@ -18,7 +18,7 @@ interpreter:
 
 
 repository:
-  clone: git clone --depth=10 --quiet --branch 2.3-stable git://github.com/redmine/redmine.git %destination%
+  clone: git clone --depth=10 --quiet --branch 2.4-stable git://github.com/redmine/redmine.git %destination%
   update:
     - rm -f Gemfile.lock
     - git reset --hard
