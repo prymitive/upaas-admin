@@ -74,7 +74,10 @@ class CrispyForm(Form):
                 css_class="btn-toolbar",
             ),
         ]
-        self.helper.layout = Layout(*layout)
+        self.helper.layout = Layout(*self.clean_layout(layout))
+
+    def clean_layout(self, layout):
+        return layout
 
 
 class InlineCrispyForm(Form):
@@ -94,7 +97,10 @@ class InlineCrispyForm(Form):
             StrictButton(_(self.submit_label), css_class='btn-primary',
                          type='submit'),
         ]
-        self.helper.layout = Layout(*layout)
+        self.helper.layout = Layout(*self.clean_layout(layout))
+
+    def clean_layout(self, layout):
+        return layout
 
 
 class CrispyMongoForm(MongoForm):
@@ -125,7 +131,10 @@ class CrispyMongoForm(MongoForm):
                 css_class="btn-toolbar",
             ),
         ]
-        self.helper.layout = Layout(*layout)
+        self.helper.layout = Layout(*self.clean_layout(layout))
+
+    def clean_layout(self, layout):
+        return layout
 
 
 class InlineCrispyMongoForm(MongoForm):
@@ -145,4 +154,7 @@ class InlineCrispyMongoForm(MongoForm):
             StrictButton(_(self.submit_label), css_class='btn-primary',
                          type='submit'),
         ]
-        self.helper.layout = Layout(*layout)
+        self.helper.layout = Layout(*self.clean_layout(layout))
+
+    def clean_layout(self, layout):
+        return layout
