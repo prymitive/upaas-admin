@@ -14,3 +14,8 @@
 
   .well
     - crispy metadata_form
+
+  %p.text-center
+    %a.btn.btn-default{'href':'{% url "app_metadata_yml" app.safe_id %}'}
+      %i.fa.fa-download
+      - trans "Download metadata"

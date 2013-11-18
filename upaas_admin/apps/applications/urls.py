@@ -46,6 +46,11 @@ urlpatterns = patterns(
         ApplicatiomMetadataFromPackageView.as_view(),
         name='app_meta_from_pkg'),
 
+    url(r'^(?P<slug>[-_\w]+)/metadata.yml$',
+        DownloadApplicationMetadataView.as_view(), name='app_metadata_yml'),
+    url(r'^pkg/(?P<slug>[-_\w]+)/metadata.yml$',
+        DownloadPackageMetadataView.as_view(), name='pkg_metadata_yml'),
+
     url(r'^task/(?P<slug>[-_\w]+)$', ApplicationTaskDetailsView.as_view(),
         name='app_task_details'),
 )

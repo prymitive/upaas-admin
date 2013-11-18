@@ -12,7 +12,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext as __
-from django.http import Http404
+from django.http import Http404, HttpResponse
 
 from mongoengine.errors import ValidationError, DoesNotExist
 
@@ -404,3 +404,34 @@ class ApplicatiomMetadataFromPackageView(OwnedPackagesMixin, AppActionView):
             app = self.object.application
             app.metadata = self.object.metadata
             app.save()
+
+
+class DownloadApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
+                                      MongoDetailView):
+
+    model = Application
+    slug_field = 'id'
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(self.object.metadata,
+                                content_type='text/x-yaml;charset=utf-8',
+                                **response_kwargs)
+        response['Content-Disposition'] = 'attachment; filename="%s' \
+                                          '.yml"' % self.object.name
+        return response
+
+
+class DownloadPackageMetadataView(LoginRequiredMixin, OwnedPackagesMixin,
+                                  MongoDetailView):
+
+    model = Package
+    slug_field = 'id'
+
+    def render_to_response(self, context, **response_kwargs):
+        response = HttpResponse(self.object.metadata,
+                                content_type='text/x-yaml;charset=utf-8',
+                                **response_kwargs)
+        response[
+            'Content-Disposition'] = 'attachment; filename="%s-%s.yml"' % (
+            self.object.application.name, self.object.safe_id)
+        return response
