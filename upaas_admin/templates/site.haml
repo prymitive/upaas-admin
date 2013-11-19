@@ -21,9 +21,15 @@
 
   %body
 
-    .navbar.navbar-default.navbar-fixed-top
+    .navbar.navbar-default.navbar-fixed-top{'role':'navigation'}
       .container
         .navbar-header
+          %button.navbar-toggle{'type':'button', 'data-toggle':'collapse', 'data-target':'.navbar-collapse'}
+            %span.sr-only
+              - trans "Toggle navigation"
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
           %a.navbar-brand{'href':'http://upaas-docs.readthedocs.org'}
             %i.fa.fa-cogs
             uPaaS
@@ -36,7 +42,7 @@
                     %i.fa.fa-wrench
                     - trans "Admin"
             %li.divider-vertical
-            %li.dropdown
+            %li.dropdown.hidden-xs
               %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
                 %strong
                   %span#upaas-tasks-badge.badge
@@ -46,7 +52,7 @@
                 %li
                   %a{'href':'#'}
                     - trans "No running tasks"
-            %li.divider-vertical
+            %li.divider-vertical.hidden-xs
             %li.dropdown
               %a.dropdown-toggle{'role':'button', 'data-toggle':'dropdown', 'href':'#'}
                 %img.img-rounded{'src':'{% gravatar_url user.email 24 %}', 'height':'24', 'width':'24'}
