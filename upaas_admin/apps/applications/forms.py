@@ -41,6 +41,11 @@ class RegisterApplicationForm(CrispyMongoForm, _MetadataForm):
 
     metadata = forms.FileField()
 
+    def clean_name(self):
+        if ' ' in self.cleaned_data['name']:
+            raise forms.ValidationError(_(u"Name cannot contain spaces"))
+        return self.cleaned_data['name']
+
 
 class UpdateApplicationMetadataForm(CrispyMongoForm, _MetadataForm):
 
