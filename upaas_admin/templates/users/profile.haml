@@ -71,10 +71,11 @@
               - trans "Api key"
               %i.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "API key is used for accessing uPaaS using cli client" %}'}
               :
-            .col-md-8
+            .col-md-8.input-group
               %input.form-control{'id':'apikey-input','type':'text', 'readonly':'readonly', 'value': '={ user.apikey }'}
-            %button.btn.btn-default{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
-              %i.fa.fa-files-o
+              %span.input-group-btn
+                %button.btn.btn-primary{'id':'copy-button', 'data-clipboard-text':'={ user.apikey }'}
+                  %i.fa.fa-files-o
 
         .text-center
           %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
