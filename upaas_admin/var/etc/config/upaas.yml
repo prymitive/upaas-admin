@@ -14,8 +14,8 @@ admin:
   # specified, details can be found in django docs:
   # https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
   domains:
-    - "upaas.io"
-    - "*.upaas.io"
+    - "www.u-paas.org"
+    - "u-paas.org"
 
 
 mongodb:
@@ -101,6 +101,7 @@ apps:
 defaults:
   budget:
     apps_count: 0
+    instance_limit: 0
     worker_limit: 16
     memory_limit: 512
     package_limit: 5

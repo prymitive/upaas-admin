@@ -12,6 +12,7 @@ from django.conf import settings
 
 
 class BudgetLimits(Document):
+    instance_limit = IntField(required=True, verbose_name=_('instance limit'))
     worker_limit = IntField(required=True, verbose_name=_('worker limit'))
     memory_limit = IntField(required=True,
                             verbose_name=_('memory limit'))

@@ -85,9 +85,10 @@ class User(MongoUser):
 
     @property
     def limits_usage(self):
-        usage = {'worker_limit': 0, 'memory_limit': 0}
+        usage = {'instance_limit': 0, 'worker_limit': 0, 'memory_limit': 0}
         for arp in ApplicationRunPlan.objects(
                 application__in=Application.objects(owner=self)):
+            usage['instance_limit'] += len(arp.backends)
             usage['worker_limit'] += arp.worker_limit
             usage['memory_limit'] += arp.memory_limit
         return usage
@@ -98,6 +99,7 @@ class User(MongoUser):
         user_budget.save()
 
     def sync_budget(self):
+        #TODO move to admin command (?)
         changed = False
         budget = self.budget
         for key, value in UserBudget.get_default_limits().items():

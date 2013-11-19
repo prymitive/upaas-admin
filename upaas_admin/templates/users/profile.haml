@@ -23,8 +23,8 @@
         %a{'href':'#apikey', 'data-toggle':'tab'}
           - trans "API key"
       %li
-        %a{'href':'#budget', 'data-toggle':'tab'}
-          - trans "Budget"
+        %a{'href':'#resources', 'data-toggle':'tab'}
+          - trans "Resource limits"
 
     .tab-content
 
@@ -80,7 +80,7 @@
           %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
             - trans "Reset API key"
 
-      #budget.tab-pane
+      #resources.tab-pane
         %dl.dl-horizontal
           %dt
             {% trans "Application limit" %}
@@ -91,6 +91,18 @@
             \/
             - if user.budget.apps_count
               = user.budget.apps_count
+            - else
+              - trans "no limit"
+
+          %dt
+            {% trans "Instance limit" %}
+            %i.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of running instances" %}'}
+            :
+          %dd
+            ={ user.limits_usage.instance_limit }
+            \/
+            - if user.budget.instance_limit
+              ={ user.budget.instance_limit }
             - else
               - trans "no limit"
 
