@@ -27,8 +27,8 @@ class ApplicationRunPlanForm(CrispyMongoForm):
         exclude = ('application', 'backends')
 
     def clean_memory_limit(self):
-        memory_limit = self.cleaned_data['memory_limit']
-        budget_limit = self.user.budget['memory_limit']
+        memory_limit = self.cleaned_data['memory']
+        budget_limit = self.user.budget['memory']
         if memory_limit > budget_limit:
             raise forms.ValidationError(_(u"User memory budget is only %d MB, "
                                           u"can't set higher application "

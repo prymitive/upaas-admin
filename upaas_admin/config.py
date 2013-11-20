@@ -57,12 +57,14 @@ class UPaaSConfig(base.Config):
             }
         },
         "defaults": {
-            "budget": {
-                "apps_count": base.IntegerEntry(required=True),
-                "instance_limit": base.IntegerEntry(required=True),
-                "worker_limit": base.IntegerEntry(required=True),
-                "memory_limit": base.IntegerEntry(required=True),
-                "package_limit": base.IntegerEntry(required=True, min_value=2),
+            "limits": {
+                "registered_apps": base.IntegerEntry(required=True),
+                "running_apps": base.IntegerEntry(required=True),
+                "instances": base.IntegerEntry(required=True),
+                "workers": base.IntegerEntry(required=True),
+                "memory": base.IntegerEntry(required=True),
+                "packages_per_app": base.IntegerEntry(required=True,
+                                                      min_value=2),
             }
         },
         "admin": {

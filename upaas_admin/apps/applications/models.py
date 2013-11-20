@@ -606,7 +606,7 @@ class Application(Document):
         """
         Removes over limit package files from database. Number of packages per
         app that are kept in database for rollback feature are set in user
-        budget as 'package_limit'.
+        limits as 'packages_per_app'.
         """
         storage = find_storage_handler(self.upaas_config)
         if not storage:
@@ -616,7 +616,7 @@ class Application(Document):
 
         removed = 0
         for pkg in Package.objects(application=self, filename__exists=True)[
-                self.owner.budget.package_limit:]:
+                self.owner.limits.packages_per_app:]:
             if pkg.id == self.current_package.id:
                 continue
             removed += 1

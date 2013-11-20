@@ -7,12 +7,13 @@ admin:
 
 
 defaults:
-  budget:
-    apps_count: 0
-    instance_limit: 0
-    worker_limit: 16
-    memory_limit: 512
-    package_limit: 2
+  limits:
+    registered_apps: 0
+    running_apps: 0
+    instances: 0
+    workers: 16
+    memory: 512
+    packages_per_app: 2
 
 
 apps:
