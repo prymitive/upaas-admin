@@ -18,13 +18,11 @@ class UserLimits(Document):
     """
     user = ReferenceField('User', dbref=False, unique=True, required=True)
 
-    registered_apps = IntField(verbose_name=_('registered application limit'))
     running_apps = IntField(verbose_name=_('running applications limit'))
     packages_per_app = IntField(verbose_name=_('stored packages limit'))
 
-    instances = IntField(verbose_name=_('running instance limit'))
-    workers = IntField(verbose_name=_('running workers limit'))
-    memory = IntField(verbose_name=_('allocated memory limit'))
+    instances = IntField(verbose_name=_('total running instance limit'))
+    workers = IntField(verbose_name=_('total running workers limit'))
 
     meta = {
         'indexes': ['user'],
@@ -32,8 +30,7 @@ class UserLimits(Document):
 
     _default_manager = QuerySetManager()
 
-    limit_fields = ['instances', 'workers', 'memory', 'registered_apps',
-                    'running_apps', 'packages_per_app']
+    limit_fields = ['running_apps', 'packages_per_app', 'instances', 'workers']
 
     @classmethod
     def get_default_limits(cls):
@@ -53,7 +50,7 @@ class ApplicationRunPlan(Document):
                              verbose_name=_('instances minimum'))
     instances_max = IntField(required=True,
                              verbose_name=_('instances maximum'))
-    workers = IntField(required=True, verbose_name=_('running workers limit'))
-    memory = IntField(required=True, verbose_name=_('allocated memory limit'))
+    workers_max = IntField(required=True,
+                           verbose_name=_('total workers limit'))
 
     _default_manager = QuerySetManager()

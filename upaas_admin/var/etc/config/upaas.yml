@@ -100,11 +100,9 @@ apps:
 
 defaults:
   limits:
-    registered_apps: 0
     running_apps: 0
     instances: 0
     workers: 16
-    memory: 512
     packages_per_app: 5
 
 
