@@ -39,6 +39,8 @@ class ApplicationRunPlanForm(CrispyMongoForm):
                                           u"higher than maximum"))
 
         instances_used = self.user.limits_usage['instances']
+        if self.instance.id:
+            instances_used -= self.instance.instances_max
         instances_limit = self.user.limits['instances']
         if instances_limit:
             instances_available = instances_limit - instances_used
@@ -54,6 +56,8 @@ class ApplicationRunPlanForm(CrispyMongoForm):
                     available=instances_available, maximum=instances_max))
 
         workers_used = self.user.limits_usage['workers']
+        if self.instance.id:
+            workers_used -= self.instance.workers_max
         workers_limit = self.user.limits['workers']
         if workers_limit:
             workers_available = workers_limit - workers_used

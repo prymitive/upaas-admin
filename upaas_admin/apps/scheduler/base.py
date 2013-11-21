@@ -58,27 +58,23 @@ def select_best_backends(run_plan):
     #TODO needs better scheduling of the number of backends application should
     # use
 
-    log.info(u"Selecting backends for %s, ha: %s" % (
-        run_plan.application.name, run_plan.ha_enabled))
+    log.info(u"Selecting backends for %s, instances: %d - %d, max workers: "
+             u"%d]" % (run_plan.application.name, run_plan.instances_min,
+                       run_plan.instances_max, run_plan.workers_max))
 
     available_backends = len(BackendServer.objects(is_enabled=True))
     if available_backends == 0:
         return []
 
-    if run_plan.ha_enabled:
-        num_backends = min(2, available_backends)
-    else:
-        num_backends = 1
-
     backends = []
-    for i in xrange(0, num_backends):
+    for i in xrange(0, run_plan.instances_min):
         backend = select_best_backend(exclude=backends,
                                       application=run_plan.application)
         if backend:
             backends.append(backend)
         else:
             log.warning(u"Can find more available backends, got %d, needed "
-                        u"%d" % (i+1, num_backends))
+                        u"%d" % (i+1, run_plan.instances_min))
             break
 
     log.info(u"Got backends for %s: %s" % (run_plan.application.name,

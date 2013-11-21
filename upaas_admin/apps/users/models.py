@@ -78,7 +78,7 @@ class User(MongoUser):
         for arp in ApplicationRunPlan.objects(
                 application__in=Application.objects(owner=self)):
             ret['running_apps'] += 1
-            ret['instances'] += len(arp.backends)
+            ret['instances'] += arp.instances_max
             ret['workers'] += arp.workers_max
         return ret
 
