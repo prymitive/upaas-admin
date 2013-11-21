@@ -74,16 +74,12 @@ class User(MongoUser):
 
     @property
     def limits_usage(self):
-        ret = {}
-        for name in UserLimits.limit_fields:
-            ret[name] = 0
-        ret['registered_apps'] = len(self.applications)
+        ret = {'running_apps': 0, 'instances': 0, 'workers': 0}
         for arp in ApplicationRunPlan.objects(
                 application__in=Application.objects(owner=self)):
             ret['running_apps'] += 1
             ret['instances'] += len(arp.backends)
-            ret['workers'] += arp.workers
-            ret['memory'] += arp.memory
+            ret['workers'] += arp.workers_max
         return ret
 
     @property

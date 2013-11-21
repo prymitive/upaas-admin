@@ -20,33 +20,50 @@ class ApplicationRunPlanForm(CrispyMongoForm):
     form_class = ''
     label_class = ''
     field_class = ''
-    layout = ['ha_enabled', 'worker_limit', 'memory_limit']
+    layout = ['instances_min', 'instances_max', 'workers_max']
 
     class Meta:
         document = ApplicationRunPlan
         exclude = ('application', 'backends')
 
-    def clean_memory_limit(self):
-        memory_limit = self.cleaned_data['memory']
-        budget_limit = self.user.budget['memory']
-        if memory_limit > budget_limit:
-            raise forms.ValidationError(_(u"User memory budget is only %d MB, "
-                                          u"can't set higher application "
-                                          u"memory limit" % budget_limit))
-        return memory_limit
+    def clean(self):
+        instances_min = self.cleaned_data.get('instances_min')
+        instances_max = self.cleaned_data.get('instances_max')
+        workers = self.cleaned_data.get('workers_max')
 
-    def clean_worker_limit(self):
-        worker_limit = self.cleaned_data['worker_limit']
-        budget_limit = self.user.budget['worker_limit']
-        ha_enabled = self.cleaned_data['ha_enabled']
-        if worker_limit > budget_limit:
-            raise forms.ValidationError(_(u"User total workers limit is only "
-                                          u"%d, can't set higher application "
-                                          u"workers limit" % budget_limit))
-        if ha_enabled and worker_limit < 2:
-            raise forms.ValidationError(_(u"Enabling high availability mode "
-                                          u"requires at least 2 workers"))
-        return worker_limit
+        if instances_min is None or instances_max is None or workers is None:
+            return self.cleaned_data
+
+        if instances_min > instances_max:
+            raise forms.ValidationError(_(u"Minimum instances count cannot be "
+                                          u"higher than maximum"))
+
+        instances_used = self.user.limits_usage['instances']
+        instances_limit = self.user.limits['instances']
+        if instances_limit:
+            instances_available = instances_limit - instances_used
+            if instances_min > instances_available:
+                raise forms.ValidationError(_(
+                    u"Only {available} instances available, cannot set "
+                    u"{minimum} as minimum ").format(
+                    available=instances_available, minimum=instances_min))
+            if instances_max > instances_available:
+                raise forms.ValidationError(_(
+                    u"Only {available} instances available, cannot set "
+                    u"{maximum} as maximum ").format(
+                    available=instances_available, maximum=instances_max))
+
+        workers_used = self.user.limits_usage['workers']
+        workers_limit = self.user.limits['workers']
+        if workers_limit:
+            workers_available = workers_limit - workers_used
+            if workers > workers_available:
+                raise forms.ValidationError(_(
+                    u"Only {available} workers available, cannot set "
+                    u"{workers} as limit ").format(
+                    available=workers_available, workers=workers))
+
+        return self.cleaned_data
 
 
 class EditApplicationRunPlanForm(ApplicationRunPlanForm):

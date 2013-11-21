@@ -6,7 +6,7 @@
 
 
 from mongoengine import (Document, QuerySetManager, IntField, ReferenceField,
-                         ListField, BooleanField)
+                         ListField)
 
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -30,8 +30,6 @@ class UserLimits(Document):
 
     _default_manager = QuerySetManager()
 
-    limit_fields = ['running_apps', 'packages_per_app', 'instances', 'workers']
-
     @classmethod
     def get_default_limits(cls):
         return settings.UPAAS_CONFIG.dump()['defaults']['limits']
@@ -46,11 +44,11 @@ class ApplicationRunPlan(Document):
     #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
     backends = ListField(ReferenceField('BackendServer', dbref=False))
 
-    instances_min = IntField(required=True,
+    instances_min = IntField(required=True, min_value=1,
                              verbose_name=_('instances minimum'))
-    instances_max = IntField(required=True,
+    instances_max = IntField(required=True, min_value=1,
                              verbose_name=_('instances maximum'))
-    workers_max = IntField(required=True,
+    workers_max = IntField(required=True, min_value=1,
                            verbose_name=_('total workers limit'))
 
     _default_manager = QuerySetManager()
