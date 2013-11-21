@@ -117,7 +117,7 @@ interpreters:
           main:
             - gem install bundler
             - bundle install --deployment --without test development
-    1.8.7:
+    "1.8.7":
       uwsgi:
         options:
           plugin: rack187
@@ -125,7 +125,7 @@ interpreters:
         - ruby1.8
         - ruby1.8-dev
         - rubygems
-    1.9.3:
+    "1.9.3":
       uwsgi:
         options:
           plugin: rack193
@@ -142,7 +142,7 @@ interpreters:
 
   python:
 
-    2.7:
+    "2.7":
       uwsgi:
         options:
           plugin: python27
@@ -154,7 +154,7 @@ interpreters:
         setup:
           main:
             - pip install -qMU -r requirements.txt
-    3.2:
+    "3.2":
       uwsgi:
         options:
           plugin: python32
@@ -168,7 +168,7 @@ interpreters:
             - pip-3.2 install -qMU -r requirements.txt
 
   php:
-    5.3:
+    "5.3":
       uwsgi:
         options:
           plugin: php53
