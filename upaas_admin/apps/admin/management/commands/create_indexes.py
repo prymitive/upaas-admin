@@ -48,7 +48,7 @@ class Command(BaseCommand):
                                                 predicate=inspect.isclass):
                 if issubclass(obj, Document):
                     log.debug(u"Found model '%s'" % name)
-                    models['%s.%s' % (app, name)] = obj
+                    models[obj.__name__] = obj
 
         for model in models.values():
             log.info(u"Checking %s" % model.__name__)
