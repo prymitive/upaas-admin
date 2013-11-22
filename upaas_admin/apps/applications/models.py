@@ -602,7 +602,7 @@ class Application(Document):
 
         removed = 0
         for pkg in Package.objects(application=self, filename__exists=True)[
-                self.owner.limits.packages_per_app:]:
+                self.owner.limits['packages_per_app']:]:
             if pkg.id == self.current_package.id:
                 continue
             removed += 1
