@@ -103,20 +103,6 @@
             .panel.panel-default
               .panel-body
                 %h1.text-center
-                  ={ user.limits_usage.instances }
-                  \/
-                  - if user.limits.instances
-                    ={ user.limits.instances }
-                  - else
-                    - trans "No limit"
-              .panel-footer
-                - trans "Instance limit"
-                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of running instances" %}'}
-
-          .col-lg-3
-            .panel.panel-default
-              .panel-body
-                %h1.text-center
                   ={ user.limits_usage.workers }
                   \/
                   - if user.limits.workers
@@ -131,17 +117,11 @@
             .panel.panel-default
               .panel-body
                 %h1.text-center
-                  ={ user.limits_usage.memory }
-                  \/
-                  - if user.limits.memory
-                    = user.limits.memory|mb_to_bytes|filesizeformat
-                  - else
-                    - trans "No limit"
+                  = user.limits.memory_per_worker|mb_to_bytes|filesizeformat
               .panel-footer
-                - trans "Memory limit"
-                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum memory limit for all running applications" %}'}
+                - trans "Package limit"
+                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum memory usage per worker" %}'}
 
-        .row
           .col-lg-3
             .panel.panel-default
               .panel-body

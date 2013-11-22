@@ -116,6 +116,12 @@ class StartPackageTask(PackageTask):
             raise Exception(u"Missing run plan for "
                             u"'%s'" % self.application.name)
 
+        backend_conf = self.application.run_plan.backend_settings(self.backend)
+        if not backend_conf:
+            log.error(_(u"Backend {backend} missing in run plan for "
+                        u"{name}").format(backend=self.backend.name,
+                                          name=self.application.name))
+
         log.info(u"Starting application '%s' using package '%s'" % (
             self.application.name, self.package.safe_id))
 
@@ -130,7 +136,7 @@ class StartPackageTask(PackageTask):
                         u"%s" % self.package.package_path)
         yield 50
 
-        self.package.save_vassal_config(self.backend)
+        self.package.save_vassal_config(backend_conf)
         # TODO handle backend start task failure with rescue code
 
         self.wait_until_running()
@@ -180,9 +186,11 @@ class StopPackageTask(PackageTask):
             if os.path.isdir(oldpkg.package_path):
                 _remove_pkg_dir(oldpkg.package_path)
 
-        self.backend.delete_application_ports(self)
-        ApplicationRunPlan.objects(id=self.application.run_plan.id).update_one(
-            pull__backends=self.backend)
+        backend_conf = self.application.run_plan.backend_settings(self.backend)
+        if backend_conf:
+            ApplicationRunPlan.objects(
+                id=self.application.run_plan.id).update_one(
+                pull__backends__id=backend_conf.id)
 
         log.info(u"Application '%s' stopped" % self.application.name)
         yield 100

@@ -9,9 +9,8 @@ admin:
 defaults:
   limits:
     running_apps: 0
-    instances: 0
     workers: 16
-    memory: 256
+    memory_per_worker: 128
     packages_per_app: 2
 
 

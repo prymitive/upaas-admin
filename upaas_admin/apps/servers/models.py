@@ -17,15 +17,11 @@ from django.conf import settings
 from upaas.inet import local_ipv4_addresses
 
 from upaas_admin.common.fields import IPv4Field
-from upaas_admin.apps.scheduler.models import ApplicationRunPlan
+from upaas_admin.apps.scheduler.models import (ApplicationRunPlan,
+                                               BackendRunPlanSettings)
 
 
 log = logging.getLogger(__name__)
-
-
-class Ports(EmbeddedDocument):
-    application = ReferenceField('Application', dbref=False, unique=True)
-    ports = DictField()
 
 
 class BackendServer(Document):
@@ -37,7 +33,6 @@ class BackendServer(Document):
                        verbose_name=_('name'))
     ip = IPv4Field(required=True, unique=True, verbose_name=_('IP address'))
     is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
-    ports = ListField(EmbeddedDocumentField(Ports))
 
     _default_manager = QuerySetManager()
 
@@ -59,7 +54,7 @@ class BackendServer(Document):
         Returns the list of application run plans scheduled to be running on
         this backend.
         """
-        return ApplicationRunPlan.objects(backends=self)
+        return ApplicationRunPlan.objects(backends__backends=self)
 
     @property
     def port_min(self):
@@ -74,9 +69,17 @@ class BackendServer(Document):
         """
         Returns all port number allocated to apps.
         """
+
         ports = []
-        for ports_data in self.ports:
-            ports.extend(ports_data.ports.values())
+        for run_plan in self.run_plans:
+            backend_conf = run_plan.backend_settings(self)
+            if backend_conf:
+                ports.append(backend_conf.socket)
+                ports.append(backend_conf.stats)
+            else:
+                log.warning(_(u"Backend {backend} not found in run plan for "
+                              u"{name}").format(
+                            backend=self.name, name=run_plan.application.name))
         return ports
 
     @property
@@ -92,11 +95,12 @@ class BackendServer(Document):
             if ports_data.application == application:
                 return ports_data
 
-    def find_free_port(self):
+    def find_free_ports(self, count):
         """
         Find and return random port number not allocated to any application.
         Return None if no such port can be found.
         """
+        ports = []
         if self.ports_available <= 0:
             log.error(u"No more free port available, used all %d "
                       u"ports" % self.maximum_ports)
@@ -105,31 +109,11 @@ class BackendServer(Document):
             #TODO random can take very long to find free port if port usage is
             #TODO high, maybe linear search would be better?
             port = randrange(self.port_min, self.port_max+1)
-            if port not in self.allocated_ports:
-                return port
-
-    def set_application_ports(self, application, ports):
-        """
-        Set port mapping for given application on this backend.
-        """
-        ports_data = self.application_ports(application)
-        if ports_data:
-            ports_data.ports = ports
-        else:
-            ports_data = Ports(application=application, ports=ports)
-            self.ports.append(ports_data)
-        self.save()
-
-    def delete_application_ports(self, application):
-        """
-        Remove application from this backend port mapping.
-        """
-        ports_data = self.application_ports(application)
-        if ports_data:
-            self.ports.remove(ports_data)
-            self.save()
-            log.info(u"Removed port mapping for '%s' on '%s'" % (
-                application.name, self.name))
+            if port not in self.allocated_ports and port not in ports:
+                ports.append(port)
+            if len(ports) == count:
+                return ports
+        return []
 
 
 class RouterServer(Document):

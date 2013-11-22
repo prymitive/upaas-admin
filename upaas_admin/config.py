@@ -59,9 +59,8 @@ class UPaaSConfig(base.Config):
         "defaults": {
             "limits": {
                 "running_apps": base.IntegerEntry(required=True),
-                "instances": base.IntegerEntry(required=True),
                 "workers": base.IntegerEntry(required=True),
-                "memory": base.IntegerEntry(required=True),
+                "memory_per_worker": base.IntegerEntry(required=True),
                 "packages_per_app": base.IntegerEntry(required=True,
                                                       min_value=2),
             }

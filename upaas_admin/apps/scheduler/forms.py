@@ -20,40 +20,22 @@ class ApplicationRunPlanForm(CrispyMongoForm):
     form_class = ''
     label_class = ''
     field_class = ''
-    layout = ['instances_min', 'instances_max', 'workers_max']
+    layout = ['workers_min', 'workers_max']
 
     class Meta:
         document = ApplicationRunPlan
         exclude = ('application', 'backends')
 
     def clean(self):
-        instances_min = self.cleaned_data.get('instances_min')
-        instances_max = self.cleaned_data.get('instances_max')
-        workers = self.cleaned_data.get('workers_max')
+        workers_min = self.cleaned_data.get('workers_min')
+        workers_max = self.cleaned_data.get('workers_max')
 
-        if instances_min is None or instances_max is None or workers is None:
+        if workers_min is None or workers_max is None:
             return self.cleaned_data
 
-        if instances_min > instances_max:
-            raise forms.ValidationError(_(u"Minimum instances count cannot be "
-                                          u"higher than maximum"))
-
-        instances_used = self.user.limits_usage['instances']
-        if self.instance.id:
-            instances_used -= self.instance.instances_max
-        instances_limit = self.user.limits['instances']
-        if instances_limit:
-            instances_available = instances_limit - instances_used
-            if instances_min > instances_available:
-                raise forms.ValidationError(_(
-                    u"Only {available} instances available, cannot set "
-                    u"{minimum} as minimum ").format(
-                    available=instances_available, minimum=instances_min))
-            if instances_max > instances_available:
-                raise forms.ValidationError(_(
-                    u"Only {available} instances available, cannot set "
-                    u"{maximum} as maximum ").format(
-                    available=instances_available, maximum=instances_max))
+        if workers_min > workers_max:
+            raise forms.ValidationError(_(u"Minimum workers number cannot be"
+                                          u"lower than maximum"))
 
         workers_used = self.user.limits_usage['workers']
         if self.instance.id:
@@ -61,11 +43,16 @@ class ApplicationRunPlanForm(CrispyMongoForm):
         workers_limit = self.user.limits['workers']
         if workers_limit:
             workers_available = workers_limit - workers_used
-            if workers > workers_available:
+            if workers_min > workers_available:
                 raise forms.ValidationError(_(
                     u"Only {available} workers available, cannot set "
-                    u"{workers} as limit ").format(
-                    available=workers_available, workers=workers))
+                    u"{workers} as minimum ").format(
+                    available=workers_available, workers=workers_min))
+            if workers_max > workers_available:
+                raise forms.ValidationError(_(
+                    u"Only {available} workers available, cannot set "
+                    u"{workers} as maximum ").format(
+                    available=workers_available, workers=workers_max))
 
         return self.cleaned_data
 

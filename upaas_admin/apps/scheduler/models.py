@@ -5,7 +5,8 @@
 """
 
 
-from mongoengine import (Document, QuerySetManager, IntField, ReferenceField,
+from mongoengine import (Document, EmbeddedDocument, QuerySetManager,
+                         IntField, ReferenceField, EmbeddedDocumentField,
                          ListField)
 
 from django.utils.translation import ugettext_lazy as _
@@ -20,10 +21,8 @@ class UserLimits(Document):
 
     running_apps = IntField(verbose_name=_('running applications limit'))
     packages_per_app = IntField(verbose_name=_('stored packages limit'))
-
-    instances = IntField(verbose_name=_('total running instance limit'))
     workers = IntField(verbose_name=_('total running workers limit'))
-    memory = IntField(verbose_name=_('total memory limit'))
+    memory_per_worker = IntField(verbose_name=_('memory per worker limit'))
 
     meta = {
         'indexes': ['user'],
@@ -36,21 +35,33 @@ class UserLimits(Document):
         return settings.UPAAS_CONFIG.dump()['defaults']['limits']
 
 
+class BackendRunPlanSettings(EmbeddedDocument):
+    """
+    Application instance settings for given backend.
+    """
+    backend = ReferenceField('BackendServer', dbref=False)
+    socket = IntField(required=True)
+    stats = IntField(required=True)
+    workers = IntField(required=True)
+
+
 class ApplicationRunPlan(Document):
     """
     Where should application run and how much resources can given app consume.
     """
     application = ReferenceField('Application', dbref=False, required=True,
                                  unique=True)
-    #FIXME adding reverse_delete_rule=DENY to backends fails, fix it
-    backends = ListField(ReferenceField('BackendServer', dbref=False))
-
-    instances_min = IntField(required=True, min_value=1,
-                             verbose_name=_('instances minimum'))
-    instances_max = IntField(required=True, min_value=1,
-                             verbose_name=_('instances maximum'))
-    workers_max = IntField(required=True, min_value=1,
-                           verbose_name=_('total workers limit'))
-    memory_max = IntField(required=True, verbose_name=_('total memory limit'))
+    backends = ListField(EmbeddedDocumentField(BackendRunPlanSettings))
+    workers_min = IntField(required=True, min_value=1, default=1,
+                           verbose_name=_('minimum number of workers'))
+    workers_max = IntField(required=True, min_value=1, default=1,
+                           verbose_name=_('maximum number of workers'))
+    memory_per_worker = IntField(required=True,
+                                 verbose_name=_('memory per worker limit'))
 
     _default_manager = QuerySetManager()
+
+    def backend_settings(self, backend):
+        for backend_conf in self.backends:
+            if backend_conf.backend == backend:
+                return backend_conf

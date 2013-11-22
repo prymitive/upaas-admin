@@ -241,6 +241,8 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
 
     def form_valid(self, form):
         form.instance.application = self.app
+        form.instance.memory_per_worker = \
+            self.request.user.limits.memory_per_worker
         ret = super(StartApplicationView, self).form_valid(form)
         self.app.start_application()
         return ret

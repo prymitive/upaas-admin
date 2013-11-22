@@ -87,9 +87,10 @@ class Package(Document):
         """
         return os.path.join(settings.UPAAS_CONFIG.paths.apps, self.safe_id)
 
-    def generate_uwsgi_config(self, backend):
+    def generate_uwsgi_config(self, backend_conf):
         """
-        :param backend: BackendServer instance for which we generate config
+        :param backend_conf: BackendRunPlanSettings instance for which we
+                             generate config
         """
 
         def _load_template(path):
@@ -118,38 +119,22 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
-        ports_data = backend.application_ports(self.application)
-        ports = {}
-        needs_update = False
-        if ports_data and PortsNames.socket in ports_data.ports:
-            ports[PortsNames.socket] = ports_data.ports[PortsNames.socket]
-        else:
-            ports[PortsNames.socket] = backend.find_free_port()
-            needs_update = True
-        if ports_data and PortsNames.stats in ports_data.ports:
-            ports[PortsNames.stats] = ports_data.ports[PortsNames.stats]
-        else:
-            ports[PortsNames.stats] = backend.find_free_port()
-            needs_update = True
-        if needs_update:
-            backend.set_application_ports(self.application, ports)
-
-        log.info(u"Using socket=%d and stats=%d for '%s'" % (
-            ports[PortsNames.socket], ports[PortsNames.stats],
-            self.application.name))
+        max_memory = backend_conf.workers
+        max_memory *= self.application.run_plan.memory_per_worker
+        max_memory *= 1024 * 1024
 
         vars = {
             'namespace': self.package_path,
             'chdir': config.apps.home,
-            'socket': '%s:%d' % (backend.ip, ports[PortsNames.socket]),
-            'stats': '%s:%d' % (backend.ip, ports[PortsNames.stats]),
+            'socket': '%s:%d' % (backend_conf.backend.ip, backend_conf.socket),
+            'stats': '%s:%d' % (backend_conf.backend.ip, backend_conf.stats),
             'uid': config.apps.uid,
             'gid': config.apps.gid,
             'app_name': self.application.name,
             'app_id': self.application.safe_id,
             'pkg_id': self.safe_id,
             'max_workers': self.application.run_plan.worker_limit,
-            'max_memory': 1024 * 1024 * 1024  # FIXME
+            'max_memory': max_memory,
         }
         try:
             vars.update(config.interpreters[self.interpreter_name]['any'][
@@ -553,8 +538,8 @@ class Application(Document):
                 kwargs['parent'] = vtask
 
             #TODO add wait for subscription
-            for backend in self.run_plan.backends:
-                Task.put('UpgradePackageTask', backend=backend,
+            for backend_conf in self.run_plan.backends:
+                Task.put('UpgradePackageTask', backend=backend_conf.backend,
                          application=self, package=self.current_package,
                          **kwargs)
 
@@ -563,7 +548,7 @@ class Application(Document):
 
             run_plan = self.run_plan
 
-            current_backends = list(run_plan.backends)
+            current_backends = [bc.backend for bc in run_plan.backends]
             new_backends = select_best_backends(run_plan)
             if not new_backends:
                 log.error(_(u"Can't update '{name}', no backend "
@@ -578,18 +563,19 @@ class Application(Document):
                 vtask.save()
                 kwargs['parent'] = vtask
 
-            for backend in new_backends:
-                if backend in current_backends:
-                    Task.put('UpdateVassalTask', backend=backend,
+            for backend_conf in new_backends:
+                if backend_conf.backend in current_backends:
+                    Task.put('UpdateVassalTask', backend=backend_conf.backend,
                              application=self, package=self.current_package,
                              **kwargs)
                 else:
                     # add backend to run plan if not already there
                     ApplicationRunPlan.objects(
                         id=self.run_plan.id,
-                        backends__nin=[backend]).update_one(
-                        push__backends=backend)
-                    Task.put('StartPackageTask', backend=backend,
+                        backends__backend__nin=[
+                            backend_conf.backend]).update_one(
+                        push__backends=backend_conf.backend)
+                    Task.put('StartPackageTask', backend=backend_conf.backend,
                              application=self, package=self.current_package,
                              **kwargs)
 
