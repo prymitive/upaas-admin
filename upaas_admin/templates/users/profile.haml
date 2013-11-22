@@ -119,7 +119,7 @@
                 %h1.text-center
                   = user.limits.memory_per_worker|mb_to_bytes|filesizeformat
               .panel-footer
-                - trans "Package limit"
+                - trans "Memory limit"
                 %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum memory usage per worker" %}'}
 
           .col-lg-3
