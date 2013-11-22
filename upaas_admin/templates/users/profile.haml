@@ -4,6 +4,7 @@
 - load i18n
 - load django_bootstrap_breadcrumbs
 - load gravatar
+- load upaas_mb_to_bytes
 
 
 - block breadcrumbs
@@ -83,7 +84,8 @@
 
       #resources.tab-pane
         .row
-          .col-lg-4
+
+          .col-lg-3
             .panel.panel-default
               .panel-body
                 %h1.text-center
@@ -96,7 +98,8 @@
               .panel-footer
                 - trans "Running application limit"
                 %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of running applications" %}'}
-          .col-lg-4
+
+          .col-lg-3
             .panel.panel-default
               .panel-body
                 %h1.text-center
@@ -109,7 +112,8 @@
               .panel-footer
                 - trans "Instance limit"
                 %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of running instances" %}'}
-          .col-lg-4
+
+          .col-lg-3
             .panel.panel-default
               .panel-body
                 %h1.text-center
@@ -123,14 +127,30 @@
                 - trans "Worker limit"
                 %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of workers for all running applications" %}'}
 
+          .col-lg-3
+            .panel.panel-default
+              .panel-body
+                %h1.text-center
+                  ={ user.limits_usage.memory }
+                  \/
+                  - if user.limits.memory
+                    = user.limits.memory|mb_to_bytes|filesizeformat
+                  - else
+                    - trans "No limit"
+              .panel-footer
+                - trans "Memory limit"
+                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum memory limit for all running applications" %}'}
+
         .row
-          %dl.dl-horizontal
-            %dt
-              {% trans "Package limit" %}
-              %i.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
-              :
-            %dd
-              ={ user.limits.packages_per_app }
+          .col-lg-3
+            .panel.panel-default
+              .panel-body
+                %h1.text-center
+                  = user.limits.packages_per_app
+              .panel-footer
+                - trans "Package limit"
+                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
+
 
   - block js_bottom
     = block.super

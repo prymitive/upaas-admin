@@ -23,6 +23,7 @@ class UserLimits(Document):
 
     instances = IntField(verbose_name=_('total running instance limit'))
     workers = IntField(verbose_name=_('total running workers limit'))
+    memory = IntField(verbose_name=_('total memory limit'))
 
     meta = {
         'indexes': ['user'],
@@ -50,5 +51,6 @@ class ApplicationRunPlan(Document):
                              verbose_name=_('instances maximum'))
     workers_max = IntField(required=True, min_value=1,
                            verbose_name=_('total workers limit'))
+    memory_max = IntField(required=True, verbose_name=_('total memory limit'))
 
     _default_manager = QuerySetManager()

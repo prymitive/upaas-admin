@@ -149,7 +149,7 @@ class Package(Document):
             'app_id': self.application.safe_id,
             'pkg_id': self.safe_id,
             'max_workers': self.application.run_plan.worker_limit,
-            'max_memory': self.application.run_plan.memory_limit * 1024 * 1024
+            'max_memory': 1024 * 1024 * 1024  # FIXME
         }
         try:
             vars.update(config.interpreters[self.interpreter_name]['any'][

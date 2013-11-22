@@ -66,6 +66,8 @@ def select_best_backends(run_plan):
     if available_backends == 0:
         return []
 
+    #FIXME set proper workers_max per backend
+
     backends = []
     for i in xrange(0, run_plan.instances_min):
         backend = select_best_backend(exclude=backends,
