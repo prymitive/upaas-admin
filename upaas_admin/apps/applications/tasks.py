@@ -190,7 +190,7 @@ class StopPackageTask(PackageTask):
         if backend_conf:
             ApplicationRunPlan.objects(
                 id=self.application.run_plan.id).update_one(
-                pull__backends__id=backend_conf.id)
+                pull__backends__backend=self.backend)
 
         log.info(u"Application '%s' stopped" % self.application.name)
         yield 100

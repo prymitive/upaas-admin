@@ -496,12 +496,13 @@ class Application(Document):
             run_plan.backends = backends
             run_plan.save()
 
-            for backend in backends:
+            for backend_conf in backends:
                 log.info(_(u"Set backend '{backend}' in '{name}' run "
-                           u"plan").format(backend=backend.name,
+                           u"plan").format(backend=backend_conf.backend.name,
                                            name=self.name))
-                Task.put('StartPackageTask', backend=backend, application=self,
-                         package=self.current_package, **kwargs)
+                Task.put('StartPackageTask', backend=backend_conf.backend,
+                         application=self, package=self.current_package,
+                         **kwargs)
 
     def stop_application(self):
         if self.current_package:
@@ -520,9 +521,10 @@ class Application(Document):
                 vtask.save()
                 kwargs['parent'] = vtask
 
-            for backend in self.run_plan.backends:
-                Task.put('StopPackageTask', backend=backend, application=self,
-                         package=self.current_package, **kwargs)
+            for backend_conf in self.run_plan.backends:
+                Task.put('StopPackageTask', backend=backend_conf.backend,
+                         application=self, package=self.current_package,
+                         **kwargs)
 
     def upgrade_application(self):
         if self.current_package:

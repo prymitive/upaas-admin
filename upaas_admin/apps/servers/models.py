@@ -54,7 +54,7 @@ class BackendServer(Document):
         Returns the list of application run plans scheduled to be running on
         this backend.
         """
-        return ApplicationRunPlan.objects(backends__backends=self)
+        return ApplicationRunPlan.objects(backends__backend=self)
 
     @property
     def port_min(self):

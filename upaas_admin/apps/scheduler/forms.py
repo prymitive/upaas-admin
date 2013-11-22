@@ -24,7 +24,7 @@ class ApplicationRunPlanForm(CrispyMongoForm):
 
     class Meta:
         document = ApplicationRunPlan
-        exclude = ('application', 'backends')
+        exclude = ('application', 'backends', 'memory_per_worker')
 
     def clean(self):
         workers_min = self.cleaned_data.get('workers_min')

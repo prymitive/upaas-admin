@@ -99,15 +99,13 @@ def instances(request, app_id):
     data = []
     app = Application.objects.filter(id=app_id, owner=request.user).first()
     if app.run_plan:
-        for backend in app.run_plan.backends:
-            ports_data = backend.application_ports(app)
-            if ports_data and ports_data.ports.get(PortsNames.stats):
-                s = fetch_json_stats(str(backend.ip),
-                                     ports_data.ports[PortsNames.stats])
-                data.append(
-                    {'backend': {'name': backend.name,
-                                 'ip': str(backend.ip)},
-                     'stats': s})
+        for backend_conf in app.run_plan.backends:
+            s = fetch_json_stats(str(backend_conf.backend.ip),
+                                 backend_conf.stats)
+            data.append(
+                {'backend': {'name': backend_conf.backend.name,
+                             'ip': str(backend_conf.backend.ip)},
+                 'stats': s})
     return dumps({'stats': data})
 
 

@@ -97,7 +97,7 @@ def select_best_backends(run_plan):
 
     backends = []
     for workers_count in workers_per_backend:
-        backend = select_best_backend(exclude=backends,
+        backend = select_best_backend(exclude=[b.backend.id for b in backends],
                                       application=run_plan.application)
         if backend:
             ports = backend.find_free_ports(2)
