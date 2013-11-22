@@ -90,10 +90,8 @@ class BackendServer(Document):
     def ports_available(self):
         return self.maximum_ports - len(self.allocated_ports)
 
-    def application_ports(self, application):
-        for ports_data in self.ports:
-            if ports_data.application == application:
-                return ports_data
+    def application_settings(self, application):
+        return self.run_plans.filter(application=application)
 
     def find_free_ports(self, count):
         """

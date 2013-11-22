@@ -80,8 +80,12 @@ class PackageTask(BackendTask, ApplicationTask):
         if timelimit is None:
             timelimit = self.graceful_timeout
 
-        ports_data = self.backend.application_ports(self.application)
-        if ports_data and ports_data.ports.get(PortsNames.stats):
+        run_plan = self.backend.application_settings(self.application)
+        if not run_plan:
+            return False
+
+        backend_conf = run_plan.backend_settings(self.backend)
+        if backend_conf:
             ip = str(self.backend.ip)
             name = self.application.name
             #FIXME track pid change instead of initial sleep (?)
@@ -89,7 +93,7 @@ class PackageTask(BackendTask, ApplicationTask):
             timeout = datetime.now() + timedelta(seconds=timelimit)
             logged = False
             while datetime.now() <= timeout:
-                s = fetch_json_stats(ip, ports_data.ports[PortsNames.stats])
+                s = fetch_json_stats(ip, backend_conf.stats)
                 if s:
                     return True
                 if logged:
