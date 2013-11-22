@@ -133,7 +133,7 @@ class Package(Document):
             'app_name': self.application.name,
             'app_id': self.application.safe_id,
             'pkg_id': self.safe_id,
-            'max_workers': self.application.run_plan.worker_limit,
+            'max_workers': self.application.run_plan.workers_max,
             'max_memory': max_memory,
         }
         try:
@@ -182,7 +182,7 @@ class Package(Document):
             options.append('env = %s=%s' % (key, value))
 
         # enable cheaper mode if we have multiple workers
-        if self.application.run_plan.worker_limit > 1:
+        if self.application.run_plan.workers_max > 1:
             options.append('\n# enabling cheaper mode')
             options.append('cheaper = 1')
 
