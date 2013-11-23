@@ -33,8 +33,9 @@ def select_best_backend(exclude=None, application=None):
                     # if this run plan is for application we are trying to find
                     # backends than ignore it, prevents jumping apps on update
                     continue
-                scores = dict(scores.items() +
-                              {backend: run_plan.memory_limit}.items())
+                scores = dict(scores.items() + {
+                    backend: run_plan.workers_max * run_plan.memory_per_worker
+                }.items())
             log.debug(u"Backend %s has %d run plans, with final score %d" % (
                 backend.name, len(backend.run_plans), scores.get(backend, 0)))
         else:
