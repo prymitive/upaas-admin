@@ -237,7 +237,8 @@ class UpdateVassalTask(PackageTask):
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
-        self.package.save_vassal_config(self.backend)
+        backend_conf = self.application.run_plan.backend_settings(self.backend)
+        self.package.save_vassal_config(backend_conf)
         yield 50
 
         self.wait_until_running()
