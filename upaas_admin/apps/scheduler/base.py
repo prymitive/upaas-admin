@@ -108,9 +108,11 @@ def select_best_backends(run_plan):
                 log.warning(_(u"Didn't found free ports on backend "
                               u"{name}").format(name=backend.name))
                 continue
+            #FIXME use proper workers_min
             brps = BackendRunPlanSettings(backend=backend, socket=ports[0],
                                           stats=ports[1],
-                                          workers=workers_count)
+                                          workers_min=1,
+                                          workers_max=workers_count)
             backends.append(brps)
         else:
             log.warning(_(u"Can find more available backends, got {got}, "
@@ -120,7 +122,7 @@ def select_best_backends(run_plan):
 
     log.info(_(u"Got backends for {name}: {servers}").format(
         name=run_plan.application.name,
-        servers=u", ".join(
-            [u"%s: %d" % (b.backend.name, b.workers) for b in backends])))
+        servers=u", ".join([u"%s: %d - %d" % (
+            b.backend.name, b.workers_min, b.workers_max) for b in backends])))
 
     return backends

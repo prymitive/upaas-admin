@@ -42,7 +42,8 @@ class BackendRunPlanSettings(EmbeddedDocument):
     backend = ReferenceField('BackendServer', dbref=False)
     socket = IntField(required=True)
     stats = IntField(required=True)
-    workers = IntField(required=True)
+    workers_min = IntField(required=True)
+    workers_max = IntField(required=True)
 
 
 class ApplicationRunPlan(Document):

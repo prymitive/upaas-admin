@@ -119,7 +119,7 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
-        max_memory = backend_conf.workers
+        max_memory = backend_conf.workers_max
         max_memory *= self.application.run_plan.memory_per_worker
         max_memory *= 1024 * 1024
 
@@ -133,7 +133,8 @@ class Package(Document):
             'app_name': self.application.name,
             'app_id': self.application.safe_id,
             'pkg_id': self.safe_id,
-            'max_workers': self.application.run_plan.workers_max,
+            'min_workers': backend_conf.workers_min,
+            'max_workers': backend_conf.workers_max,
             'max_memory': max_memory,
         }
         try:
