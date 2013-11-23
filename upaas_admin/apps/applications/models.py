@@ -132,7 +132,6 @@ class Package(Document):
             'app_name': self.application.name,
             'app_id': self.application.safe_id,
             'pkg_id': self.safe_id,
-            'min_workers': backend_conf.workers_min,
             'max_workers': backend_conf.workers_max,
             'max_memory': max_memory,
         }
@@ -182,9 +181,9 @@ class Package(Document):
             options.append('env = %s=%s' % (key, value))
 
         # enable cheaper mode if we have multiple workers
-        if self.application.run_plan.workers_max > 1:
+        if backend_conf.workers_max > 1:
             options.append('\n# enabling cheaper mode')
-            options.append('cheaper = 1')
+            options.append('cheaper = %d' % backend_conf.workers_min)
 
         options.append('\n# starting base template')
         options.extend(_load_template(base_template))
