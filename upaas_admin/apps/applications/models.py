@@ -118,11 +118,13 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
+        run_plan = self.application.run_plan
+
         max_memory = backend_conf.workers_max
-        max_memory *= self.application.run_plan.memory_per_worker
+        max_memory *= run_plan.memory_per_worker
         max_memory *= 1024 * 1024
 
-        vars = {
+        variables = {
             'namespace': self.package_path,
             'chdir': config.apps.home,
             'socket': '%s:%d' % (backend_conf.backend.ip, backend_conf.socket),
@@ -134,14 +136,15 @@ class Package(Document):
             'pkg_id': self.safe_id,
             'max_workers': backend_conf.workers_max,
             'max_memory': max_memory,
+            'memory_per_worker': run_plan.memory_per_worker,
         }
         try:
-            vars.update(config.interpreters[self.interpreter_name]['any'][
+            variables.update(config.interpreters[self.interpreter_name]['any'][
                 'uwsgi']['vars'])
         except (AttributeError, KeyError):
             pass
         try:
-            vars.update(config.interpreters[self.interpreter_name][
+            variables.update(config.interpreters[self.interpreter_name][
                 self.interpreter_version]['uwsgi']['vars'])
         except (AttributeError, KeyError):
             pass
@@ -173,7 +176,7 @@ class Package(Document):
         options = ['[uwsgi]']
 
         options.append('\n# starting uWSGI config variables list')
-        for key, value in vars.items():
+        for key, value in variables.items():
             options.append('var_%s = %s' % (key, value))
 
         options.append('\n# starting ENV variables list')
