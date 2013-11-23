@@ -72,8 +72,9 @@
                 - total_avg_rt_summary = Math.round(total_avg_rt / total_workers / 1000) + ' ms';
                 %tr
                   %td
-                    ∑
                     = total_workers
+                    \/
+                    = instance.stats.workers.lenght
                   %td
                   %td
                     = window.UPAAS.bytes_to_human(total_rss);
