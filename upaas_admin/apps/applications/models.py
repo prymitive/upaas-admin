@@ -32,7 +32,6 @@ from upaas_admin.apps.servers.models import RouterServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.scheduler.base import select_best_backends
-from upaas_admin.apps.servers.constants import PortsNames
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.tasks.base import VirtualTask
 from upaas_admin.apps.tasks.constants import TaskStatus, ACTIVE_TASK_STATUSES

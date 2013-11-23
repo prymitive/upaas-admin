@@ -14,7 +14,6 @@ from mongoengine import ReferenceField
 from django.utils.translation import ugettext_lazy as _
 
 from upaas_admin.apps.tasks.models import Task
-from upaas_admin.apps.servers.constants import PortsNames
 from upaas_admin.common.uwsgi import fetch_json_stats
 
 
