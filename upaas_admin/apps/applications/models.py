@@ -566,6 +566,10 @@ class Application(Document):
 
             for backend_conf in new_backends:
                 if backend_conf.backend in current_backends:
+                    # replace backend settings with updated version
+                    run_plan.update(
+                        pull__backends__backend=backend_conf.backend)
+                    run_plan.update(push__backends=backend_conf)
                     Task.put('UpdateVassalTask', backend=backend_conf.backend,
                              application=self, package=self.current_package,
                              **kwargs)
