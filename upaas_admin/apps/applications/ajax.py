@@ -95,17 +95,29 @@ def tasks_updates(user):
 @dajaxice_register
 @cache_page(3)  # TODO make it configurable?
 def instances(request, app_id):
-    data = []
+    stats = []
     app = Application.objects.filter(id=app_id, owner=request.user).first()
-    if app.run_plan:
+    run_plan = app.run_plan
+    if run_plan:
         for backend_conf in app.run_plan.backends:
+            backend_data = {
+                'name': backend_conf.backend.name,
+                'ip': str(backend_conf.backend.ip),
+                'limits': {
+                    'workers_min': backend_conf.workers_min,
+                    'workers_max': backend_conf.workers_max,
+                    'memory_per_worker': run_plan.memory_per_worker,
+                    'memory_per_worker_bytes': run_plan.memory_per_worker *
+                    1024 * 1024,
+                    'backend_memory': run_plan.memory_per_worker *
+                    backend_conf.workers_max,
+                    'backend_memory_bytes': run_plan.memory_per_worker *
+                    backend_conf.workers_max * 1024 * 1024,
+                }}
             s = fetch_json_stats(str(backend_conf.backend.ip),
                                  backend_conf.stats)
-            data.append(
-                {'backend': {'name': backend_conf.backend.name,
-                             'ip': str(backend_conf.backend.ip)},
-                 'stats': s})
-    return dumps({'stats': data})
+            stats.append({'backend': backend_data, 'stats': s})
+    return dumps({'stats': stats})
 
 
 @cache_page(2)  # TODO make it configurable?
