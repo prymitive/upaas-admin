@@ -582,7 +582,7 @@ class Application(Document):
                              **kwargs)
 
             for backend in current_backends:
-                if backend not in new_backends:
+                if backend not in [bc.backend for bc in new_backends]:
                     log.info(_(u"Stopping {name} on old backend "
                                u"{backend}").format(name=self.name,
                                                     backend=backend.name))

@@ -174,6 +174,8 @@ class StopPackageTask(PackageTask):
                                      self.application.vassal_path))
         yield 10
 
+        #FIXME wait here for instance to die
+
         if os.path.isdir(self.package.package_path):
             _remove_pkg_dir(self.package.package_path)
         else:

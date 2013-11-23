@@ -302,6 +302,8 @@ class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
         return form
 
     def form_valid(self, form):
+        form.instance.memory_per_worker = self.request.user.limits[
+            'memory_per_worker']
         ret = super(EditApplicationRunPlanView, self).form_valid(form)
         self.app.update_application()
         return ret

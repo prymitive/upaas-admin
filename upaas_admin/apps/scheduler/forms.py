@@ -63,4 +63,4 @@ class EditApplicationRunPlanForm(ApplicationRunPlanForm):
 
     class Meta:
         document = ApplicationRunPlan
-        exclude = ('application', 'backends')
+        exclude = ('application', 'backends', 'memory_per_worker')

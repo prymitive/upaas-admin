@@ -78,6 +78,8 @@ def select_best_backends(run_plan):
     if available_backends == 0:
         return []
 
+    #FIXME support workers_min
+
     if available_backends == 1:
         needs_backends = 1
     elif run_plan.workers_min < 4:
