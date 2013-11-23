@@ -91,7 +91,7 @@ class BackendServer(Document):
         return self.maximum_ports - len(self.allocated_ports)
 
     def application_settings(self, application):
-        return self.run_plans.filter(application=application)
+        return self.run_plans.filter(application=application).first()
 
     def find_free_ports(self, count):
         """
