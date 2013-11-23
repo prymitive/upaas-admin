@@ -68,7 +68,7 @@ class PackageTask(BackendTask, ApplicationTask):
 
     # time limit for graceful operations, how long should we wait for app to
     # start before giving up
-    graceful_timeout = 300
+    graceful_timeout = 120
 
     meta = {
         'allow_inheritance': True,
