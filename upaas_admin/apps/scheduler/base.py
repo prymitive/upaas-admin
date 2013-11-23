@@ -67,7 +67,7 @@ def select_best_backends(run_plan):
     run empty list will be returned.
     """
     #TODO needs better scheduling of the number of backends application should
-    # use
+    # use, also we need to check resources
 
     #FIXME translate
     log.info(u"Selecting backends for %s, workers: %d - %d, memory per "
@@ -78,8 +78,6 @@ def select_best_backends(run_plan):
     available_backends = len(BackendServer.objects(is_enabled=True))
     if available_backends == 0:
         return []
-
-    #FIXME support workers_min
 
     if available_backends == 1:
         needs_backends = 1
@@ -98,6 +96,10 @@ def select_best_backends(run_plan):
                                     count=needs_backends,
                                     mapping=workers_per_backend))
 
+    #FIXME find backends first, set values after that
+    workers_min = (needs_backends / run_plan.workers_min) \
+        or run_plan.workers_min
+
     backends = []
     for workers_count in workers_per_backend:
         backend = select_best_backend(exclude=[b.backend for b in backends],
@@ -108,10 +110,9 @@ def select_best_backends(run_plan):
                 log.warning(_(u"Didn't found free ports on backend "
                               u"{name}").format(name=backend.name))
                 continue
-            #FIXME use proper workers_min
             brps = BackendRunPlanSettings(backend=backend, socket=ports[0],
                                           stats=ports[1],
-                                          workers_min=1,
+                                          workers_min=workers_min,
                                           workers_max=workers_count)
             backends.append(brps)
         else:
