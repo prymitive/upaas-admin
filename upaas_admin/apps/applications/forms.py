@@ -7,6 +7,8 @@
 
 from upaas.config.metadata import MetadataConfig
 
+from crispy_forms.layout import HTML
+
 from django import forms
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
@@ -63,7 +65,10 @@ class UpdateApplicationMetadataInlineForm(InlineCrispyMongoForm,
                                           _MetadataForm):
 
     submit_label = 'Update'
-    layout = ['metadata']
+    layout = [
+        HTML(u"<b>%s:</b>" % _(u"New metadata")),
+        'metadata'
+    ]
 
     class Meta:
         document = Application

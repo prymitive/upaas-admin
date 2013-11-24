@@ -140,6 +140,7 @@ class CrispyMongoForm(MongoForm):
 class InlineCrispyMongoForm(MongoForm):
 
     submit_label = 'Submit'
+    submit_icon_class = 'fa fa-floppy-o'
     form_action = None
     form_class = 'form-inline'
     layout = []
@@ -151,8 +152,9 @@ class InlineCrispyMongoForm(MongoForm):
         self.helper.form_class = self.form_class
         self.helper.field_template = 'bootstrap3/layout/inline_field.html'
         layout = self.layout + [
-            StrictButton(_(self.submit_label), css_class='btn-primary',
-                         type='submit'),
+            CirspyIconButton(_(self.submit_label), type='submit',
+                             css_class='btn-primary',
+                             icon_class=self.submit_icon_class),
         ]
         self.helper.layout = Layout(*self.clean_layout(layout))
 

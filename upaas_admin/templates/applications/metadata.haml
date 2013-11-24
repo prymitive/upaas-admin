@@ -10,12 +10,12 @@
   %pre.upaas-metadata-textarea<
     = app.metadata
 
-  %p
-
   .well
-    - crispy metadata_form
-
-  %p.text-center
-    %a.btn.btn-default{'href':'{% url "app_metadata_yml" app.safe_id %}'}
-      %i.fa.fa-download
-      - trans "Download metadata"
+    .row
+      .col-md-8
+        - crispy metadata_form
+      .col-md-4
+        .pull-right
+          %a.btn.btn-default{'href':'{% url "app_metadata_yml" app.safe_id %}'}
+            %i.fa.fa-download
+            - trans "Download metadata"
