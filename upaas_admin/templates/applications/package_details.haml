@@ -87,10 +87,13 @@
             %i.fa.fa-undo
             - trans "Set as app metadata"
 
-        %p.text-center
-          %a.btn.btn-default{'href':'{% url "pkg_metadata_yml" pkg.safe_id %}'}
-            %i.fa.fa-download
-            - trans "Download metadata"
+        .well
+          .row
+            .col-md-12
+              .pull-right
+                %a.btn.btn-default{'href':'{% url "app_metadata_yml" app.safe_id %}'}
+                  %i.fa.fa-download
+                  - trans "Download metadata"
 
       - if metadiff
         #metadiff.tab-pane
