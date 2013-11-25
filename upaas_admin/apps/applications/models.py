@@ -474,6 +474,7 @@ class Application(Document):
             return task
 
     def start_application(self):
+        #FIXME check if application can start (running apps limit)
         if self.current_package:
             run_plan = self.run_plan
             if not run_plan:
