@@ -32,9 +32,8 @@
       #details.tab-pane.active
         .row
           .col-md-2.text-center
-            %img.img-rounded{'src':'{% gravatar_url user.email 120 %}', 'height':'120', 'width':'120'}
-              %a{'href':'https://gravatar.com', 'target':'_blank'}
-                - trans "Change avatar"
+            %a.upaas-help-tooltip{'href':'https://gravatar.com', 'target':'_blank', 'title': '{% trans "Change avatar" %}'}
+              %img.img-rounded{'src':'{% gravatar_url user.email 120 %}', 'height':'120', 'width':'120'}
           .col-md-10
             %dl.dl-horizontal
               %dt
