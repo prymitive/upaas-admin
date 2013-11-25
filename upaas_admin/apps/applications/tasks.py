@@ -219,7 +219,8 @@ class UpgradePackageTask(PackageTask):
             raise
         yield 40
 
-        self.package.save_vassal_config(self.backend)
+        backend_conf = self.application.run_plan.backend_settings(self.backend)
+        self.package.save_vassal_config(backend_conf)
         yield 75
 
         self.wait_until_running()
