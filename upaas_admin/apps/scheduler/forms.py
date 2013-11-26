@@ -39,10 +39,11 @@ class ApplicationRunPlanForm(CrispyMongoForm):
 
         workers_used = self.user.limits_usage['workers']
         if self.instance.id:
-            workers_used -= self.instance.workers_max
+            run_plan = ApplicationRunPlan.objects(id=self.instance.id).first()
+            workers_used -= run_plan.workers_max
         workers_limit = self.user.limits['workers']
         if workers_limit:
-            workers_available = workers_limit - workers_used
+            workers_available = max(workers_limit - workers_used, 0)
             if workers_min > workers_available:
                 raise forms.ValidationError(_(
                     u"Only {available} workers available, cannot set "

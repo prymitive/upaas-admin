@@ -32,7 +32,7 @@ class RunPlanResource(MongoEngineResource):
     class Meta:
         queryset = ApplicationRunPlan.objects.all()
         resource_name = 'run_plan'
-        excludes = ['application', 'backends']
+        excludes = ['application', 'backends', 'memory_per_worker']
         filtering = {
             'id': ALL,
             'application': ALL,
@@ -54,9 +54,13 @@ class RunPlanResource(MongoEngineResource):
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
+        kwargs['application'] = app
+        kwargs['memory_per_worker'] = bundle.request.user.limits[
+            'memory_per_worker']
         try:
-            return super(MongoEngineResource, self).obj_create(
-                bundle, request=request, application=app, **kwargs)
+            return super(MongoEngineResource, self).obj_create(bundle,
+                                                               request=request,
+                                                               **kwargs)
         except mongoengine.ValidationError, e:
             log.warning(_(u"Can't create new run plan, invalid data payload: "
                         "{msg}").format(msg=e.message))
@@ -65,6 +69,11 @@ class RunPlanResource(MongoEngineResource):
             msg = _(u"Application is already running")
             log.warning(msg)
             raise exceptions.ValidationError(msg)
+
+    def obj_update(self, bundle, **kwargs):
+        bundle.obj.memory_per_worker = bundle.request.user.limits[
+            'memory_per_worker']
+        return super(RunPlanResource, self).obj_update(bundle, **kwargs)
 
     def apply_authorization_limits(self, request, object_list):
         log.debug(_(u"Limiting query to user owned apps (length: "
