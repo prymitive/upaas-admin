@@ -216,9 +216,10 @@ interpreters:
       setup:
         actions:
           interpreter:
+            - cat /etc/php5/cgi/php.ini > /etc/php5/php.ini
             - echo -e "\n\n-e\n;loading modules\n" >> /etc/php5/php.ini
-            - cat /etc/php5/cgi/conf.d/*.ini >> /etc/php5/cgi/php.ini
-            - sed -i s/"^memory_limit =.*"/"memory_limit = -1"/g /etc/php5/cgi/php.ini
+            - cat /etc/php5/cgi/conf.d/*.ini >> /etc/php5/php.ini
+            - sed -i s/"^memory_limit =.*"/"memory_limit = -1"/g /etc/php5/php.ini
 
     "5.5":
       uwsgi:
