@@ -123,6 +123,7 @@ interpreters:
         - echo "exit 101\n" >> /usr/sbin/policy-rc.d
         - chmod 755 /usr/sbin/policy-rc.d
         - apt-add-repository -y ppa:brightbox/ruby-ng
+        - apt-add-repository -y ppa:chris-lea/php5.5
         - apt-get update -qq
         - apt-get dist-upgrade -y
       finalize:
@@ -208,12 +209,21 @@ interpreters:
             - pip-3.2 install -qMU -r requirements.txt
 
   php:
+
     any:
       uwsgi:
         template: interpreters/php.ini
+      setup:
+        actions:
+          interpreter:
+            - echo -e "\n\n-e\n;loading modules\n" >> /etc/php5/php.ini
+            - cat /etc/php5/cgi/conf.d/*.ini >> /etc/php5/cgi/php.ini
+            - sed -i s/"^memory_limit =.*"/"memory_limit = -1"/g /etc/php5/cgi/php.ini
+
     "5.5":
       uwsgi:
         plugin: php
       packages:
         - php5-dev
+        - php5-cgi
         - php-pear
