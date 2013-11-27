@@ -1,0 +1,34 @@
+os:
+  Ubuntu:
+    packages:
+      - git-core
+      - python-imaging
+
+
+interpreter:
+  type: python
+  versions:
+    - "2.7"
+  settings:
+    module: django.core.handlers.wsgi:WSGIHandler()
+
+
+repository:
+  clone: git clone --depth=10 --quiet git://github.com/sigurdga/django-jquery-file-upload.git %destination%
+  update:
+    - git reset --hard
+    - git pull
+  info: git log -n 1
+  changelog: git log --no-merges %old%..%new%"
+
+
+env = DJANGO_SETTINGS_MODULE=django-jquery-file-upload.settings
+
+
+actions:
+  setup:
+    main:
+      - ln -s /home/app /home/django-jquery-file-upload
+      - pip install "django<1.6"
+      - pip install pillow
+      - python manage.py syncdb --noinput
