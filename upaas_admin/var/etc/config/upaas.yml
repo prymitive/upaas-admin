@@ -208,9 +208,11 @@ interpreters:
             - pip-3.2 install -qMU -r requirements.txt
 
   php:
-    "5.5":
+    any:
       uwsgi:
         template: interpreters/php.ini
+    "5.5":
+      uwsgi:
         plugin: php
       packages:
         - php5-dev
