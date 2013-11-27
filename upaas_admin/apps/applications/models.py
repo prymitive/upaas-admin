@@ -149,6 +149,30 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
+        # interpretere default settings for any version
+        try:
+            for key, value in config.interpreters[self.interpreter_name][
+                    'any']['settings'].items():
+                var_name = "meta_%s_%s" % (self.interpreter_name, key)
+                variables[var_name] = value
+        except (AttributeError, KeyError):
+            pass
+        # interpretere default settings for current version
+        try:
+            for key, value in config.interpreters[self.interpreter_name][
+                    self.interpreter_version]['settings'].items():
+                var_name = "meta_%s_%s" % (self.interpreter_name, key)
+                variables[var_name] = value
+        except (AttributeError, KeyError):
+            pass
+        # interpreter settings from metadata
+        try:
+            for key, val in self.metadata_config.interpreter.settings.items():
+                var_name = "meta_%s_%s" % (self.interpreter_name, key)
+                variables[var_name] = val
+        except KeyError:
+            pass
+
         envs = {}
         try:
             envs.update(config.interpreters[self.interpreter_name]['any'][

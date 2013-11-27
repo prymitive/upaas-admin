@@ -184,6 +184,8 @@ interpreters:
     any:
       uwsgi:
         template: interpreters/python.ini
+      settings:
+        module: app
 
     "2.7":
       uwsgi:
