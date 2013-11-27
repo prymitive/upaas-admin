@@ -30,6 +30,15 @@ class ApplicationRunPlanForm(CrispyMongoForm):
         workers_min = self.cleaned_data.get('workers_min')
         workers_max = self.cleaned_data.get('workers_max')
 
+        if not self.instance.id:
+            apps_running = self.user.limits_usage['running_apps']
+            apps_limit = self.user.limits['running_apps']
+            if apps_running >= apps_limit:
+                raise forms.ValidationError(
+                    _(u"Already running maximum allowed applications "
+                      u"({count}), can't start another one").format(
+                        count=apps_running))
+
         if workers_min is None or workers_max is None:
             return self.cleaned_data
 

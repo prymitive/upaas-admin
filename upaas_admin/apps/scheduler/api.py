@@ -32,7 +32,7 @@ class RunPlanResource(MongoEngineResource):
     class Meta:
         queryset = ApplicationRunPlan.objects.all()
         resource_name = 'run_plan'
-        excludes = ['application', 'backends', 'memory_per_worker']
+        excludes = ['backends', 'memory_per_worker']
         filtering = {
             'id': ALL,
             'application': ALL,
@@ -41,6 +41,10 @@ class RunPlanResource(MongoEngineResource):
         authorization = Authorization()
         validation = MongoCleanedDataFormValidation(
             form_class=ApplicationRunPlanForm)
+
+    def __init__(self, *args, **kwargs):
+        super(RunPlanResource, self).__init__(*args, **kwargs)
+        self.fields['application'].readonly = True
 
     def obj_create(self, bundle, request=None, **kwargs):
         #FIXME handle reference field properly using mongoengine-tastypie
