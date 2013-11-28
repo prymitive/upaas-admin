@@ -184,6 +184,7 @@ class Package(Document):
                 self.interpreter_version]['env'])
         except (AttributeError, KeyError):
             pass
+        envs.update(self.metadata_config.env)
 
         plugin = None
         try:
