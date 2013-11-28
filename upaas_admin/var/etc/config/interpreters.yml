@@ -1,7 +1,9 @@
+# default envs for every interpreter
 env:
-  LC_ALL: C
-  LANG: C
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
   PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 uwsgi:
   # base template path
   template: templates/base.ini

@@ -1,12 +1,15 @@
 # how long any action command can take to execute
 timelimit: 600
-# how to install or remove package
+
+# how to install package
 install:
   env:
     DEBIAN_FRONTEND: noninteractive
     LC_ALL: C
     LANG: C
   cmd: apt-get install --no-install-recommends -y %package%
+
+# how to uninstall package
 uninstall:
   env:
     DEBIAN_FRONTEND: noninteractive

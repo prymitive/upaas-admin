@@ -1,5 +1,13 @@
 limits:
+
+  # how many simultaneously running apps each user might have by default
   running_apps: 0
+
+  # how many workers user can allocate by default
   workers: 16
+
+  # how much memory single worker can consume by default
   memory_per_worker: 128
+
+  # how many last package files will be stored for user by default
   packages_per_app: 5

@@ -12,6 +12,7 @@ any:
       main:
         - gem install bundler
         - bundle install --deployment --without test development
+
 "1.8.7":
   uwsgi:
     plugin: rack_ruby18
@@ -24,6 +25,7 @@ any:
       interpreter:
         - ruby-switch --set ruby1.8
         - ruby -v
+
 "1.9.3":
   uwsgi:
     plugin: rack_ruby191
@@ -35,6 +37,7 @@ any:
       interpreter:
         - ruby-switch --set ruby1.9.1
         - ruby -v
+
 "2.0.0":
   uwsgi:
     plugin: rack_ruby20

@@ -4,8 +4,10 @@
 host: localhost
 port: 27017
 database: upaas
+
 # user and password is optional
 username: username
 password: password
+
 # if uri is set then it will be used, otherwise host, database and auth
 # options will be used

@@ -15,6 +15,7 @@ any:
     setup:
       main:
         - pip install -qMU -r requirements.txt
+
 "3.2":
   uwsgi:
     plugin: python32
