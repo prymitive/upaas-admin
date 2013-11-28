@@ -1,0 +1,28 @@
+any:
+  uwsgi:
+    template: templates/python.ini
+  settings:
+    module: app
+
+"2.7":
+  uwsgi:
+    plugin: python27
+  packages:
+    - python2.7
+    - python2.7-dev
+    - python-pip
+  actions:
+    setup:
+      main:
+        - pip install -qMU -r requirements.txt
+"3.2":
+  uwsgi:
+    plugin: python32
+  packages:
+    - python3.2
+    - python3.2-dev
+    - python3-pip
+  actions:
+    setup:
+      main:
+        - pip-3.2 install -qMU -r requirements.txt

@@ -1,0 +1,8 @@
+# where to store app files during package build
+workdir: /var/upaas/workdir
+
+# where to store running apps
+apps: /var/upaas/apps
+
+# where to save generated uWSGI vassal configs
+vassals: /etc/uwsgi-emperor/vassals

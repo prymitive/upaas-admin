@@ -1,0 +1,48 @@
+any:
+  env:
+    RAILS_ENV: production
+    RACK_ENV: production
+  uwsgi:
+    template: templates/ruby.ini
+  packages:
+    - ruby-switch
+
+  actions:
+    setup:
+      main:
+        - gem install bundler
+        - bundle install --deployment --without test development
+"1.8.7":
+  uwsgi:
+    plugin: rack_ruby18
+  packages:
+    - ruby1.8
+    - ruby1.8-dev
+    - rubygems
+  actions:
+    setup:
+      interpreter:
+        - ruby-switch --set ruby1.8
+        - ruby -v
+"1.9.3":
+  uwsgi:
+    plugin: rack_ruby191
+  packages:
+    - ruby1.9.1
+    - ruby1.9.1-dev
+  actions:
+    setup:
+      interpreter:
+        - ruby-switch --set ruby1.9.1
+        - ruby -v
+"2.0.0":
+  uwsgi:
+    plugin: rack_ruby20
+  packages:
+    - ruby2.0
+    - ruby2.0-dev
+  actions:
+    setup:
+      interpreter:
+        - ruby-switch --set ruby2.0
+        - ruby -v

@@ -129,7 +129,7 @@ interpreters:
         RAILS_ENV: production
         RACK_ENV: production
       uwsgi:
-        template: interpreters/ruby.ini
+        template: templates/ruby.ini
       packages:
         - ruby-switch
 
@@ -177,7 +177,7 @@ interpreters:
 
     any:
       uwsgi:
-        template: interpreters/python.ini
+        template: templates/python.ini
       settings:
         module: app
 
@@ -208,7 +208,7 @@ interpreters:
 
     any:
       uwsgi:
-        template: interpreters/php.ini
+        template: templates/php.ini
       setup:
         actions:
           interpreter:

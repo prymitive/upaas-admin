@@ -1,0 +1,5 @@
+limits:
+  running_apps: 0
+  workers: 16
+  memory_per_worker: 128
+  packages_per_app: 5

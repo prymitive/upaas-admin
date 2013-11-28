@@ -1,0 +1,17 @@
+# name or uid of user that will be used to run app inside namespace
+uid: www-data
+
+# name or gid of group that will be used to run app inside namespace
+gid: www-data
+
+# app directory inside the chroot
+home: /home/app
+
+# automatic domain for apps
+domain: upaas.local
+
+# minimal port for app sockets
+tcp:
+  # port range for app sockets, all ports from this range must be free
+  port_min: 2001
+  port_max: 7999

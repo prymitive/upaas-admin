@@ -1,0 +1,7 @@
+# class implementing storage access
+handler: upaas.storage.mongodb.MongoDBStorage
+
+# local storage example, requires shared fs (NFS)
+#handler: upaas.storage.local.LocalStorage
+#  settings:
+   #dir: /var/upaas/storage
