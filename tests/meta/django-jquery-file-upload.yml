@@ -22,7 +22,8 @@ repository:
   changelog: git log --no-merges %old%..%new%"
 
 
-env = DJANGO_SETTINGS_MODULE=django-jquery-file-upload.settings
+env:
+  DJANGO_SETTINGS_MODULE: django-jquery-file-upload.settings
 
 
 actions:
