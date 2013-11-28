@@ -10,6 +10,7 @@ import logging
 import tempfile
 import shutil
 import time
+import re
 from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
@@ -86,6 +87,28 @@ class Package(Document):
         """
         return os.path.join(settings.UPAAS_CONFIG.paths.apps, self.safe_id)
 
+    def uwsgi_options_from_metadata(self):
+        """
+        Parse uWSGI options in metadata (if any) and return only allowed.
+        """
+        options = []
+        compiled = []
+
+        for regexp in self.upaas_config.apps.uwsgi.safe_options:
+            compiled.append(re.compile(regexp))
+
+        for opt in self.metadata_config.uwsgi.settings:
+            if '=' in opt:
+                for regexp in compiled:
+                    opt_name = opt.split('=')[0].rstrip(' ')
+                    if regexp.match(opt_name):
+                        options.append(opt)
+                        log.info(_(u"Adding safe uWSGI option from metadata: "
+                                   u"{opt}").format(opt=opt))
+                        break
+
+        return options
+
     def generate_uwsgi_config(self, backend_conf):
         """
         :param backend_conf: BackendRunPlanSettings instance for which we
@@ -93,6 +116,7 @@ class Package(Document):
         """
 
         def _load_template(path):
+            log.info(u"Loading uWSGI template from: %s" % path)
             for search_path in UPAAS_CONFIG_DIRS:
                 template_path = os.path.join(search_path, path)
                 if os.path.exists(template_path):
@@ -100,6 +124,7 @@ class Package(Document):
                     ret = f.read().splitlines()
                     f.close()
                     return ret
+            return []
 
         # so it won't change while generating configuration
         config = deepcopy(self.upaas_config)
@@ -207,6 +232,10 @@ class Package(Document):
         options.append('\n# starting ENV variables list')
         for key, value in envs.items():
             options.append('env = %s=%s' % (key, value))
+
+        options.append('\n# starting options from app metadata')
+        for opt in self.uwsgi_options_from_metadata():
+            options.append(opt)
 
         # enable cheaper mode if we have multiple workers
         if backend_conf.workers_max > 1:

@@ -54,6 +54,9 @@ class UPaaSConfig(base.Config):
             "tcp": {
                 "port_min": base.IntegerEntry(required=True),
                 "port_max": base.IntegerEntry(required=True),
+            },
+            "uwsgi": {
+                "safe_options": base.ListEntry(value_type=unicode),
             }
         },
         "defaults": {
