@@ -26,8 +26,8 @@ class _MetadataForm(object):
             meta = metadata.read()
             MetadataConfig.from_string(meta)
             metadata = meta
-        except:
-            raise forms.ValidationError(_(u"Invalid metadata file"))
+        except Exception, e:
+            raise forms.ValidationError(_(u"%s" % e))
         return metadata
 
 
