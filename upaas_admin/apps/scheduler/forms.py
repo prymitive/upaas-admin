@@ -33,7 +33,7 @@ class ApplicationRunPlanForm(CrispyMongoForm):
         if not self.instance.id:
             apps_running = self.user.limits_usage['running_apps']
             apps_limit = self.user.limits['running_apps']
-            if apps_running >= apps_limit:
+            if apps_limit and apps_running >= apps_limit:
                 raise forms.ValidationError(
                     _(u"Already running maximum allowed applications "
                       u"({count}), can't start another one").format(
