@@ -5,14 +5,14 @@ timelimit: 600
 install:
   env:
     DEBIAN_FRONTEND: noninteractive
-    LC_ALL: C
-    LANG: C
+    LC_ALL: en_US.UTF-8
+    LANG: en_US.UTF-8
   cmd: apt-get install --no-install-recommends -y %package%
 
 # how to uninstall package
 uninstall:
   env:
     DEBIAN_FRONTEND: noninteractive
-    LC_ALL: C
-    LANG: C
+    LC_ALL: en_US.UTF-8
+    LANG: en_US.UTF-8
   cmd: apt-get remove -y %package%

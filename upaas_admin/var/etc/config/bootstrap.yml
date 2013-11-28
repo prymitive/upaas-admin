@@ -6,8 +6,8 @@ timelimit: 600
 # envs are optional
 
 env:
-  LC_ALL: C
-  LANG: C
+  LC_ALL: en_US.UTF-8
+  LANG: en_US.UTF-8
 
 commands:
   - debootstrap --components=main,universe,multiverse,restricted `lsb_release -sc` %workdir%
