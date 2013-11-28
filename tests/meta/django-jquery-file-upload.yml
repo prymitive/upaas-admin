@@ -33,3 +33,8 @@ actions:
       - pip install "django<1.6"
       - pip install pillow
       - python manage.py syncdb --noinput
+
+
+uwsgi:
+  settings:
+    - "static-map = /static=fileupload/static"
