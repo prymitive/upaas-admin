@@ -1,8 +1,8 @@
 any:
   uwsgi:
     template: templates/php.ini
-  setup:
-    actions:
+  actions:
+    setup:
       interpreter:
         - cat /etc/php5/cgi/php.ini > /etc/php5/php.ini
         - echo -e "\n\n-e\n;loading modules\n" >> /etc/php5/php.ini
