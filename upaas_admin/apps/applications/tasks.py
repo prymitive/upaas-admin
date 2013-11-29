@@ -18,6 +18,7 @@ from upaas.builder.builder import Builder
 from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
 from upaas import processes
+from upaas import utils
 
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.exceptions import UnpackError
