@@ -1,8 +1,9 @@
 os:
-  Ubuntu:
+  Debian: &debian
     packages:
       - git-core
       - python-imaging
+  Ubuntu: *debian
 
 
 interpreter:

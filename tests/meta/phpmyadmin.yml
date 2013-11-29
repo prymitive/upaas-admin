@@ -1,9 +1,10 @@
 os:
-  Ubuntu:
+  Debian: &debian
     packages:
       - git-core
       - php5-mysql
       - php5-mcrypt
+  Ubuntu: *debian
 
 
 interpreter:

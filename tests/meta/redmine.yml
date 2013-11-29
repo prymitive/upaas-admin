@@ -1,5 +1,5 @@
 os:
-  Ubuntu:
+  Debian: &debian
     packages:
       - git-core
       - rake
@@ -9,6 +9,7 @@ os:
       - imagemagick
       - libmagickcore-dev
       - libmagickwand-dev
+  Ubuntu: *debian
 
 
 interpreter:
