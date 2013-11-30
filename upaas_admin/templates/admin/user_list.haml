@@ -68,8 +68,12 @@
             .btn-group
               %button.btn.btn-default.btn-sm.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
                 %i.fa.fa-gear
+                &nbsp;
                 %span.caret
               %ul.dropdown-menu.pull-right{'role': 'menu'}
+                %li.dropdown-header.upaas-no-wrap{'role':'presentation'}
+                  = user_object.full_name_or_login
+                %li.divider{'role':'presentation'}
                 %li
                   %a{'href':'{% url "admin_user_edit" user_object.safe_id %}'}
                     %i.fa.fa-pencil
