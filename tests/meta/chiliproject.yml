@@ -57,3 +57,6 @@ files:
     production:
       adapter: sqlite3
       database: db/redmine.db
+  config.ru: |
+    require File.dirname(__FILE__) + '/config/environment'
+    run ActionController::Dispatcher.new
