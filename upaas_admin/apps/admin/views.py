@@ -66,6 +66,9 @@ class AdminCreateUserLimitsView(LoginRequiredMixin, SuperUserRequiredMixin,
         context['limit_user'] = self.limit_user
         return context
 
+    def get_initial(self):
+        return UserLimits.get_default_limits()
+
     def form_valid(self, form):
         form.instance.user = self.limit_user
         return super(AdminCreateUserLimitsView, self).form_valid(form)
