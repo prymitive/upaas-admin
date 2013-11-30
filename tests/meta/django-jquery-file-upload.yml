@@ -9,6 +9,7 @@ os:
 interpreter:
   type: python
   versions:
+    - "3.2"
     - "2.7"
   settings:
     module: django.core.handlers.wsgi:WSGIHandler()
