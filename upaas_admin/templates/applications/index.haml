@@ -45,8 +45,12 @@
             .btn-group
               %button.btn.btn-default.btn-sm.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
                 %i.fa.fa-gear
+                &nbsp;
                 %span.caret
               %ul.dropdown-menu.pull-right{'role': 'menu'}
+                %li.dropdown-header.upaas-no-wrap{'role':'presentation'}
+                  = app.name
+                %li.divider{'role':'presentation'}
                 - include "applications/partials/app_actions.html"
 
       - empty
