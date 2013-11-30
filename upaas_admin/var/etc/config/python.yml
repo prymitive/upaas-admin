@@ -3,6 +3,11 @@ any:
     template: templates/python.ini
   settings:
     module: app
+  actions:
+    setup:
+      main:
+        - pip install -qMU -r requirements.txt
+
 
 "2.7":
   uwsgi:
@@ -13,8 +18,9 @@ any:
     - python-pip
   actions:
     setup:
-      main:
-        - pip install -qMU -r requirements.txt
+      interpreter:
+        - python -V
+
 
 "3.2":
   uwsgi:
@@ -22,8 +28,13 @@ any:
   packages:
     - python3.2
     - python3.2-dev
-    - python3-pip
+    - python3-setuptools
   actions:
     setup:
-      main:
-        - pip-3.2 install -qMU -r requirements.txt
+      interpreter:
+        - update-alternatives --install /usr/bin/python python /usr/bin/python3.2 99
+        - update-alternatives --set python /usr/bin/python3.2
+        - python -V
+        - python -m easy_install pip
+        - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip-3.2 99
+        - update-alternatives --set pip /usr/local/bin/pip-3.2
