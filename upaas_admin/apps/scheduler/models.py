@@ -30,9 +30,16 @@ class UserLimits(Document):
 
     _default_manager = QuerySetManager()
 
+    limit_fields = ['running_apps', 'packages_per_app', 'workers',
+                    'memory_per_worker']
+
     @classmethod
     def get_default_limits(cls):
         return settings.UPAAS_CONFIG.dump()['defaults']['limits']
+
+    @property
+    def safe_id(self):
+        return str(self.id)
 
 
 class BackendRunPlanSettings(EmbeddedDocument):

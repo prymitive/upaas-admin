@@ -1,0 +1,26 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb "Users" "admin_users_list"
+  - breadcrumb object.user.full_name_or_login "admin_user_edit" object.user.safe_id
+  - breadcrumb "Delete custom limits" admin_user_limits_create object.user.safe_id
+
+
+- block content
+
+  %form.well{'method':'post', 'action':'{% url "admin_user_limits_delete" object.safe_id %}'}
+    - csrf_token
+    %p
+      - trans "Are you sure you want to delete custom user limits?"
+    .controls
+      %button.btn.btn-default{'type':'button', 'onClick':'javascript:history.go(-1);'}
+        %i.fa.fa-reply
+        - trans "Cancel"
+      %input.btn.btn-danger{'type':'submit', 'value':'{% trans "Delete" %}'}/

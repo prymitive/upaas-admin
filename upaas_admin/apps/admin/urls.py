@@ -19,6 +19,13 @@ urlpatterns = patterns(
     url(r'^users/(?P<slug>[-_.\w]+)/edit$', AdminEditUserView.as_view(),
         name='admin_user_edit'),
 
+    url(r'^users/limits/(?P<slug>[-_.\w]+)/create$',
+        AdminCreateUserLimitsView.as_view(), name='admin_user_limits_create'),
+    url(r'^users/limits/(?P<slug>[-_.\w]+)/edit$',
+        AdminEditUserLimitsView.as_view(), name='admin_user_limits_edit'),
+    url(r'^users/limits/(?P<slug>[-_.\w]+)/delete$',
+        AdminDeleteUserLimitsView.as_view(), name='admin_user_limits_delete'),
+
     url(r'^routers$', AdminRouterListView.as_view(),
         name='admin_routers_list'),
     url(r'^routers/create$', AdminCreateRouterView.as_view(),

@@ -45,13 +45,13 @@
           - trans "Active"
         %th
           - trans "Administrator"
+        %th
 
     %tbody
       - for user_object in object_list
         %tr
           %td{'style':'background: url("{% gravatar_url user_object.email 32 %}") left no-repeat; padding-left:40px;'}
-            %a{'href':'{% url "admin_user_edit" user_object.username %}'}
-              = user_object.username
+            = user_object.username
           %td
             = user_object.first_name
           %td
@@ -64,5 +64,27 @@
           %td
             - if user_object.is_superuser
               %i.fa.fa-thumbs-o-up
+          %td.upaas-table-action
+            .btn-group
+              %button.btn.btn-default.btn-sm.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
+                %i.fa.fa-gear
+                %span.caret
+              %ul.dropdown-menu.pull-right{'role': 'menu'}
+                %li
+                  %a{'href':'{% url "admin_user_edit" user_object.safe_id %}'}
+                    %i.fa.fa-pencil
+                    - trans "Edit user account"
+                %li
+                  - if user_object.limits_settings
+                    %a{'href':'{% url "admin_user_limits_edit" user_object.limits_settings.safe_id %}'}
+                      %i.fa.fa-tachometer
+                      - trans "Edit custom limits"
+                    %a{'href':'{% url "admin_user_limits_delete" user_object.limits_settings.safe_id %}'}
+                      %i.fa.fa-trash-o
+                      - trans "Delete custom limits"
+                  - else
+                    %a{'href':'{% url "admin_user_limits_create" user_object.safe_id %}'}
+                      %i.fa.fa-tachometer
+                      - trans "Create custom limits"
 
   - include "partials/pagination_footer.html"

@@ -54,23 +54,27 @@ class User(MongoUser):
             document.apikey = User.generate_apikey()
 
     @property
+    def safe_id(self):
+        return str(self.id)
+
+    @property
     def full_name_or_login(self):
         return self.get_full_name() or self.username
 
     @property
+    def limits_settings(self):
+        return UserLimits.objects(user=self).first()
+
+    @property
     def limits(self):
-        default_limits = UserLimits.get_default_limits()
-        user_limits = UserLimits.objects(user=self).first()
+        ret = UserLimits.get_default_limits()
+        user_limits = self.limits_settings
         if user_limits:
-            ret = {}
             for name in UserLimits.limit_fields:
                 value = getattr(user_limits, name)
                 if value is not None:
                     ret[name] = value
-                else:
-                    ret[name] = default_limits[name]
-            return ret
-        return default_limits
+        return ret
 
     @property
     def limits_usage(self):

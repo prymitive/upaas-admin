@@ -14,6 +14,7 @@ from mongoengine.django.auth import make_password
 from upaas_admin.common.forms import ContribFormFieldGenerator
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
+from upaas_admin.apps.scheduler.models import UserLimits
 
 
 #FIXME patch crispy form-horizontal to support checkboxes and move to crispy
@@ -37,6 +38,13 @@ class AdminEditUserForm(MongoForm):
         document = User
         exclude = ('username', 'password', 'is_staff', 'last_login',
                    'date_joined', 'apikey')
+
+
+class AdminUserLimitsForm(MongoForm):
+
+    class Meta:
+        document = UserLimits
+        exclude = ('user',)
 
 
 class AdminRouterForm(MongoForm):

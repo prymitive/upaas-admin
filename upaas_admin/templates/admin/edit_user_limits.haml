@@ -9,16 +9,17 @@
 - block breadcrumbs
   = block.super
   - breadcrumb "Users" "admin_users_list"
-  - breadcrumb object.full_name_or_login "admin_user_edit" object.safe_id
+  - breadcrumb object.user.full_name_or_login "admin_user_edit" object.user.safe_id
+  - breadcrumb "Create custom limits" admin_user_limits_create object.user.safe_id
 
 
 - block content
 
-  %form.well{'method':'post', 'action':'{% url "admin_user_edit" object.safe_id %}'}
+  %form.well{'method':'post', 'action':'{% url "admin_user_limits_edit" object.safe_id %}'}
     - csrf_token
     = form|crispy
     .controls
       %button.btn.btn-default{'type':'button', 'onClick':'javascript:history.go(-1);'}
         %i.fa.fa-reply
         - trans "Cancel"
-      %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Save" %}'}/
+      %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Edit" %}'}/
