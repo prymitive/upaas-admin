@@ -23,23 +23,32 @@
           - trans "Interpreter version"
         %th
           - trans "Packages"
+        %th
 
     %tbody
-      - for application in object_list
+      - for app in object_list
         %tr
           %td
-            - if application.run_plan
+            - if app.run_plan
               %i.fa.fa-play{'title':'{% trans "Running" %}'}
             - else
               %i.fa.fa-stop{'title':'{% trans "Stopped" %}'}
-            %a{'href':'{% url "app_details" application.id %}'}
-              = application.name
+            %a{'href':'{% url "app_details" app.id %}'}
+              = app.name
           %td
-            = application.interpreter_name
+            = app.interpreter_name
           %td
-            = application.interpreter_version
+            = app.interpreter_version
           %td
-            = application.packages|length
+            = app.packages|length
+          %td.upaas-table-action
+            .btn-group
+              %button.btn.btn-default.btn-sm.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
+                %i.fa.fa-gear
+                %span.caret
+              %ul.dropdown-menu.pull-right{'role': 'menu'}
+                - include "applications/partials/app_actions.html"
+
       - empty
         %tr
           %td{'colspan':'4'}
