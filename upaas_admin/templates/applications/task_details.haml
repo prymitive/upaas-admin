@@ -9,7 +9,7 @@
   = block.super
   - breadcrumb task.application.name "app_details" task.application.safe_id
   - breadcrumb "Tasks" "app_tasks" task.application.safe_id
-  - breadcrumb task.title "task_details" task.safe_id
+  - breadcrumb task.title|truncatechars:"60" "task_details" task.safe_id
 
 
 - block content
