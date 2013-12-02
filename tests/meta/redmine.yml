@@ -56,3 +56,7 @@ files:
     production:
       adapter: sqlite3
       database: db/redmine.db
+
+uwsgi:
+  settings:
+    - "route = ^/ basicauth:UPAAS,admin:adm123"
