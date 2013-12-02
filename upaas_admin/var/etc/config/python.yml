@@ -38,3 +38,4 @@ any:
         - python -m easy_install pip
         - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip-3.2 99
         - update-alternatives --set pip /usr/local/bin/pip-3.2
+        - sed -i 1s_'^#!/usr/bin/python$'_'#!/usr/bin/python2'_ /bin/* /sbin/* /usr/bin/* /usr/sbin/*
