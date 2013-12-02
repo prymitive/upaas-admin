@@ -9,7 +9,7 @@ import os
 import logging
 from socket import gethostname
 
-from mongoengine import StringField, ReferenceField
+from mongoengine import StringField, ReferenceField, BooleanField
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -18,7 +18,6 @@ from upaas.builder.builder import Builder
 from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
 from upaas import processes
-from upaas import utils
 
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.exceptions import UnpackError
@@ -38,14 +37,14 @@ class BuildPackageTask(ApplicationTask):
 
     application = ReferenceField('Application', dbref=False, required=True)
     metadata = StringField(required=True)
-    system_filename = StringField()
+    force_fresh = BooleanField(default=False)
 
     def generate_title(self):
-        if self.system_filename:
-            return _(u"Building new package for {name}").format(
+        if self.force_fresh:
+            return _(u"Building new fresh package for {name}").format(
                 name=self.application.name)
         else:
-            return _(u"Building new fresh package for {name}").format(
+            return _(u"Building new package for {name}").format(
                 name=self.application.name)
 
     def job(self):
@@ -61,15 +60,19 @@ class BuildPackageTask(ApplicationTask):
             log.error(u"Missing uPaaS configuration")
             raise Exception()
 
+        system_filename = None
+        if not self.force_fresh and self.application.current_package:
+            system_filename = self.application.current_package.filename
+
         log.info(u"Starting build task with parameters app_id=%s, "
-                 u"system_filename=%s" % (self.application.safe_id,
-                                          self.system_filename))
+                 u"force_fresh=%s" % (self.application.safe_id,
+                                      self.force_fresh))
 
         build_result = None
         try:
             builder = Builder(upaas_config, metadata_obj)
             for result in builder.build_package(
-                    system_filename=self.system_filename):
+                    system_filename=system_filename):
                 log.debug("Build progress: %d%%" % result.progress)
                 yield result.progress
                 build_result = result

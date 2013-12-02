@@ -1,4 +1,4 @@
-- extends 'site.html'
+- extends 'applications/base.html'
 
 
 - load i18n
@@ -8,11 +8,10 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb app.name "app_details" app.safe_id
   - breadcrumb "Build package" "build_package" app.safe_id
 
 
-- block content
+- block app_content
 
   - if app.pending_build_tasks
     %h3.text-center

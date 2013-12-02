@@ -519,12 +519,9 @@ class Application(Document):
             log.info(_(u"Application {name} is already queued for "
                        u"building").format(name=self.name))
         else:
-            system_filename = None
-            if not force_fresh and self.current_package:
-                system_filename = self.current_package.filename
             task = Task.put('BuildPackageTask', application=self,
                             metadata=self.metadata,
-                            system_filename=system_filename)
+                            force_fresh=force_fresh)
             return task
 
     def start_application(self):
