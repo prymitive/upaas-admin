@@ -29,3 +29,5 @@ uwsgi:
     - "^(min|max)-worker-lifetime$"
     - "^upload-progress$"
     - "^lazy"
+    - "^route"
+    - "^(response|final|error)-route$"
