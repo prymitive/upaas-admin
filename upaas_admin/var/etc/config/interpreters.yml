@@ -16,6 +16,7 @@ actions:
       - chmod 755 /usr/sbin/policy-rc.d
       - apt-add-repository -y ppa:brightbox/ruby-ng
       - apt-add-repository -y ppa:chris-lea/php5.5
+      - apt-add-repository -y ppa:fkrull/deadsnakes
       - apt-get update -qq
       - apt-get dist-upgrade -y
     finalize:
