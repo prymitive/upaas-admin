@@ -2,7 +2,6 @@ os:
   Debian: &debian
     packages:
       - git-core
-      - python-imaging
   Ubuntu: *debian
 
 
@@ -31,7 +30,7 @@ env:
 actions:
   setup:
     main:
-      - ln -s /home/app /home/django-jquery-file-upload
+      - ln -sf /home/app /home/django-jquery-file-upload
       - pip install "django<1.6"
       - pip install pillow
       - python manage.py syncdb --noinput
