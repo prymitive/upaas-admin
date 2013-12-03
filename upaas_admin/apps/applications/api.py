@@ -32,7 +32,7 @@ class ApplicationResource(MongoEngineResource):
     class Meta:
         queryset = Application.objects.all()
         resource_name = 'application'
-        excludes = ['owner', 'current_package', 'packages']
+        excludes = ['current_package', 'packages']
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -40,6 +40,10 @@ class ApplicationResource(MongoEngineResource):
         }
         authentication = UpaasApiKeyAuthentication()
         authorization = Authorization()
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationResource, self).__init__(*args, **kwargs)
+        self.fields['owner'].readonly = True
 
     def dehydrate(self, bundle):
         bundle.data['packages'] = len(bundle.obj.packages)
