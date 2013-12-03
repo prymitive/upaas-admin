@@ -1,0 +1,49 @@
+- extends 'site.html'
+
+
+- load i18n
+
+
+- block content
+
+  - if tabs
+    - include "users/partials/users_index_tabs.html"
+
+  %table.table
+
+    %thead
+      %tr
+        %th
+          - trans "Status"
+        %th
+          - trans "Created"
+        %th
+          - trans "Application"
+        %th
+          - trans "Title"
+
+    %tbody
+      - for task in tasks
+        %tr{'id':'={ task.safe_id }', 'class':'{% if task.is_active %}upaas-task-active {% endif %}{% if task.status == task_statuses.failed %}danger{% elif task.status == task_statuses.successful %}success{% elif task.status == task_statuses.running %}active{% endif %}'}
+          %td
+            - if task.is_pending
+              %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
+            - else
+              %i{'class':'={ task.icon_class }'}
+          %td
+            %a{'href':'{% url "app_task_details" task.safe_id %}'}
+              = task.date_created
+          %td
+            %a{'href':'{% url "app_details" task.application.safe_id %}'}
+              = task.application.name|truncatechars:30
+          %td
+            = task.title
+            - if task.parent
+              %i.upaas-help-tooltip.pull-right.fa.fa-sitemap{'title':'{% trans "Task is part of a group of tasks" %}'}
+
+      - empty
+        %tr
+          %td.text-center{'colspan':'4'}
+            - trans "No tasks"
+
+  - include "partials/pagination_footer.html"

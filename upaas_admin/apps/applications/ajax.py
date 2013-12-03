@@ -88,7 +88,8 @@ def tasks_updates(user):
             running, data = task_to_json(task, task.application, running)
             tasks.append(data)
 
-    return {'list': tasks, 'running': running}
+    return {'list': tasks, 'running': running,
+            'recent': len(user.recent_tasks)}
 
 
 @login_required

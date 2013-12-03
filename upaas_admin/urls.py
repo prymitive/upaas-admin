@@ -46,7 +46,7 @@ handler500 = 'upaas_admin.common.handlers.server_error'
 
 urlpatterns = patterns(
     '',
-    url(r'^$', IndexView.as_view(), name='site_index'),
+    url(r'^$', IndexView.as_view(), name=IndexView.tab_id),
 
     url(r'^login$', 'django.contrib.auth.views.login',
         {'template_name': 'users/login.html'}, name='site_login'),

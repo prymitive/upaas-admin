@@ -1,0 +1,20 @@
+- load i18n
+
+.tabbable
+
+  %ul.nav.nav-tabs
+    - for tab in tabs
+      %li{'id':'upaas-app-{{ app.safe_id }}-tab-{{ tab.tab_id }}', 'class':'{% if tab.tab_id == current_tab_id %}active{% endif %}'}
+        %a{'href':'{% url tab.tab_id %}'}
+          = tab.tab_label
+          - if tab.tab_id == 'site_index'
+            %span.badge{'class': 'upaas-user-badge-apps{% if not user.applications %} hidden{% endif %}'}
+              = user.applications|length
+          - if tab.tab_id == 'users_tasks'
+            %span.badge{'class': 'upaas-user-badge-recent_tasks{% if not user.recent_tasks %} hidden{% endif %}'}
+              = user.recent_tasks|length
+    %li
+      %a{'href':'{% url "app_register" %}'}
+        %i.fa.fa-plus
+        - trans "Register new application"
+  .tab-content

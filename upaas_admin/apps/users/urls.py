@@ -15,4 +15,5 @@ urlpatterns = patterns(
     url(r'^profile$', UserProfileView.as_view(), name='users_profile'),
     url(r'^apikey/reset$', ResetApiKeyView.as_view(),
         name='users_apikey_reset'),
+    url(r'^tasks$', UserTasksView.as_view(), name=UserTasksView.tab_id),
 )

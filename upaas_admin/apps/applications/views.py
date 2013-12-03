@@ -37,10 +37,27 @@ from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
-                PaginationMixin, ListView):
+                PaginationMixin, TabView):
 
     template_name = 'index.html'
     paginate_by = 10
+    _is_tab = True
+    tab_id = 'site_index'
+    tab_group = 'users_index'
+    tab_label = _('Applications')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        self.object_list = request.user.applications
+        paginator = Paginator(self.object_list, self.paginate_by,
+                              request=request)
+        tasks = paginator.page(page)
+        context = self.get_context_data(object_list=tasks.object_list,
+                                        page_obj=tasks)
+        return self.render_to_response(context)
 
 
 class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,

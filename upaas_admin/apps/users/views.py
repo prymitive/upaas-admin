@@ -12,9 +12,15 @@ from django.core.urlresolvers import reverse_lazy
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
+from pure_pagination import Paginator, PageNotAnInteger
+from pure_pagination.mixins import PaginationMixin
+
+from tabination.views import TabView
+
 from upaas_admin.common.mixin import LoginRequiredMixin, AppTemplatesDirMixin
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.users.forms import ResetApiKeyForm
+from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 log = logging.getLogger(__name__)
@@ -48,3 +54,29 @@ class ResetApiKeyView(LoginRequiredMixin, AppTemplatesDirMixin, FormView):
         self.request.user.save()
         messages.success(self.request, _(u"New API key generated"))
         return super(ResetApiKeyView, self).form_valid(form)
+
+
+class UserTasksView(LoginRequiredMixin, AppTemplatesDirMixin, PaginationMixin,
+                    TabView):
+
+    template_name = 'tasks.html'
+    paginate_by = 10
+    _is_tab = True
+    tab_id = 'users_tasks'
+    tab_group = 'users_index'
+    tab_label = _('Tasks')
+
+    def get(self, request, *args, **kwargs):
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        self.object_list = request.user.tasks.order_by('-date_created',
+                                                       'parent')
+        paginator = Paginator(self.object_list, self.paginate_by,
+                              request=request)
+        tasks = paginator.page(page)
+        context = self.get_context_data(tasks=tasks.object_list,
+                                        task_statuses=TaskStatus,
+                                        page_obj=tasks)
+        return self.render_to_response(context)

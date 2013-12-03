@@ -24,6 +24,8 @@ window.UPAAS.apps_updates_callback = function (data) {
         window.UPAAS.update_badge('.upaas-app-' + app.id + '-badge-packages', app.packages);
         window.UPAAS.update_badge('.upaas-app-' + app.id + '-badge-instances', app.instances);
         window.UPAAS.update_badge('.upaas-app-' + app.id + '-badge-tasks', app.active_tasks.length);
+        window.UPAAS.update_badge('.upaas-user-badge-apps', data.apps.list.length);
+        window.UPAAS.update_badge('.upaas-user-badge-recent_tasks', data.tasks.recent);
     });
 
     if (data.tasks.running > 0) {
@@ -46,7 +48,7 @@ window.UPAAS.apps_updates_callback = function (data) {
                 //TODO move to template
                 menu.push('<li role="presentation" class="dropdown-header"></li>');
                 menu.push('<li>');
-                menu.push('<a href="#"> ' + gettext('and') + ' ' +
+                menu.push('<a href="' + Django.url('users_tasks') + '"> ' + gettext('and') + ' ' +
                               (data.tasks.list.length - i) + ' ' +
                               gettext('more tasks') + '</a>');
                 menu.push('</li>');
@@ -62,7 +64,7 @@ window.UPAAS.apps_updates_callback = function (data) {
         });
     } else {
         menu.push('<li>');
-        menu.push('<a href="#">' + gettext('No running tasks') + '</a>');
+        menu.push('<a href="' + Django.url('users_tasks') + '">' + gettext('No running tasks') + '</a>');
         menu.push('</li>');
     }
     if ($('#upaas-tasks-menu').html() != menu.join('')) {

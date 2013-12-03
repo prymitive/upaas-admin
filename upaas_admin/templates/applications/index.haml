@@ -6,10 +6,8 @@
 
 - block content
 
-  %p
-    %a.btn.btn-default{'href':'{% url "app_register" %}'}
-      %i.fa.fa-plus-circle
-      - trans "Register new application"
+  - if tabs
+    - include "users/partials/users_index_tabs.html"
 
   %table.table.table-striped
 
