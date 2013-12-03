@@ -4,7 +4,6 @@
 - load i18n
 - load django_bootstrap_breadcrumbs
 - load gravatar
-- load upaas_mb_to_bytes
 
 
 - block breadcrumbs
@@ -23,9 +22,6 @@
       %li
         %a{'href':'#apikey', 'data-toggle':'tab'}
           - trans "API key"
-      %li
-        %a{'href':'#resources', 'data-toggle':'tab'}
-          - trans "Resource limits"
 
     .tab-content
 
@@ -80,55 +76,6 @@
         .text-center
           %a.btn.btn-danger{'href':'{% url "users_apikey_reset" %}'}
             - trans "Reset API key"
-
-      #resources.tab-pane
-        .row
-
-          .col-lg-3
-            .panel.panel-default
-              .panel-body
-                %h1.text-center
-                  = user.running_applications|length
-                  \/
-                  - if user.limits.running_apps
-                    = user.limits.running_apps
-                  - else
-                    - trans "No limit"
-              .panel-footer.text-center
-                - trans "Running application limit"
-                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of running applications" %}'}
-
-          .col-lg-3
-            .panel.panel-default
-              .panel-body
-                %h1.text-center
-                  ={ user.limits_usage.workers }
-                  \/
-                  - if user.limits.workers
-                    = user.limits.workers
-                  - else
-                    - trans "No limit"
-              .panel-footer.text-center
-                - trans "Worker limit"
-                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of workers for all running applications" %}'}
-
-          .col-lg-3
-            .panel.panel-default
-              .panel-body
-                %h1.text-center
-                  = user.limits.memory_per_worker|mb_to_bytes|filesizeformat
-              .panel-footer.text-center
-                - trans "Memory limit"
-                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum memory usage per worker" %}'}
-
-          .col-lg-3
-            .panel.panel-default
-              .panel-body
-                %h1.text-center
-                  = user.limits.packages_per_app
-              .panel-footer.text-center
-                - trans "Package limit"
-                %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
 
 
   - block js_bottom

@@ -80,3 +80,12 @@ class UserTasksView(LoginRequiredMixin, AppTemplatesDirMixin, PaginationMixin,
                                         task_statuses=TaskStatus,
                                         page_obj=tasks)
         return self.render_to_response(context)
+
+
+class UserLimitsView(LoginRequiredMixin, AppTemplatesDirMixin, TabView):
+
+    template_name = "limits.html"
+    _is_tab = True
+    tab_id = 'users_limits'
+    tab_group = 'users_index'
+    tab_label = _('Quota')
