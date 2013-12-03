@@ -91,6 +91,7 @@ class ApplicationResource(MongoEngineResource):
     def build_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
+            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
@@ -105,6 +106,7 @@ class ApplicationResource(MongoEngineResource):
     def build_fresh_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
+            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
@@ -120,6 +122,7 @@ class ApplicationResource(MongoEngineResource):
     def start_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
+            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata and app.current_package:
@@ -135,6 +138,7 @@ class ApplicationResource(MongoEngineResource):
     def stop_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
+            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if not app.run_plan:
@@ -153,6 +157,7 @@ class ApplicationResource(MongoEngineResource):
     def update_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
+            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.run_plan:
