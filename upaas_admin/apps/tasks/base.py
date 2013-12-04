@@ -108,3 +108,37 @@ class PackageTask(BackendTask, ApplicationTask):
                             u"running yet").format(name=name))
 
         return False
+
+    def wait_until_stopped(self, timelimit=None):
+        if timelimit is None:
+            timelimit = self.graceful_timeout
+
+        run_plan = self.backend.application_settings(self.application)
+        if not run_plan:
+            return False
+
+        backend_conf = run_plan.backend_settings(self.backend)
+        if backend_conf:
+            ip = str(self.backend.ip)
+            name = self.application.name
+            #FIXME track pid change instead of initial sleep (?)
+            sleep(3)
+            timeout = datetime.now() + timedelta(seconds=timelimit)
+            logged = False
+            while datetime.now() <= timeout:
+                s = fetch_json_stats(ip, backend_conf.stats)
+                if not s:
+                    return True
+                if logged:
+                    log.debug(_(u"Waiting for {name} to stop").format(
+                        name=name))
+                else:
+                    log.info(_(u"Waiting for {name} to stop").format(
+                        name=name))
+                    logged = True
+                sleep(2)
+            else:
+                log.error(_(u"Timeout reached but {name} doesn't appear to be "
+                            u"stopped yet").format(name=name))
+
+        return False

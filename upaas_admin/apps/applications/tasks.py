@@ -178,26 +178,10 @@ class StopPackageTask(PackageTask):
                                      self.application.vassal_path))
         yield 10
 
-        #FIXME wait here for instance to die
-
-        if os.path.isdir(self.package.package_path):
-            _remove_pkg_dir(self.package.package_path)
-        else:
-            log.warning(u"Package directory not found at "
-                        u"'%s'" % self.package.package_path)
+        self.wait_until_stopped()
         yield 75
 
-        log.info(u"Checking for old application packages")
-        for oldpkg in self.application.packages:
-            if os.path.isdir(oldpkg.package_path):
-                _remove_pkg_dir(oldpkg.package_path)
-
-        backend_conf = self.application.run_plan.backend_settings(self.backend)
-        if backend_conf:
-            ApplicationRunPlan.objects(
-                id=self.application.run_plan.id).update_one(
-                pull__backends__backend=self.backend)
-
+        self.application.remove_unpacked_packages()
         log.info(u"Application '%s' stopped" % self.application.name)
         yield 100
 
@@ -230,7 +214,7 @@ class UpgradePackageTask(PackageTask):
         self.wait_until_running()
         yield 95
 
-        self.package.cleanup_application_packages()
+        self.application.remove_unpacked_packages(exclude=[self.package.id])
         yield 100
 
 
@@ -249,5 +233,5 @@ class UpdateVassalTask(PackageTask):
         self.wait_until_running()
         yield 95
 
-        self.package.cleanup_application_packages()
+        self.application.remove_unpacked_packages(exclude=[self.package.id])
         yield 100

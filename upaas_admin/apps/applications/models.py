@@ -330,35 +330,6 @@ class Package(Document):
         log.info(u"Package moved")
         utils.rmdirs(directory)
 
-    def cleanup_application_packages(self):
-        """
-        Remove all but current unpacked packages
-        """
-        log.info(u"Cleaning old packages for '%s'" % self.application.name)
-        for oldpkg in self.application.packages:
-            if oldpkg.id == self.id:
-                # skip current package!
-                continue
-            if os.path.isdir(oldpkg.package_path):
-                log.info(u"Removing package directory "
-                         u"'%s'" % oldpkg.package_path)
-
-                # if there are running pids inside package dir we will need to
-                # wait this should only happen during upgrade, when we need to
-                # wait for app to reload into new package dir
-                pids = processes.directory_pids(oldpkg.package_path)
-                while pids:
-                    log.info(u"Waiting for %d pid(s) in %s to terminate" % (
-                        len(pids), oldpkg.package_path))
-                    time.sleep(2)
-                    pids = processes.directory_pids(oldpkg.package_path)
-
-                try:
-                    processes.kill_and_remove_dir(oldpkg.package_path)
-                except OSError, e:
-                    log.error(u"Exception during package directory cleanup: "
-                              u"%s" % e)
-
 
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -676,3 +647,42 @@ class Application(Document):
         if removed:
             log.info(u"Removed %d package file(s) for app %s" % (removed,
                                                                  self.name))
+
+    def remove_unpacked_packages(self, exclude=None, timeout=None):
+        """
+        Remove all but current unpacked packages
+        """
+        if timeout is None:
+            timeout = self.upaas_config.commands.timelimit
+        log.info(_(u"Cleaning packages for {name}").format(name=self.name))
+        for pkg in self.packages:
+            if exclude and pkg.id in exclude:
+                # skip current package!
+                continue
+            if os.path.isdir(pkg.package_path):
+                log.info(_(u"Removing package directory {path}").format(
+                    path=pkg.package_path))
+
+                # if there are running pids inside package dir we will need to
+                # wait this should only happen during upgrade, when we need to
+                # wait for app to reload into new package dir
+                started_at = datetime.datetime.now()
+                pids = processes.directory_pids(pkg.package_path)
+                while pids:
+                    if datetime.datetime.now() - started_at >= timeout:
+                        log.error(_(u"Timeout reached while waiting for pids "
+                                    u"in {path} to die, killing any remaining "
+                                    u"processes").format(
+                            path=pkg.package_path))
+                        break
+                    log.info(_(u"Waiting for {pids} pid(s) in {path} to "
+                               u"terminate").format(pids=len(pids),
+                                                    path=pkg.package_path))
+                    time.sleep(2)
+                    pids = processes.directory_pids(pkg.package_path)
+
+                try:
+                    processes.kill_and_remove_dir(pkg.package_path)
+                except OSError, e:
+                    log.error(_(u"Exception during package directory cleanup: "
+                                u"{e}").format(e=e))
