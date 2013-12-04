@@ -44,7 +44,7 @@ window.UPAAS.apps_updates_callback = function (data) {
                 menu.push('<li role="presentation" class="divider"></li>');
             }
 
-            if (i > 4 && data.tasks.length > 6) {
+            if (i > 4 && data.tasks.list.length > 6) {
                 //TODO move to template
                 menu.push('<li role="presentation" class="dropdown-header"></li>');
                 menu.push('<li>');
