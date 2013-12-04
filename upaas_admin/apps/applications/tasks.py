@@ -121,30 +121,31 @@ class StartPackageTask(PackageTask):
                             u"'%s'" % self.application.name)
 
         backend_conf = self.application.run_plan.backend_settings(self.backend)
-        if not backend_conf:
+        if backend_conf:
+            log.info(u"Starting application '%s' using package '%s'" % (
+                self.application.name, self.package.safe_id))
+
+            if not os.path.exists(self.package.package_path):
+                try:
+                    self.package.unpack()
+                except UnpackError, e:
+                    log.error(u"Unpacking failed: %s" % e)
+                    raise Exception(u"Unpacking package failed: %s" % e)
+            else:
+                log.warning(u"Package already exists: "
+                            u"%s" % self.package.package_path)
+            yield 50
+
+            self.package.save_vassal_config(backend_conf)
+            # TODO handle backend start task failure with rescue code
+
+            self.wait_until_running()
+            yield 100
+        else:
             log.error(_(u"Backend {backend} missing in run plan for "
                         u"{name}").format(backend=self.backend.name,
                                           name=self.application.name))
-
-        log.info(u"Starting application '%s' using package '%s'" % (
-            self.application.name, self.package.safe_id))
-
-        if not os.path.exists(self.package.package_path):
-            try:
-                self.package.unpack()
-            except UnpackError, e:
-                log.error(u"Unpacking failed: %s" % e)
-                raise Exception(u"Unpacking package failed: %s" % e)
-        else:
-            log.warning(u"Package already exists: "
-                        u"%s" % self.package.package_path)
-        yield 50
-
-        self.package.save_vassal_config(backend_conf)
-        # TODO handle backend start task failure with rescue code
-
-        self.wait_until_running()
-        yield 100
+            yield 100
 
 
 @register
@@ -155,14 +156,6 @@ class StopPackageTask(PackageTask):
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
-        def _remove_pkg_dir(directory):
-            log.info(u"Removing package directory '%s'" % directory)
-            try:
-                processes.kill_and_remove_dir(directory)
-            except OSError, e:
-                log.error(u"Exception during package directory cleanup: "
-                          u"%s" % e)
-
         if os.path.isfile(self.application.vassal_path):
             log.info(u"Removing vassal config file "
                      u"'%s'" % self.application.vassal_path)
@@ -200,22 +193,28 @@ class UpgradePackageTask(PackageTask):
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
-        try:
-            self.package.unpack()
-        except UnpackError:
-            log.error(u"Unpacking failed")
-            raise
-        yield 40
-
         backend_conf = self.application.run_plan.backend_settings(self.backend)
-        self.package.save_vassal_config(backend_conf)
-        yield 75
+        if backend_conf:
+            try:
+                self.package.unpack()
+            except UnpackError:
+                log.error(u"Unpacking failed")
+                raise
+            yield 40
 
-        self.wait_until_running()
-        yield 95
+            self.package.save_vassal_config(backend_conf)
+            yield 75
 
-        self.application.remove_unpacked_packages(exclude=[self.package.id])
-        yield 100
+            self.wait_until_running()
+            yield 95
+
+            self.application.remove_unpacked_packages(
+                exclude=[self.package.id])
+            yield 100
+        else:
+            log.warning(_(u"No run plan for {name}, it was probably "
+                          u"stopped").format(name=self.application.name))
+            yield 100
 
 
 @register
@@ -227,11 +226,17 @@ class UpdateVassalTask(PackageTask):
 
     def job(self):
         backend_conf = self.application.run_plan.backend_settings(self.backend)
-        self.package.save_vassal_config(backend_conf)
-        yield 50
+        if backend_conf:
+            self.package.save_vassal_config(backend_conf)
+            yield 50
 
-        self.wait_until_running()
-        yield 95
+            self.wait_until_running()
+            yield 95
 
-        self.application.remove_unpacked_packages(exclude=[self.package.id])
-        yield 100
+            self.application.remove_unpacked_packages(
+                exclude=[self.application.current_package.id])
+            yield 100
+        else:
+            log.warning(_(u"No run plan for {name}, it was probably "
+                          u"stopped").format(name=self.application.name))
+            yield 100
