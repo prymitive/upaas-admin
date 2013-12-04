@@ -53,8 +53,8 @@ class RunPlanResource(MongoEngineResource):
         app = Application.objects(id=bundle.data['application'],
                                   owner=bundle.request.user).first()
         if not app or not app.current_package:
-            msg = _(u"Can't create new run plan, app not found, or no "
-                    u"packages built yet")
+            msg = unicode(_(u"Can't create new run plan, app not found, or"
+                            u" no packages built yet"))
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
@@ -70,7 +70,7 @@ class RunPlanResource(MongoEngineResource):
                         "{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
         except mongoengine.NotUniqueError:
-            msg = _(u"Application is already running")
+            msg = unicode(_(u"Application is already running"))
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
