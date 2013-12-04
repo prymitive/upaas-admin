@@ -16,6 +16,7 @@ from tastypie_mongoengine.resources import MongoEngineResource
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
+from tastypie.exceptions import Unauthorized
 
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
@@ -79,7 +80,33 @@ class RunPlanResource(MongoEngineResource):
             'memory_per_worker']
         return super(RunPlanResource, self).obj_update(bundle, **kwargs)
 
-    def apply_authorization_limits(self, request, object_list):
+    def authorized_read_list(self, object_list, bundle):
         log.debug(_(u"Limiting query to user owned apps (length: "
                     u"{length})").format(length=len(object_list)))
-        return object_list.filter(application__in=request.user.applications)
+        return object_list.filter(
+            application__in=bundle.request.user.applications)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
+
+    def create_list(self, object_list, bundle):
+        return object_list
+
+    def create_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        allowed = []
+        for obj in object_list:
+            if bundle.obj.application.owner == bundle.request.user:
+                allowed.append(obj)
+        return allowed
+
+    def update_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))

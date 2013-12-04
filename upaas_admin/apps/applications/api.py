@@ -18,6 +18,7 @@ from tastypie_mongoengine.resources import MongoEngineResource
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
+from tastypie.exceptions import Unauthorized
 from tastypie.utils import trailing_slash
 
 from upaas_admin.apps.applications.models import Application, Package
@@ -64,10 +65,35 @@ class ApplicationResource(MongoEngineResource):
                           u"{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
 
-    def apply_authorization_limits(self, request, object_list):
+    def authorized_read_list(self, object_list, bundle):
         log.debug(_(u"Limiting query to user owned apps (length: "
                     u"{length})").format(length=len(object_list)))
-        return object_list.filter(owner=request.user)
+        return object_list.filter(owner=bundle.request.user)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def create_list(self, object_list, bundle):
+        return object_list
+
+    def create_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        allowed = []
+        for obj in object_list:
+            if bundle.obj.owner == bundle.request.user:
+                allowed.append(obj)
+        return allowed
+
+    def update_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
 
     def prepend_urls(self):
         return [
@@ -91,7 +117,6 @@ class ApplicationResource(MongoEngineResource):
     def build_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
-            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
@@ -106,7 +131,6 @@ class ApplicationResource(MongoEngineResource):
     def build_fresh_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
-            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
@@ -122,7 +146,6 @@ class ApplicationResource(MongoEngineResource):
     def start_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
-            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata and app.current_package:
@@ -138,7 +161,6 @@ class ApplicationResource(MongoEngineResource):
     def stop_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
-            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if not app.run_plan:
@@ -157,7 +179,6 @@ class ApplicationResource(MongoEngineResource):
     def update_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         app = Application.objects(
-            owner=request.user,
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.run_plan:
@@ -178,3 +199,30 @@ class PackageResource(MongoEngineResource):
         }
         authentication = UpaasApiKeyAuthentication()
         authorization = Authorization()
+
+    def authorized_read_list(self, object_list, bundle):
+        log.debug(_(u"Limiting query to user owned apps (length: "
+                    u"{length})").format(length=len(object_list)))
+        return object_list.filter(
+            application__in=bundle.request.user.applications)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
+
+    def create_list(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def create_detail(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def update_list(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def update_detail(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized(_(u"Unauthorized for such operation"))
