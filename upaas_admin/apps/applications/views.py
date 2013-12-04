@@ -7,8 +7,9 @@
 
 from difflib import unified_diff
 
-from django.views.generic import ListView, CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.edit import ProcessFormView, FormMixin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext as __
@@ -58,6 +59,38 @@ class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
         context = self.get_context_data(object_list=tasks.object_list,
                                         page_obj=tasks)
         return self.render_to_response(context)
+
+
+class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
+                              TabView, CreateView):
+    template_name = 'register.html'
+    model = Application
+    form_class = RegisterApplicationForm
+    _is_tab = True
+    tab_id = 'app_register'
+    tab_group = 'users_index'
+    tab_label = _('Register new application')
+    weight = 99
+
+    def get(self, request, *args, **kwargs):
+        self.object = None
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        form.instance.metadata = form.cleaned_data['metadata']
+        return super(RegisterApplicationView, self).form_valid(form)
 
 
 class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
@@ -176,18 +209,6 @@ class ApplicationTaskDetailsView(LoginRequiredMixin, OwnedAppTasksMixin,
     slug_field = 'id'
     context_object_name = 'task'
     #TODO add support for virtual tasks
-
-
-class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
-                              CreateView):
-    template_name = 'register.html'
-    model = Application
-    form_class = RegisterApplicationForm
-
-    def form_valid(self, form):
-        form.instance.owner = self.request.user
-        form.instance.metadata = form.cleaned_data['metadata']
-        return super(RegisterApplicationView, self).form_valid(form)
 
 
 class UpdateApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,

@@ -13,7 +13,7 @@ from upaas_admin.apps.applications.views import *
 urlpatterns = patterns(
     'upaas_admin.apps.applications.views',
     url(r'^register$', RegisterApplicationView.as_view(),
-        name='app_register'),
+        name=RegisterApplicationView.tab_id),
 
     url(r'^(?P<slug>[-_\w]+)/update/metadata$',
         UpdateApplicationMetadataView.as_view(), name='app_update_metadata'),

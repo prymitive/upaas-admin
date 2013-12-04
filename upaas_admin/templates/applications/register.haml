@@ -2,16 +2,13 @@
 
 
 - load i18n
-- load django_bootstrap_breadcrumbs
 - load crispy_forms_tags
 
 
-- block breadcrumbs
-  = block.super
-  - breadcrumb "Register new application" "app_register"
-
-
 - block content
+
+  - if tabs
+    - include "users/partials/users_index_tabs.html"
 
   .well
     - crispy form
