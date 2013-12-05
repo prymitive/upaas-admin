@@ -10,8 +10,8 @@ install:
   - sudo apt-get -yy install nodejs
   - sudo npm install -g less
   - pip install -U pip
-  - pip install -Ur requirements.txt --use-mirrors
-  - pip install -Ur requirements-test.txt --use-mirrors
+  - pip install -Ur requirements.txt --use-mirrors --download-cache $HOME/.pip-cache
+  - pip install -Ur requirements-test.txt --use-mirrors --download-cache $HOME/.pip-cache
   - ./setup.py develop
 
 script:
@@ -20,3 +20,7 @@ script:
 
 services:
   - mongodb
+
+cache:
+  directories:
+    - $HOME/.pip-cache/
