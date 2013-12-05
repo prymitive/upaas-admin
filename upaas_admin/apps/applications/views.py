@@ -5,6 +5,8 @@
 """
 
 
+import logging
+
 from difflib import unified_diff
 
 from django.views.generic import CreateView, UpdateView, DeleteView
@@ -21,6 +23,8 @@ from tabination.views import TabView
 from pure_pagination import Paginator, PageNotAnInteger
 from pure_pagination.mixins import PaginationMixin
 
+from upaas.storage.utils import find_storage_handler
+
 from upaas_admin.common.mixin import (
     LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
 from upaas_admin.apps.applications.mixin import (
@@ -34,6 +38,9 @@ from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
                                               EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
 from upaas_admin.apps.tasks.constants import TaskStatus
+
+
+log = logging.getLogger(__name__)
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
@@ -403,6 +410,18 @@ class PackageDeleteView(LoginRequiredMixin, OwnedPackagesMixin,
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         if self.object.id != self.object.application.current_package.id:
+            if self.object.filename:
+                storage = find_storage_handler(self.upaas_config)
+                if not storage:
+                    log.error(_(u"Storage handler {name} not found").format(
+                        name=self.upaas_config.storage.handler))
+                    return application_error(request, self.object.application,
+                                             _(u"Storage error, please try "
+                                               u"again later"))
+                if storage.exists(self.object.filename):
+                    log.info(_(u"Removing package {pkg} file: {path}").format(
+                        self.object.safe_id, self.object.filename))
+                    storage.delete(self.object.filename)
             self.object.delete()
             return HttpResponseRedirect(self.get_success_url())
         else:
