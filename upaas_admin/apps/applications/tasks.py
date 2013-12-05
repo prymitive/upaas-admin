@@ -124,9 +124,10 @@ class StartApplicationTask(ApplicationBackendTask):
 
         backend_conf = run_plan.backend_settings(self.backend)
         if backend_conf:
-            backend_conf = run_plan.replace_backend_settings(
-                backend_conf.backend, backend_conf,
-                package=self.application.current_package.id)
+            if backend_conf.package.id != self.application.current_package.id:
+                backend_conf = run_plan.replace_backend_settings(
+                    backend_conf.backend, backend_conf,
+                    package=self.application.current_package.id)
             log.info(u"Starting application '%s' using package '%s'" % (
                 self.application.name, backend_conf.package.safe_id))
 
@@ -214,9 +215,10 @@ class UpgradeApplicationTask(ApplicationBackendTask):
 
         backend_conf = run_plan.backend_settings(self.backend)
         if backend_conf:
-            backend_conf = run_plan.replace_backend_settings(
-                backend_conf.backend, backend_conf,
-                package=self.application.current_package.id)
+            if backend_conf.package.id != self.application.current_package.id:
+                backend_conf = run_plan.replace_backend_settings(
+                    backend_conf.backend, backend_conf,
+                    package=self.application.current_package.id)
             try:
                 backend_conf.package.unpack()
             except UnpackError:
@@ -263,7 +265,7 @@ class UpdateVassalTask(ApplicationBackendTask):
             yield 95
 
             self.application.remove_unpacked_packages(
-                exclude=[self.application.current_package.id])
+                exclude=[backend_conf.package.id])
             yield 100
         else:
             log.warning(_(u"No run plan for {name}, it was probably "
