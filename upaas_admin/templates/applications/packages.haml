@@ -31,11 +31,31 @@
             = package.interpreter_name
           %td
             = package.interpreter_version
-          %td
-            -if package.filename and app.current_package.id != package.id
-              %a.btn.btn-xs.btn-default{'href':'{% url "package_rollback" package.safe_id %}'}
-                %i.fa.fa-undo
-                - trans "Rollback"
+          %td.upaas-table-action
+            - if app.current_package.id != package.id
+              .btn-group
+                %button.btn.btn-default.btn-sm.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
+                  %i.fa.fa-gear
+                  &nbsp;
+                  %span.caret
+                %ul.dropdown-menu.pull-right{'role': 'menu'}
+                  %li.dropdown-header.upaas-no-wrap{'role':'presentation'}
+                    = package.date_created
+                  %li.divider{'role':'presentation'}
+                  %li{'class':'{% if not package.filename %}disabled{% endif %}'}
+                    -if package.filename
+                      %a{'href':'{% url "package_rollback" package.safe_id %}'}
+                        %i.fa.fa-undo
+                        - trans "Rollback"
+                    - else
+                      %a{'href':'#'}
+                        %i.fa.fa-undo
+                        - trans "Rollback"
+                  %li
+                    %a{'href':'{% url "package_delete" package.safe_id %}'}
+                      %i.fa.fa-trash-o
+                      - trans "Delete"
+
       - empty
         %tr
           %td{'colspan':'4'}

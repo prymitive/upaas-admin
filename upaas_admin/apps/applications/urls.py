@@ -45,6 +45,8 @@ urlpatterns = patterns(
     url(r'^pkg/(?P<slug>[-_\w]+)/metadata/restore$',
         ApplicatiomMetadataFromPackageView.as_view(),
         name='app_meta_from_pkg'),
+    url(r'^pkg/(?P<slug>[-_\w]+)/delete$', PackageDeleteView.as_view(),
+        name='package_delete'),
 
     url(r'^(?P<slug>[-_\w]+)/metadata.yml$',
         DownloadApplicationMetadataView.as_view(), name='app_metadata_yml'),

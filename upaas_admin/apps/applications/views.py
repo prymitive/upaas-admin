@@ -7,13 +7,12 @@
 
 from difflib import unified_diff
 
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic.edit import ProcessFormView, FormMixin
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext as __
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 
 from mongoengine.errors import ValidationError, DoesNotExist
 
@@ -385,6 +384,30 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
             self.object.metadata.splitlines(1), fromfile=__(u"Application"),
             tofile=__(u"Package")))
         return context
+
+
+class PackageDeleteView(LoginRequiredMixin, OwnedPackagesMixin,
+                        AppTemplatesDirMixin, DeleteView, MongoDetailView):
+    template_name = 'delete_package.html'
+    model = Package
+    slug_field = 'id'
+    context_object_name = 'pkg'
+    success_url = reverse_lazy(ApplicationPackagesView.tab_id)
+
+    def get_context_data(self, **kwargs):
+        context = super(PackageDeleteView, self).get_context_data(**kwargs)
+        if self.object:
+            context['app'] = self.object.application
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.id != self.object.application.current_package.id:
+            self.object.delete()
+            return HttpResponseRedirect(self.get_success_url())
+        else:
+            return application_error(request, self.object.application,
+                                     _(u"Package in use"))
 
 
 class BuildPackageView(AppActionView):
