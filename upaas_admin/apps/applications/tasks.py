@@ -17,12 +17,12 @@ from upaas.config.metadata import MetadataConfig
 from upaas.builder.builder import Builder
 from upaas.builder import exceptions
 from upaas.config.base import ConfigurationError
-from upaas import processes
 
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.applications.models import Package
-from upaas_admin.apps.tasks.base import ApplicationTask, PackageTask
+from upaas_admin.apps.tasks.base import (ApplicationTask,
+                                         ApplicationBackendTask)
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.tasks.registry import register
 
@@ -106,7 +106,7 @@ class BuildPackageTask(ApplicationTask):
 
 
 @register
-class StartPackageTask(PackageTask):
+class StartApplicationTask(ApplicationBackendTask):
 
     def generate_title(self):
         return _(u"Starting {name} on {backend}").format(
@@ -120,23 +120,28 @@ class StartPackageTask(PackageTask):
             raise Exception(u"Missing run plan for "
                             u"'%s'" % self.application.name)
 
-        backend_conf = self.application.run_plan.backend_settings(self.backend)
-        if backend_conf:
-            log.info(u"Starting application '%s' using package '%s'" % (
-                self.application.name, self.package.safe_id))
+        run_plan = self.application.run_plan
 
-            if not os.path.exists(self.package.package_path):
+        backend_conf = run_plan.backend_settings(self.backend)
+        if backend_conf:
+            backend_conf = run_plan.replace_backend_settings(
+                backend_conf.backend, backend_conf,
+                package=self.application.current_package.id)
+            log.info(u"Starting application '%s' using package '%s'" % (
+                self.application.name, backend_conf.package.safe_id))
+
+            if not os.path.exists(backend_conf.package.package_path):
                 try:
-                    self.package.unpack()
+                    backend_conf.package.unpack()
                 except UnpackError, e:
                     log.error(u"Unpacking failed: %s" % e)
                     raise Exception(u"Unpacking package failed: %s" % e)
             else:
                 log.warning(u"Package already exists: "
-                            u"%s" % self.package.package_path)
+                            u"%s" % backend_conf.package.package_path)
             yield 50
 
-            self.package.save_vassal_config(backend_conf)
+            backend_conf.package.save_vassal_config(backend_conf)
             # TODO handle backend start task failure with rescue code
 
             self.wait_until_running()
@@ -149,7 +154,7 @@ class StartPackageTask(PackageTask):
 
 
 @register
-class StopPackageTask(PackageTask):
+class StopApplicationTask(ApplicationBackendTask):
 
     def generate_title(self):
         return _(u"Stopping {name} on {backend}").format(
@@ -174,6 +179,13 @@ class StopPackageTask(PackageTask):
         self.wait_until_stopped()
         yield 75
 
+        run_plan = self.application.run_plan
+        if run_plan:
+            run_plan.remove_backend_settings(self.backend)
+        else:
+            log.warning(_(u"Missing run plan for {name}, already "
+                          u"stopped?").format(name=self.application.name))
+
         self.application.remove_unpacked_packages()
         log.info(u"Application '%s' stopped" % self.application.name)
         yield 100
@@ -186,30 +198,40 @@ class StopPackageTask(PackageTask):
 
 
 @register
-class UpgradePackageTask(PackageTask):
+class UpgradeApplicationTask(ApplicationBackendTask):
 
     def generate_title(self):
         return _(u"Upgrading {name} on {backend}").format(
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
-        backend_conf = self.application.run_plan.backend_settings(self.backend)
+        run_plan = self.application.run_plan
+        if not run_plan:
+            msg = unicode(_(u"Missing run plan for {name}, cannot "
+                          u"upgrade").format(name=self.application.name))
+            log.warning(msg)
+            raise Exception(msg)
+
+        backend_conf = run_plan.backend_settings(self.backend)
         if backend_conf:
+            backend_conf = run_plan.replace_backend_settings(
+                backend_conf.backend, backend_conf,
+                package=self.application.current_package.id)
             try:
-                self.package.unpack()
+                backend_conf.package.unpack()
             except UnpackError:
                 log.error(u"Unpacking failed")
                 raise
             yield 40
 
-            self.package.save_vassal_config(backend_conf)
+            backend_conf.package.save_vassal_config(backend_conf)
             yield 75
 
             self.wait_until_running()
             yield 95
 
             self.application.remove_unpacked_packages(
-                exclude=[self.package.id])
+                exclude=[backend_conf.package.id])
             yield 100
         else:
             log.warning(_(u"No run plan for {name}, it was probably "
@@ -218,16 +240,23 @@ class UpgradePackageTask(PackageTask):
 
 
 @register
-class UpdateVassalTask(PackageTask):
+class UpdateVassalTask(ApplicationBackendTask):
 
     def generate_title(self):
         return _(u"Updating {name} configuration on {backend}").format(
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
+        run_plan = self.application.run_plan
+        if not run_plan:
+            msg = unicode(_(u"Missing run plan for {name}, cannot "
+                          u"upgrade").format(name=self.application.name))
+            log.warning(msg)
+            raise Exception(msg)
+
         backend_conf = self.application.run_plan.backend_settings(self.backend)
         if backend_conf:
-            self.package.save_vassal_config(backend_conf)
+            backend_conf.package.save_vassal_config(backend_conf)
             yield 50
 
             self.wait_until_running()

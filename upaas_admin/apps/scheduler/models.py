@@ -47,6 +47,7 @@ class BackendRunPlanSettings(EmbeddedDocument):
     Application instance settings for given backend.
     """
     backend = ReferenceField('BackendServer', dbref=False)
+    package = ReferenceField('Package', dbref=False, required=True)
     socket = IntField(required=True)
     stats = IntField(required=True)
     workers_min = IntField(required=True)
@@ -73,3 +74,19 @@ class ApplicationRunPlan(Document):
         for backend_conf in self.backends:
             if backend_conf.backend == backend:
                 return backend_conf
+
+    def remove_backend_settings(self, backend):
+        self.__class__.objects(id=self.id).update_one(
+            pull__backends__backend=backend)
+
+    def append_backend_settings(self, backend_conf):
+        self.__class__.objects(id=self.id).update_one(
+            push__backends=backend_conf)
+
+    def replace_backend_settings(self, backend, backend_conf, **kwargs):
+        self.remove_backend_settings(backend)
+        data = backend_conf._data
+        data.update(kwargs)
+        self.append_backend_settings(BackendRunPlanSettings(**data))
+        self.reload()
+        return self.backend_settings(backend)

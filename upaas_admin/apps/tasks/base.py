@@ -59,12 +59,10 @@ class ApplicationTask(Task):
     }
 
 
-class PackageTask(BackendTask, ApplicationTask):
+class ApplicationBackendTask(BackendTask, ApplicationTask):
     """
     Task that will run on specific backend server for specific application.
     """
-
-    package = ReferenceField('Package', dbref=False, required=True)
 
     # time limit for graceful operations, how long should we wait for app to
     # start before giving up
@@ -142,3 +140,12 @@ class PackageTask(BackendTask, ApplicationTask):
                             u"stopped yet").format(name=name))
 
         return False
+
+
+class PackageTask(ApplicationBackendTask):
+    """
+    Task that will run on specific backend server for specific application
+    package.
+    """
+
+    package = ReferenceField('Package', dbref=False, required=True)

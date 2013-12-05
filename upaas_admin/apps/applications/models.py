@@ -503,7 +503,8 @@ class Application(Document):
                 log.error(u"Trying to start '%s' without run plan" % self.name)
                 return
 
-            backends = select_best_backends(run_plan)
+            backends = select_best_backends(run_plan,
+                                            package=self.current_package)
             if not backends:
                 log.error(_(u"Can't start '{name}', no backend "
                             u"available").format(name=self.name))
@@ -525,9 +526,8 @@ class Application(Document):
                 log.info(_(u"Set backend '{backend}' in '{name}' run "
                            u"plan").format(backend=backend_conf.backend.name,
                                            name=self.name))
-                Task.put('StartPackageTask', backend=backend_conf.backend,
-                         application=self, package=self.current_package,
-                         **kwargs)
+                Task.put('StartApplicationTask', backend=backend_conf.backend,
+                         application=self, **kwargs)
 
     def stop_application(self):
         if self.current_package:
@@ -547,9 +547,8 @@ class Application(Document):
                 kwargs['parent'] = vtask
 
             for backend_conf in self.run_plan.backends:
-                Task.put('StopPackageTask', backend=backend_conf.backend,
-                         application=self, package=self.current_package,
-                         **kwargs)
+                Task.put('StopApplicationTask', backend=backend_conf.backend,
+                         application=self, **kwargs)
 
     def upgrade_application(self):
         if self.current_package:
@@ -566,8 +565,8 @@ class Application(Document):
 
             #TODO add wait for subscription
             for backend_conf in self.run_plan.backends:
-                Task.put('UpgradePackageTask', backend=backend_conf.backend,
-                         application=self, package=self.current_package,
+                Task.put('UpgradeApplicationTask',
+                         backend=backend_conf.backend, application=self,
                          **kwargs)
 
     def update_application(self):
@@ -606,8 +605,8 @@ class Application(Document):
                         backends__backend__nin=[
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
-                    Task.put('StartPackageTask', backend=backend_conf.backend,
-                             application=self, package=self.current_package,
+                    Task.put('StartApplicationTask',
+                             backend=backend_conf.backend, application=self,
                              **kwargs)
 
             for backend in current_backends:
@@ -615,9 +614,8 @@ class Application(Document):
                     log.info(_(u"Stopping {name} on old backend "
                                u"{backend}").format(name=self.name,
                                                     backend=backend.name))
-                    Task.put('StopPackageTask', backend=backend,
-                             application=self, package=self.current_package,
-                             **kwargs)
+                    Task.put('StopApplicationTask', backend=backend,
+                             application=self, **kwargs)
 
     def trim_package_files(self):
         """
@@ -667,9 +665,11 @@ class Application(Document):
                 # wait this should only happen during upgrade, when we need to
                 # wait for app to reload into new package dir
                 started_at = datetime.datetime.now()
+                timeout_at = datetime.datetime.now() + datetime.timedelta(
+                    seconds=timeout)
                 pids = processes.directory_pids(pkg.package_path)
                 while pids:
-                    if datetime.datetime.now() - started_at >= timeout:
+                    if datetime.datetime.now() > timeout_at:
                         log.error(_(u"Timeout reached while waiting for pids "
                                     u"in {path} to die, killing any remaining "
                                     u"processes").format(

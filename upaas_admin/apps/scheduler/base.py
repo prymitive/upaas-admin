@@ -60,7 +60,7 @@ def split_workers(workers, backends):
     return [len(workers_list[i::backends]) for i in xrange(backends)]
 
 
-def select_best_backends(run_plan):
+def select_best_backends(run_plan, **kwargs):
     """
     Select best backends for given application run plan. Returns a list of
     backends where application should be running. If there are no backends to
@@ -105,15 +105,23 @@ def select_best_backends(run_plan):
         backend = select_best_backend(exclude=[b.backend for b in backends],
                                       application=run_plan.application)
         if backend:
-            ports = backend.find_free_ports(2)
-            if not ports:
-                log.warning(_(u"Didn't found free ports on backend "
-                              u"{name}").format(name=backend.name))
-                continue
-            brps = BackendRunPlanSettings(backend=backend, socket=ports[0],
-                                          stats=ports[1],
+            backend_conf = run_plan.backend_settings(backend)
+            if backend_conf:
+                kwargs['socket'] = backend_conf.socket
+                kwargs['stats'] = backend_conf.stats
+                if 'package' not in kwargs:
+                    kwargs['package'] = backend_conf.package
+            else:
+                ports = backend.find_free_ports(2)
+                kwargs['socket'] = ports[0]
+                kwargs['stats'] = ports[1]
+                if not ports:
+                    log.warning(_(u"Didn't found free ports on backend "
+                                  u"{name}").format(name=backend.name))
+                    continue
+            brps = BackendRunPlanSettings(backend=backend,
                                           workers_min=workers_min,
-                                          workers_max=workers_count)
+                                          workers_max=workers_count, **kwargs)
             backends.append(brps)
         else:
             log.warning(_(u"Can find more available backends, got {got}, "
