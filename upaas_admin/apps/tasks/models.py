@@ -19,6 +19,7 @@ from upaas.processes import is_pid_running
 
 from upaas_admin.apps.tasks.constants import *
 from upaas_admin.apps.tasks.registry import find_task_class
+from upaas_admin.apps.servers.models import BackendServer
 
 
 log = logging.getLogger(__name__)
@@ -358,7 +359,21 @@ class Task(Document):
         Cleanup all interrupted tasks assigned to remote backends and mark them
         as failed.
         """
-        # look for backends that did not ack itself to the database
-        pass
-        #TODO add backend acking task class to db every few seconds
-        # look for task classes that are not acked and fail all tasks
+        # look for tasks locked at backends that did not ack itself to the
+        # database for at least 600 seconds
+        timestamp = datetime.datetime.now() - datetime.timedelta(seconds=600)
+        backends = BackendServer.objects(**{
+            u'worker_ping__%s__lte' % cls.__name__: timestamp
+        }).distinct('name')
+        if backends:
+            log.warning(_(u"{len} non responsive backends: {names}").format(
+                len=len(backends), names=backends))
+            for task in cls.objects(locked_by_backend__in=backends,
+                                    locked_since__lte=timestamp):
+                log.warning(_(u"Task {name} with id {tid} is locked on non "
+                              u"backend {backend}, but it didn't send any "
+                              u"pings for 10 minutes, marking as "
+                              u"failed").format(
+                    name=task.__class__.__name__, tid=task.safe_id,
+                    backend=task.locked_by_backend))
+                task.fail_task()

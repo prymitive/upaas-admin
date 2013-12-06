@@ -5,8 +5,8 @@
 """
 
 
-import logging
 import datetime
+import logging
 from random import randrange
 
 from mongoengine import *
@@ -17,8 +17,7 @@ from django.conf import settings
 from upaas.inet import local_ipv4_addresses
 
 from upaas_admin.common.fields import IPv4Field
-from upaas_admin.apps.scheduler.models import (ApplicationRunPlan,
-                                               BackendRunPlanSettings)
+from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 
 
 log = logging.getLogger(__name__)
@@ -33,6 +32,7 @@ class BackendServer(Document):
                        verbose_name=_('name'))
     ip = IPv4Field(required=True, unique=True, verbose_name=_('IP address'))
     is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
+    worker_ping = DictField()
 
     _default_manager = QuerySetManager()
 
