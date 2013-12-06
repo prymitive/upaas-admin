@@ -238,7 +238,7 @@ class Package(Document):
             options.append(opt)
 
         # enable cheaper mode if we have multiple workers
-        if backend_conf.workers_max > 1:
+        if backend_conf.workers_max > backend_conf.workers_min:
             options.append('\n# enabling cheaper mode')
             options.append('cheaper = %d' % backend_conf.workers_min)
 
