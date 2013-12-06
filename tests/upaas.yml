@@ -117,7 +117,8 @@ interpreters:
         - echo "exit 101\n" >> /usr/sbin/policy-rc.d
         - chmod 755 /usr/sbin/policy-rc.d
         - apt-add-repository -y ppa:brightbox/ruby-ng
-        - apt-add-repository -y ppa:chris-lea/php5.5
+        - apt-add-repository -y ppa:ondrej/php5
+        - apt-add-repository -y ppa:fkrull/deadsnakes
         - apt-get update -qq
         - apt-get dist-upgrade -y
       finalize:
