@@ -67,7 +67,7 @@ class DaemonCommand(BaseCommand):
         self.pool.join()
 
     def pop_task(self, **kwargs):
-        return self.task_class.pop(**kwargs)
+        return self.task_class.pop(self.backend, **kwargs)
 
     def register_backend(self):
         name = gethostname()
@@ -127,8 +127,8 @@ class DaemonCommand(BaseCommand):
             if self.is_exiting:
                 break
             self.ping()
-            self.task_class.cleanup_local_tasks()
-            self.task_class.cleanup_remote_tasks()
+            self.task_class.cleanup_local_tasks(self.backend)
+            self.task_class.cleanup_remote_tasks(self.backend)
             if len(results) < workers_count:
                 task = self.pop_task()
                 if task:

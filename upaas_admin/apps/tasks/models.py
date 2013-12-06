@@ -7,7 +7,6 @@
 import os
 import datetime
 import logging
-from socket import gethostname
 
 from mongoengine import (StringField, DateTimeField, IntField, ListField,
                          BooleanField, ReferenceField, Document,
@@ -85,10 +84,9 @@ class Task(Document):
     parent_started = BooleanField(default=False)
 
     locked_since = DateTimeField()
-    locked_by_backend = StringField()
+    locked_by_backend = ReferenceField(BackendServer)
     locked_by_pid = IntField()
 
-    worker_hostname = gethostname()
     worker_pid = os.getpid()
 
     #TODO add retry support
@@ -309,7 +307,7 @@ class Task(Document):
             raise ValueError("Task class '%s' not registered!" % task_class)
 
     @classmethod
-    def pop(cls, with_parent=False, **kwargs):
+    def pop(cls, backend, with_parent=False, **kwargs):
         """
         Pop one pending task from the queue. Returns task instance or None
         if there is no pending task.
@@ -328,22 +326,22 @@ class Task(Document):
 
         cls.objects(status=TaskStatus.pending, is_virtual=False,
                     **kwargs).update_one(
-            set__locked_by_backend=cls.worker_hostname,
+            set__locked_by_backend=backend,
             set__locked_by_pid=cls.worker_pid,
             set__locked_since=datetime.datetime.now(),
             set__status=TaskStatus.running)
-        return cls.objects(locked_by_backend=cls.worker_hostname,
+        return cls.objects(locked_by_backend=backend,
                            locked_by_pid=cls.worker_pid).first()
 
     @classmethod
-    def cleanup_local_tasks(cls):
+    def cleanup_local_tasks(cls, backend):
         """
         Cleanup all interrupted tasks assigned to local backend and mark them
         as failed.
         """
         # look for tasks locked at least 60 seconds ago
         timestamp = datetime.datetime.now() - datetime.timedelta(seconds=60)
-        for task in cls.objects(locked_by_backend=cls.worker_hostname,
+        for task in cls.objects(locked_by_backend=backend,
                                 locked_by_pid__ne=cls.worker_pid,
                                 locked_since__lte=timestamp):
             if not is_pid_running(task.locked_by_pid):
@@ -354,7 +352,7 @@ class Task(Document):
                 task.fail_task()
 
     @classmethod
-    def cleanup_remote_tasks(cls):
+    def cleanup_remote_tasks(cls, backend):
         """
         Cleanup all interrupted tasks assigned to remote backends and mark them
         as failed.
@@ -363,11 +361,12 @@ class Task(Document):
         # database for at least 600 seconds
         timestamp = datetime.datetime.now() - datetime.timedelta(seconds=600)
         backends = BackendServer.objects(**{
+            u'backend__ne': backend,
             u'worker_ping__%s__lte' % cls.__name__: timestamp
-        }).distinct('name')
+        })
         if backends:
-            log.warning(_(u"{len} non responsive backends: {names}").format(
-                len=len(backends), names=backends))
+            log.debug(_(u"{len} non responsive backends: {names}").format(
+                len=len(backends), names=[b.name for b in backends]))
             for task in cls.objects(locked_by_backend__in=backends,
                                     locked_since__lte=timestamp):
                 log.warning(_(u"Task {name} with id {tid} is locked on non "
