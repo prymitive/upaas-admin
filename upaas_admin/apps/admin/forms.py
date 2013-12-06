@@ -59,5 +59,5 @@ class AdminBackendForm(MongoForm):
 
     class Meta:
         document = BackendServer
-        exclude = ('date_created',)
+        exclude = ('date_created', 'worker_ping')
         formfield_generator = ContribFormFieldGenerator
