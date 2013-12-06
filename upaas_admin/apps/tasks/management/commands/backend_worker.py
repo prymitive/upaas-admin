@@ -36,24 +36,27 @@ class Command(DaemonCommand):
         # * task groups - don't start app's task if app has unfinished group
         # of tasks running
         # injecting raw mongo query to do so
-        locked_apps = self.task_class.objects(
-            Q(is_virtual=False)
-            & (
-                Q(parent__exists=False, status=TaskStatus.running,
-                    backend=self.backend)
-                | (
-                    Q(parent__exists=True, parent_started=True)
-                    & (
-                        Q(status__ne=TaskStatus.pending, backend=self.backend)
-                        |
-                        Q(status=TaskStatus.pending, backend__ne=self.backend)
-                    )
-                )
-            )
-        ).distinct("application")
         return super(Command, self).pop_task(
             backend=self.backend,
-            __raw__={'application': {'$nin': locked_apps}})
+            __raw__={
+                'application': {
+                    '$nin': self.task_class.objects(
+                        Q(is_virtual=False)
+                        & (
+                            Q(parent__exists=False, status=TaskStatus.running,
+                                backend=self.backend)
+                            | (
+                                Q(parent__exists=True, parent_started=True)
+                                & (
+                                    Q(status__ne=TaskStatus.pending,
+                                      backend=self.backend)
+                                    |
+                                    Q(status=TaskStatus.pending,
+                                      backend__ne=self.backend)
+                                )
+                            )
+                        )
+                    ).distinct("application")}})
 
     def handle(self, *args, **options):
         name = gethostname()
