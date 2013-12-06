@@ -53,7 +53,7 @@
             - if backend_object.is_enabled
               %i.fa.fa-thumbs-o-up
           %td
-            - if backend.is_healthy
+            - if backend_object.is_healthy
               %i.text-success.fa.fa-thumbs-o-up.upaas-help-tooltip{'title':'{% trans "Backend is healthy" %}'}
             - else
               %i.text-danger.fa.fa-thumbs-o-down.upaas-help-tooltip{'title':'{% trans "No connection to backend workers" %}'}

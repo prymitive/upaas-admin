@@ -90,6 +90,16 @@ class BackendServer(Document):
     def ports_available(self):
         return self.maximum_ports - len(self.allocated_ports)
 
+    @property
+    def is_healthy(self):
+        if not self.worker_ping:
+            return False
+        limit = datetime.datetime.now() - datetime.timedelta(seconds=300)
+        for timestamp in self.worker_ping.values():
+            if timestamp < limit:
+                return False
+        return True
+
     def application_settings(self, application):
         return self.run_plans.filter(application=application).first()
 
@@ -112,15 +122,6 @@ class BackendServer(Document):
             if len(ports) == count:
                 return ports
         return []
-
-    def is_healthy(self):
-        if not self.worker_ping:
-            return False
-        limit = datetime.datetime.now() - datetime.timedelta(seconds=300)
-        for timestamp in self.worker_ping.values():
-            if timestamp < limit:
-                return False
-        return True
 
 
 class RouterServer(Document):
