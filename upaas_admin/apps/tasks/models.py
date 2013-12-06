@@ -209,7 +209,9 @@ class Task(Document):
             self.unlock_task()
             self.status = TaskStatus.successful
             self.save()
+        self.full_cleanup()
 
+    def full_cleanup(self):
         if self.parent:
             self.cleanup_parent()
         else:
@@ -355,6 +357,7 @@ class Task(Document):
                                 task.__class__.__name__,
                                 task.safe_id, task.locked_by_pid))
                 task.fail_task()
+                task.full_cleanup()
 
     @classmethod
     def cleanup_remote_tasks(cls, local_backend):
@@ -381,3 +384,4 @@ class Task(Document):
                     name=task.__class__.__name__, tid=task.safe_id,
                     backend=task.locked_by_backend))
                 task.fail_task()
+                task.full_cleanup()
