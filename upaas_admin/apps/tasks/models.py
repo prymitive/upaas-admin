@@ -297,12 +297,13 @@ class Task(Document):
                 if tasks >= limit:
                     log.debug(_(u"Already {len} tasks queued with params: "
                                 u"{params}").format(len=tasks, params=kwargs))
-                else:
-                    task = klass(*args, **kwargs)
-                    if not task.title:
-                        task.title = task.generate_title()
-                    task.save()
-                    return task
+                    return
+
+            task = klass(*args, **kwargs)
+            if not task.title:
+                task.title = task.generate_title()
+            task.save()
+            return task
         else:
             raise ValueError("Task class '%s' not registered!" % task_class)
 

@@ -251,10 +251,12 @@ class UpdateVassalTask(ApplicationBackendTask):
     def job(self):
         run_plan = self.application.run_plan
         if not run_plan:
-            msg = unicode(_(u"Missing run plan for {name}, cannot "
-                          u"upgrade").format(name=self.application.name))
+            msg = unicode(_(u"Missing run plan for {name}, application was "
+                            u"already stopped?").format(
+                name=self.application.name))
             log.warning(msg)
-            raise Exception(msg)
+            yield 100
+            raise StopIteration
 
         backend_conf = self.application.run_plan.backend_settings(self.backend)
         if backend_conf:
