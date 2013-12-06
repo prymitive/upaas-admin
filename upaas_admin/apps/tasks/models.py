@@ -292,7 +292,12 @@ class Task(Document):
         klass = find_task_class(task_class)
         if klass:
             if limit:
-                tasks = len(klass.objects(status=TaskStatus.pending, **kwargs))
+                # we don't pass all keywords to filter
+                kw = {}
+                for k, v in kwargs.items():
+                    if k not in ['parent']:
+                        kw[k] = v
+                tasks = len(klass.objects(status=TaskStatus.pending, **kw))
                 if tasks >= limit:
                     log.debug(_(u"Already {len} tasks queued with params: "
                                 u"{params}").format(len=tasks, params=kwargs))
