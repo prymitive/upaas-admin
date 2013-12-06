@@ -512,6 +512,7 @@ class Application(Document):
                 return
 
             kwargs = {}
+            vtask = None
             if len(backends) > 1:
                 vtask = VirtualTask(
                     title=_(u"Starting application {name}").format(
@@ -522,12 +523,16 @@ class Application(Document):
             run_plan.backends = backends
             run_plan.save()
 
+            tasks = []
             for backend_conf in backends:
                 log.info(_(u"Set backend '{backend}' in '{name}' run "
                            u"plan").format(backend=backend_conf.backend.name,
                                            name=self.name))
-                Task.put('StartApplicationTask', backend=backend_conf.backend,
-                         application=self, **kwargs)
+                tasks.append(Task.put('StartApplicationTask',
+                                      backend=backend_conf.backend,
+                                      application=self, limit=1, **kwargs))
+            if vtask and len(filter(None, tasks)) == 0:
+                vtask.delete()
 
     def stop_application(self):
         if self.current_package:
@@ -539,6 +544,7 @@ class Application(Document):
                 return
 
             kwargs = {}
+            vtask = None
             if len(self.run_plan.backends) > 1:
                 vtask = VirtualTask(
                     title=_(u"Stopping application {name}").format(
@@ -546,9 +552,13 @@ class Application(Document):
                 vtask.save()
                 kwargs['parent'] = vtask
 
+            tasks = []
             for backend_conf in self.run_plan.backends:
-                Task.put('StopApplicationTask', backend=backend_conf.backend,
-                         application=self, **kwargs)
+                tasks.append(Task.put('StopApplicationTask',
+                                      backend=backend_conf.backend,
+                                      application=self, limit=1, **kwargs))
+            if vtask and len(filter(None, tasks)) == 0:
+                vtask.delete()
 
     def upgrade_application(self):
         if self.current_package:
@@ -556,6 +566,7 @@ class Application(Document):
                 return
 
             kwargs = {}
+            vtask = None
             if len(self.run_plan.backends) > 1:
                 vtask = VirtualTask(
                     title=_(u"Upgrading application {name}").format(
@@ -563,11 +574,13 @@ class Application(Document):
                 vtask.save()
                 kwargs['parent'] = vtask
 
-            #TODO add wait for subscription
+            tasks = []
             for backend_conf in self.run_plan.backends:
-                Task.put('UpgradeApplicationTask',
-                         backend=backend_conf.backend, application=self,
-                         **kwargs)
+                tasks.append(Task.put('UpgradeApplicationTask',
+                                      backend=backend_conf.backend,
+                                      application=self, limit=1, **kwargs))
+            if vtask and len(filter(None, tasks)) == 0:
+                vtask.delete()
 
     def update_application(self):
         if self.run_plan:
@@ -582,6 +595,7 @@ class Application(Document):
                 return
 
             kwargs = {}
+            vtask = None
             if len(current_backends) > 1 or len(new_backends) > 1:
                 vtask = VirtualTask(
                     title=_(u"Updating application {name}").format(
@@ -589,15 +603,17 @@ class Application(Document):
                 vtask.save()
                 kwargs['parent'] = vtask
 
+            tasks = []
             for backend_conf in new_backends:
                 if backend_conf.backend in current_backends:
                     # replace backend settings with updated version
                     run_plan.update(
                         pull__backends__backend=backend_conf.backend)
                     run_plan.update(push__backends=backend_conf)
-                    Task.put('UpdateVassalTask', backend=backend_conf.backend,
-                             application=self, package=self.current_package,
-                             **kwargs)
+                    tasks.append(Task.put('UpdateVassalTask',
+                                          backend=backend_conf.backend,
+                                          application=self,
+                                          limit=1, **kwargs))
                 else:
                     # add backend to run plan if not already there
                     ApplicationRunPlan.objects(
@@ -605,17 +621,21 @@ class Application(Document):
                         backends__backend__nin=[
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
-                    Task.put('StartApplicationTask',
-                             backend=backend_conf.backend, application=self,
-                             **kwargs)
+                    tasks.append(Task.put('StartApplicationTask',
+                                          backend=backend_conf.backend,
+                                          application=self, limit=1, **kwargs))
 
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
                     log.info(_(u"Stopping {name} on old backend "
                                u"{backend}").format(name=self.name,
                                                     backend=backend.name))
-                    Task.put('StopApplicationTask', backend=backend,
-                             application=self, **kwargs)
+                    tasks.append(Task.put('StopApplicationTask',
+                                          backend=backend, application=self,
+                                          **kwargs))
+
+            if vtask and len(filter(None, tasks)) == 0:
+                vtask.delete()
 
     def trim_package_files(self):
         """

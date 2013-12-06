@@ -285,18 +285,24 @@ class Task(Document):
         return ret
 
     @classmethod
-    def put(cls, task_class, *args, **kwargs):
+    def put(cls, task_class, limit=None, *args, **kwargs):
         """
         Create new task with given arguments and place in on the queue.
         Returns task instance.
         """
         klass = find_task_class(task_class)
         if klass:
-            task = klass(*args, **kwargs)
-            if not task.title:
-                task.title = task.generate_title()
-            task.save()
-            return task
+            if limit:
+                tasks = len(klass.objects(status=TaskStatus.pending, **kwargs))
+                if tasks >= limit:
+                    log.debug(_(u"Already {len} tasks queued with params: "
+                                u"{params}").format(len=tasks, params=kwargs))
+                else:
+                    task = klass(*args, **kwargs)
+                    if not task.title:
+                        task.title = task.generate_title()
+                    task.save()
+                    return task
         else:
             raise ValueError("Task class '%s' not registered!" % task_class)
 
