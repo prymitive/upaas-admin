@@ -307,7 +307,7 @@ class Task(Document):
             raise ValueError("Task class '%s' not registered!" % task_class)
 
     @classmethod
-    def pop(cls, backend, with_parent=False, **kwargs):
+    def pop(cls, local_backend, with_parent=False, **kwargs):
         """
         Pop one pending task from the queue. Returns task instance or None
         if there is no pending task.
@@ -319,29 +319,29 @@ class Task(Document):
             kwargs['parent_started'] = True
         else:
             # do first query
-            task = cls.pop(with_parent=True, **kwargs)
+            task = cls.pop(local_backend, with_parent=True, **kwargs)
             if task:
                 return task
             # if first query didn't return anything we pass to normal query
 
         cls.objects(status=TaskStatus.pending, is_virtual=False,
                     **kwargs).update_one(
-            set__locked_by_backend=backend,
+            set__locked_by_backend=local_backend,
             set__locked_by_pid=cls.worker_pid,
             set__locked_since=datetime.datetime.now(),
             set__status=TaskStatus.running)
-        return cls.objects(locked_by_backend=backend,
+        return cls.objects(locked_by_backend=local_backend,
                            locked_by_pid=cls.worker_pid).first()
 
     @classmethod
-    def cleanup_local_tasks(cls, backend):
+    def cleanup_local_tasks(cls, local_backend):
         """
         Cleanup all interrupted tasks assigned to local backend and mark them
         as failed.
         """
         # look for tasks locked at least 60 seconds ago
         timestamp = datetime.datetime.now() - datetime.timedelta(seconds=60)
-        for task in cls.objects(locked_by_backend=backend,
+        for task in cls.objects(locked_by_backend=local_backend,
                                 locked_by_pid__ne=cls.worker_pid,
                                 locked_since__lte=timestamp):
             if not is_pid_running(task.locked_by_pid):
@@ -352,7 +352,7 @@ class Task(Document):
                 task.fail_task()
 
     @classmethod
-    def cleanup_remote_tasks(cls, backend):
+    def cleanup_remote_tasks(cls, local_backend):
         """
         Cleanup all interrupted tasks assigned to remote backends and mark them
         as failed.
@@ -361,7 +361,7 @@ class Task(Document):
         # database for at least 600 seconds
         timestamp = datetime.datetime.now() - datetime.timedelta(seconds=600)
         backends = BackendServer.objects(**{
-            u'id__ne': backend.id,
+            u'id__ne': local_backend.id,
             u'worker_ping__%s__lte' % cls.__name__: timestamp
         })
         if backends:

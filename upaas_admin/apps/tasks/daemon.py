@@ -117,8 +117,9 @@ class DaemonCommand(BaseCommand):
         self.register_backend()
 
         workers_count = options['workers']
-        log.info(u"Started master process with pid %d, running %d worker"
-                 u"(s)" % (os.getpid(), workers_count))
+        log.info(u"Started master process with pid %d, running %d worker (s), "
+                 u"task class: %s" % (os.getpid(), workers_count,
+                                      self.task_class.__name__))
         self.pool = multiprocessing.Pool(workers_count, worker_init)
 
         results = []
