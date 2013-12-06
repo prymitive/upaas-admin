@@ -361,7 +361,7 @@ class Task(Document):
         # database for at least 600 seconds
         timestamp = datetime.datetime.now() - datetime.timedelta(seconds=600)
         backends = BackendServer.objects(**{
-            u'backend__ne': backend,
+            u'id__ne': backend.id,
             u'worker_ping__%s__lte' % cls.__name__: timestamp
         })
         if backends:
