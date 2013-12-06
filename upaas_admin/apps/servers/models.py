@@ -113,6 +113,15 @@ class BackendServer(Document):
                 return ports
         return []
 
+    def is_healthy(self):
+        if not self.worker_ping:
+            return False
+        limit = datetime.datetime.now() - datetime.timedelta(seconds=300)
+        for timestamp in self.worker_ping.values():
+            if timestamp < limit:
+                return False
+        return True
+
 
 class RouterServer(Document):
     """
