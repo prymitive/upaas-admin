@@ -54,10 +54,8 @@ files:
     production:
       sessions:
         default:
-          database: errbit
+          database: errbit-stable
           hosts:
-            - 'upaas-dev:27017'
-          username: errbit
-          password: errB1t
+            - 'localhost:27017'
       options:
         identity_map_enabled: true
