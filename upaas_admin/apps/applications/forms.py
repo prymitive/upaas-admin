@@ -44,8 +44,13 @@ class RegisterApplicationForm(CrispyMongoForm, _MetadataForm):
     metadata = forms.FileField()
 
     def clean_name(self):
-        if ' ' in self.cleaned_data['name']:
+        name = self.cleaned_data['name']
+        if ' ' in name:
             raise forms.ValidationError(_(u"Name cannot contain spaces"))
+        if self.owner.applications.filter(name=name).first():
+            raise forms.ValidationError(_(
+                u"Application with name {name} already registered").format(
+                name=name))
         return self.cleaned_data['name']
 
 
@@ -108,6 +113,16 @@ class ApplicatiomMetadataFromPackageForm(CrispyForm):
 
     submit_label = 'Save'
     submit_icon_class = 'fa fa-undo'
+    layout = ['confirm']
+
+    confirm = forms.BooleanField(required=True)
+
+
+class DeletePackageForm(CrispyForm):
+
+    submit_label = 'Delete'
+    submit_css_class = 'btn-danger'
+    submit_icon_class = 'fa fa-trash-o'
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)

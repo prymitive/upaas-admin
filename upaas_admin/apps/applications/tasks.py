@@ -63,6 +63,9 @@ class BuildPackageTask(ApplicationTask):
         system_filename = None
         if not self.force_fresh and self.application.current_package:
             system_filename = self.application.current_package.filename
+            log.info(_(u"Using current application package {pkg} as "
+                       u"parent").format(
+                pkg=self.application.current_package.safe_id))
 
         log.info(u"Starting build task with parameters app_id=%s, "
                  u"force_fresh=%s" % (self.application.safe_id,

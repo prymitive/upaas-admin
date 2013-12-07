@@ -14,7 +14,8 @@ import re
 from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
-                         ReferenceField, ListField, CASCADE, QuerySetManager)
+                         ReferenceField, ListField, QuerySetManager, NULLIFY,
+                         signals)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -66,6 +67,12 @@ class Package(Document):
 
     _default_manager = QuerySetManager()
 
+    @classmethod
+    def pre_delete(cls, sender, document, **kwargs):
+        log.debug(_(u"Pre delete signal on package {id}").format(
+            id=document.safe_id))
+        document.delete_package_file(null_filename=False)
+
     @property
     def safe_id(self):
         return str(self.id)
@@ -86,6 +93,32 @@ class Package(Document):
         Unpacked package directory path
         """
         return os.path.join(settings.UPAAS_CONFIG.paths.apps, self.safe_id)
+
+    def delete_package_file(self, null_filename=True):
+        log.debug(_(u"Deleting package file for {pkg}").format(
+            pkg=self.safe_id))
+        if not self.filename:
+            log.debug(_(u"Package {pkg} has no filename, skipping "
+                        u"delete").format(pkg=self.safe_id))
+
+        storage = find_storage_handler(self.upaas_config)
+        if not storage:
+            log.error(_(u"Storage handler '{handler}' not found, cannot "
+                        u"package file").format(
+                handler=self.upaas_config.storage.handler))
+            return
+
+        log.debug(_(u"Checking if package file {path} is stored").format(
+            path=self.filename))
+        if storage.exists(self.filename):
+            log.info(_(u"Removing package {pkg} file from storage").format(
+                pkg=self.safe_id))
+            storage.delete(self.filename)
+        if null_filename:
+            log.info(_(u"Clearing filename for package {pkg}").format(
+                pkg=self.safe_id))
+            del self.filename
+            self.save()
 
     def uwsgi_options_from_metadata(self):
         """
@@ -338,10 +371,9 @@ class Application(Document):
     # FIXME reverse_delete_rule=DENY for owner
     owner = ReferenceField('User', dbref=False, required=True)
     metadata = StringField(verbose_name=_('Application metadata'))
-    current_package = ReferenceField(Package, reverse_delete_rule=CASCADE,
-                                     dbref=False, required=False)
-    packages = ListField(
-        ReferenceField(Package, reverse_delete_rule=CASCADE, dbref=False))
+    current_package = ReferenceField(Package, dbref=False, required=False)
+    packages = ListField(ReferenceField(Package, dbref=False,
+                                        reverse_delete_rule=NULLIFY))
     domains = ListField(StringField)  # FIXME uniqness
 
     _default_manager = QuerySetManager()
@@ -655,12 +687,7 @@ class Application(Document):
             if pkg.id == self.current_package.id:
                 continue
             removed += 1
-            if storage.exists(pkg.filename):
-                log.info(u"Removing package %s file from "
-                         u"database" % pkg.safe_id)
-                storage.delete(pkg.filename)
-            del pkg.filename
-            pkg.save()
+            pkg.delete_package_file(null_filename=True)
 
         if removed:
             log.info(u"Removed %d package file(s) for app %s" % (removed,
@@ -706,3 +733,6 @@ class Application(Document):
                 except OSError, e:
                     log.error(_(u"Exception during package directory cleanup: "
                                 u"{e}").format(e=e))
+
+
+signals.pre_delete.connect(Package.pre_delete, sender=Package)

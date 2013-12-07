@@ -9,9 +9,9 @@ import logging
 
 from difflib import unified_diff
 
-from django.views.generic import CreateView, UpdateView, DeleteView
+from django.views.generic import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.detail import SingleObjectMixin
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext as __
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -23,8 +23,6 @@ from tabination.views import TabView
 from pure_pagination import Paginator, PageNotAnInteger
 from pure_pagination.mixins import PaginationMixin
 
-from upaas.storage.utils import find_storage_handler
-
 from upaas_admin.common.mixin import (
     LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
 from upaas_admin.apps.applications.mixin import (
@@ -33,7 +31,8 @@ from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
     UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm,
-    RollbackApplicationForm, ApplicatiomMetadataFromPackageForm)
+    RollbackApplicationForm, ApplicatiomMetadataFromPackageForm,
+    DeletePackageForm)
 from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
                                               EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
@@ -80,14 +79,14 @@ class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
 
     def get(self, request, *args, **kwargs):
         self.object = None
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
+        form = self.get_form(self.get_form_class())
+        form.owner = request.user
         return self.render_to_response(self.get_context_data(form=form))
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
+        form = self.get_form(self.get_form_class())
+        form.owner = request.user
         if form.is_valid():
             return self.form_valid(form)
         else:
@@ -394,38 +393,43 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
 
 
 class PackageDeleteView(LoginRequiredMixin, OwnedPackagesMixin,
-                        AppTemplatesDirMixin, DeleteView, MongoDetailView):
+                        AppTemplatesDirMixin, FormView, DeleteView,
+                        MongoDetailView):
+
     template_name = 'delete_package.html'
     model = Package
     slug_field = 'id'
     context_object_name = 'pkg'
-    success_url = reverse_lazy(ApplicationPackagesView.tab_id)
+    form_class = DeletePackageForm
+    application = None
+
+    def get_success_url(self):
+        return reverse(ApplicationPackagesView.tab_id,
+                       args=[self.application.safe_id])
 
     def get_context_data(self, **kwargs):
         context = super(PackageDeleteView, self).get_context_data(**kwargs)
         if self.object:
-            context['app'] = self.object.application
+            self.application = self.object.application
+            context['app'] = self.application
+        context['form'] = self.get_form(self.get_form_class())
         return context
 
-    def post(self, request, *args, **kwargs):
+    def post(self, *args, **kwargs):
         self.object = self.get_object()
+        return FormView.post(self, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.get_context_data()
         if self.object.id != self.object.application.current_package.id:
             if self.object.filename:
-                storage = find_storage_handler(self.upaas_config)
-                if not storage:
-                    log.error(_(u"Storage handler {name} not found").format(
-                        name=self.upaas_config.storage.handler))
-                    return application_error(request, self.object.application,
-                                             _(u"Storage error, please try "
-                                               u"again later"))
-                if storage.exists(self.object.filename):
-                    log.info(_(u"Removing package {pkg} file: {path}").format(
-                        self.object.safe_id, self.object.filename))
-                    storage.delete(self.object.filename)
+                self.object.delete_package_file(null_filename=False)
+            Application.objects(id=self.application.id).update_one(
+                pull__packages=self.object.id)
             self.object.delete()
             return HttpResponseRedirect(self.get_success_url())
         else:
-            return application_error(request, self.object.application,
+            return application_error(self.request, self.object.application,
                                      _(u"Package in use"))
 
 

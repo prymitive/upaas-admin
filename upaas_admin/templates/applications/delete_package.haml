@@ -15,12 +15,9 @@
 
 - block app_content
 
-  %form.well{'method':'post', 'action':'{% url "package_delete" pkg.safe_id %}'}
-    - csrf_token
+  .well
+
     %p
-      - trans "Are you sure you want to delete this package?"
-    .controls
-      %button.btn.btn-default{'type':'button', 'onClick':'javascript:history.go(-1);'}
-        %i.fa.fa-reply
-        - trans "Cancel"
-      %input.btn.btn-danger{'type':'submit', 'value':'{% trans "Delete" %}'}/
+      - trans "Are you sure you want to delete this package ?"
+
+    - crispy form
