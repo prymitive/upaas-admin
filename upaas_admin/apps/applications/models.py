@@ -100,6 +100,7 @@ class Package(Document):
         if not self.filename:
             log.debug(_(u"Package {pkg} has no filename, skipping "
                         u"delete").format(pkg=self.safe_id))
+            return
 
         storage = find_storage_handler(self.upaas_config)
         if not storage:
