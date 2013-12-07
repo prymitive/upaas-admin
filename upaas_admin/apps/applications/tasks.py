@@ -263,6 +263,19 @@ class UpdateVassalTask(ApplicationBackendTask):
 
         backend_conf = self.application.run_plan.backend_settings(self.backend)
         if backend_conf:
+
+            if backend_conf.package.id != self.application.current_package.id:
+                log.info(_(u"Old package on backend, running upgrade"))
+                backend_conf = run_plan.replace_backend_settings(
+                    backend_conf.backend, backend_conf,
+                    package=self.application.current_package.id)
+            try:
+                backend_conf.package.unpack()
+            except UnpackError:
+                log.error(u"Unpacking failed")
+                raise
+            yield 40
+
             backend_conf.package.save_vassal_config(backend_conf)
             yield 50
 
