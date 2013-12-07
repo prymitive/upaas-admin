@@ -269,12 +269,12 @@ class UpdateVassalTask(ApplicationBackendTask):
                 backend_conf = run_plan.replace_backend_settings(
                     backend_conf.backend, backend_conf,
                     package=self.application.current_package.id)
-            try:
-                backend_conf.package.unpack()
-            except UnpackError:
-                log.error(u"Unpacking failed")
-                raise
-            yield 40
+                try:
+                    backend_conf.package.unpack()
+                except UnpackError:
+                    log.error(u"Unpacking failed")
+                    raise
+                yield 40
 
             backend_conf.package.save_vassal_config(backend_conf)
             yield 50
