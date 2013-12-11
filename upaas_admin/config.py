@@ -57,7 +57,15 @@ class UPaaSConfig(base.Config):
             },
             "uwsgi": {
                 "safe_options": base.ListEntry(value_type=unicode),
-            }
+            },
+            "graphite": {
+                "carbon": base.ListEntry(value_type=unicode),
+                "timeout": base.IntegerEntry(default=3),
+                "frequency": base.IntegerEntry(default=60),
+                "max_retry": base.IntegerEntry(default=1),
+                "retry_delay": base.IntegerEntry(default=7),
+                "root": base.IntegerEntry(default="uwsgi"),
+            },
         },
         "defaults": {
             "limits": {
