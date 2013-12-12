@@ -197,6 +197,15 @@ class Package(Document):
             'max_memory': max_memory,
             'memory_per_worker': run_plan.memory_per_worker,
         }
+
+        if config.apps.graphite.carbon:
+            variables['carbon_servers'] = config.apps.graphite.carbon
+            variables['carbon_timeout'] = config.apps.graphite.timeout
+            variables['carbon_frequency'] = config.apps.graphite.frequency
+            variables['carbon_max_retry'] = config.apps.graphite.max_retry
+            variables['carbon_retry_delay'] = config.apps.graphite.retry_delay
+            variables['carbon_root'] = config.apps.graphite.root
+
         try:
             variables.update(config.interpreters[self.interpreter_name]['any'][
                 'uwsgi']['vars'])
