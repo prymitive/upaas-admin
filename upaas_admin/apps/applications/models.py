@@ -199,7 +199,8 @@ class Package(Document):
         }
 
         if config.apps.graphite.carbon:
-            variables['carbon_servers'] = config.apps.graphite.carbon
+            variables['carbon_servers'] = u' '.join(
+                config.apps.graphite.carbon)
             variables['carbon_timeout'] = config.apps.graphite.timeout
             variables['carbon_frequency'] = config.apps.graphite.frequency
             variables['carbon_max_retry'] = config.apps.graphite.max_retry
