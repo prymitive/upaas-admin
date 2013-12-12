@@ -289,6 +289,11 @@ class Package(Document):
         options.append('\n# starting base template')
         options.extend(_load_template(base_template))
 
+        if config.apps.graphite.carbon:
+            options.append('\n# starting carbon servers block')
+            for carbon in config.apps.graphite.carbon:
+                options.append('carbon = %s' % carbon)
+
         options.append('\n# starting interpreter plugin')
         if plugin:
             options.append('plugin = %s' % plugin)
@@ -385,7 +390,7 @@ class Application(Document):
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
-    domains = ListField(StringField)  # FIXME uniqness
+    domains = ListField(StringField, unique=False)  # FIXME uniqness
 
     _default_manager = QuerySetManager()
 
