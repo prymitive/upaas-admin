@@ -1,0 +1,27 @@
+- extends 'applications/base.html'
+
+
+- load compressed
+
+
+- block app_content
+
+  %img#graph
+
+
+- block js_bottom
+  = block.super
+
+  - compressed_js 'graphite'
+
+  :javascript
+    $(document).ready(function(){
+      $("#graph").graphite({
+          url: "{{ render_url }}",
+          from: "-30minutes",
+          target: [
+              "{{ carbon_root }}.*.{{ app.id }}.active_workers",
+          ],
+          title: "Active workers"
+      });
+    });

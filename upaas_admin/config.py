@@ -60,6 +60,7 @@ class UPaaSConfig(base.Config):
             },
             "graphite": {
                 "carbon": base.ListEntry(value_type=unicode),
+                "render_url": base.StringEntry(),
                 "timeout": base.IntegerEntry(default=3),
                 "frequency": base.IntegerEntry(default=60),
                 "max_retry": base.IntegerEntry(default=1),

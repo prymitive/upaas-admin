@@ -261,6 +261,12 @@ PIPELINE_JS = {
         ),
         'output_filename': 'js/zeroclipboard.js',
     },
+    'graphite': {
+        'source_filenames': (
+            'graphite/jquery.graphite.js',
+        ),
+        'output_filename': 'js/graphite.js',
+    }
 }
 
 

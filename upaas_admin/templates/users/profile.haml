@@ -78,24 +78,24 @@
             - trans "Reset API key"
 
 
-  - block js_bottom
-    = block.super
+- block js_bottom
+  = block.super
 
-    - include "partials/load_zeroclipboard.html"
+  - include "partials/load_zeroclipboard.html"
 
-    :javascript
-      $(document).ready(function(){
-        var clip = new ZeroClipboard($('button#copy-button'));
-        var cliptip = $(clip.htmlBridge)
-          .tooltip({'title': '{% trans "Copy to clipboard" %}'});
-        clip.on('mouseover', function(client) {
-          cliptip.attr('title', '{% trans "Copy to clipboard" %}')
-            .tooltip('fixTitle')
-            .tooltip('show');
-        });
-        clip.on('complete', function(client, args) {
-          cliptip.attr('title', '{% trans "Copied" %}')
-            .tooltip('fixTitle')
-            .tooltip('show');
-        });
+  :javascript
+    $(document).ready(function(){
+      var clip = new ZeroClipboard($('button#copy-button'));
+      var cliptip = $(clip.htmlBridge)
+        .tooltip({'title': '{% trans "Copy to clipboard" %}'});
+      clip.on('mouseover', function(client) {
+        cliptip.attr('title', '{% trans "Copy to clipboard" %}')
+          .tooltip('fixTitle')
+          .tooltip('show');
       });
+      clip.on('complete', function(client, args) {
+        cliptip.attr('title', '{% trans "Copied" %}')
+          .tooltip('fixTitle')
+          .tooltip('show');
+      });
+    });

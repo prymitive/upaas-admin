@@ -28,6 +28,8 @@ urlpatterns = patterns(
         name=ApplicationPackagesView.tab_id),
     url(r'^(?P<slug>[-_\w]+)/instances$', ApplicationInstancesView.as_view(),
         name=ApplicationInstancesView.tab_id),
+    url(r'^(?P<slug>[-_\w]+)/stats$', ApplicationStatsView.as_view(),
+        name=ApplicationStatsView.tab_id),
     url(r'^(?P<slug>[-_\w]+)/tasks$', ApplicationTasksView.as_view(),
         name=ApplicationTasksView.tab_id),
 

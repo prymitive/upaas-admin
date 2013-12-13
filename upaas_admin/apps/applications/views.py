@@ -15,6 +15,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ugettext as __
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.conf import settings
 
 from mongoengine.errors import ValidationError, DoesNotExist
 
@@ -174,6 +175,25 @@ class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
     tab_id = 'app_instances'
     tab_group = 'app_navigation'
     tab_label = _('Instances')
+
+
+class ApplicationStatsView(LoginRequiredMixin, OwnedAppsMixin,
+                           AppTemplatesDirMixin, MongoDetailView,
+                           DetailTabView):
+
+    template_name = 'stats.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    tab_id = 'app_stats'
+    tab_group = 'app_navigation'
+    tab_label = _('Statistics')
+
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationStatsView, self).get_context_data(**kwargs)
+        context['carbon_root'] = settings.UPAAS_CONFIG.apps.graphite.root
+        context['render_url'] = settings.UPAAS_CONFIG.apps.graphite.render_url
+        return context
 
 
 class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
