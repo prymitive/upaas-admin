@@ -1,12 +1,15 @@
 - extends 'applications/base.html'
 
 
+- load i18n
+- load tz
 - load compressed
 
 
 - block app_content
 
-  %img#graph
+  #graph-placeholder
+    %img#graph
 
 
 - block js_bottom
@@ -17,11 +20,19 @@
   :javascript
     $(document).ready(function(){
       $("#graph").graphite({
+          width: $('#graph-placeholder').width(),
           url: "{{ render_url }}",
-          from: "-30minutes",
+          tz: "{{ TIME_ZONE }}",
+
+          from: "-20minutes",
           target: [
-              "{{ carbon_root }}.*.{{ app.id }}.active_workers",
+              "alias({{ carbon_root }}.*.{{ app.id }}.core.busy_workers, '{% trans "busy" %}')",
+              "alias({{ carbon_root }}.*.{{ app.id }}.core.idle_workers, '{% trans "idle" %}')",
           ],
-          title: "Active workers"
+          title: "{% trans "Workers" %}",
+          areaMode: "stacked",
+          hideLegend: false,
+          yUnitSystem: "binary",
+          lineMode: "staircase"
       });
     });
