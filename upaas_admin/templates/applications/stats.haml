@@ -20,10 +20,6 @@
   :javascript
     $(document).ready(function(){
       $("#graph").graphite({
-          width: $('#graph-placeholder').width(),
-          url: "{{ render_url }}",
-          tz: "{{ TIME_ZONE }}",
-
           from: "-20minutes",
           target: [
               "alias({{ carbon_root }}.*.{{ app.id }}.core.busy_workers, '{% trans "busy" %}')",
@@ -33,6 +29,11 @@
           areaMode: "stacked",
           hideLegend: false,
           yUnitSystem: "binary",
-          lineMode: "staircase"
+          lineMode: "staircase",
+
+          width: $('#graph-placeholder').width(),
+          url: "{{ render_url }}",
+          tz: "{{ TIME_ZONE }}",
+          bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
     });
