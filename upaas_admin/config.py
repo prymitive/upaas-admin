@@ -65,7 +65,7 @@ class UPaaSConfig(base.Config):
                 "frequency": base.IntegerEntry(default=60),
                 "max_retry": base.IntegerEntry(default=1),
                 "retry_delay": base.IntegerEntry(default=7),
-                "root": base.IntegerEntry(default="uwsgi"),
+                "root": base.StringEntry(default="uwsgi"),
             },
         },
         "defaults": {
