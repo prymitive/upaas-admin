@@ -223,6 +223,7 @@ PIPELINE_CSS = {
             'bootstrap/less/bootstrap.less',
             'font-awesome/less/font-awesome.less',
             'bootstrap/less/theme.less',
+            'tabdrop/tabdrop.less',
             'upaas/less/base/*.less',
         ),
         'output_filename': 'css/bootstrap.css',
@@ -245,6 +246,7 @@ PIPELINE_JS = {
             'underscore/underscore-min.js',
             'underscore/underscore.string.min.js',
             'haml/haml.min.js',
+            'tabdrop/bootstrap-tabdrop.js',
             'upaas/js/base/*.js',
         ),
         'output_filename': 'js/base.js',
@@ -266,7 +268,7 @@ PIPELINE_JS = {
             'graphite/jquery.graphite.js',
         ),
         'output_filename': 'js/graphite.js',
-    }
+    },
 }
 
 
