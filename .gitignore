@@ -25,5 +25,6 @@ docs/_build
 # less compiled to css
 upaas_admin/static/bootstrap/less/*.css
 upaas_admin/static/upaas/*.css
+upaas_admin/static/upaas/less/*/*.css
 upaas_admin/static/zeroclipboard/*.css
 upaas_admin/static/font-awesome/less/*.css
