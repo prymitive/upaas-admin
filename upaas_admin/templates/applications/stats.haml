@@ -8,8 +8,35 @@
 
 - block app_content
 
-  #graph-placeholder
-    %img#graph
+  .row
+    .pull-right
+      %label{'for': 'upaas-select-stats'}
+        {% trans "Pick metric and time range" %}:
+      .btn-group
+        %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+          - trans "Workers count"
+          %span.caret
+        %ul.dropdown-menu.pull-right{'role':'menu'}
+          %li
+            %a{'id':'metric-requests', 'href':'#'}
+              - trans "Requests"
+            %a{'id':'metric-avg_rt', 'href':'#'}
+              - trans "Response times"
+            %a{'id':'metric-workers', 'href':'#'}
+              - trans "Workers count"
+            %a{'id':'metric-rss', 'href':'#'}
+              - trans "Memory usage"
+            %a{'id':'metric-tx', 'href':'#'}
+              - trans "Bandwidth"
+      %button#upaas-stats-dates.btn.btn-default{'type':'button'}
+        %span#upaas-stats-dates-label
+          - trans "Select time range"
+        %span.caret
+
+  .row
+    %p
+    #graph-placeholder
+      %img#graph
 
 
 - block js_bottom
@@ -17,14 +44,18 @@
 
   - compressed_js 'graphite'
 
+  - compressed_css 'daterangepicker'
+  - compressed_js 'daterangepicker'
+
   :javascript
-    $(document).ready(function(){
+    function render(start, end) {
       $("#graph").graphite({
-          from: "-20minutes",
+          from: moment(start).format("HH:mm_YYYYMMDD"),
+          until: moment(end).format("HH:mm_YYYYMMDD"),
 
           target: [
-              "alias({{ carbon_root }}.*.{{ app.id }}.core.busy_workers, '{% trans "busy" %}')",
-              "alias({{ carbon_root }}.*.{{ app.id }}.core.idle_workers, '{% trans "idle" %}')",
+              "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
+              "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
           ],
           title: "{% trans "Workers" %}",
           areaMode: "stacked",
@@ -37,4 +68,51 @@
           tz: "{{ TIME_ZONE }}",
           bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
+    }
+
+    $(document).ready(function(){
+      var default_start = moment().subtract('hours', 2);
+      var default_end = moment();
+      var separator = ' - ';
+      var date_format = 'YYYY/MM/DD H:mm';
+
+      $('#upaas-stats-dates').daterangepicker({
+        applyClass: 'btn-primary',
+        showDropdowns: true,
+        opens: 'left',
+        separator: separator,
+
+        startDate: default_start,
+        endDate: default_end,
+        minDate: '{{ app.date_created|date:"c" }}',
+        maxDate: moment(),
+
+        timePicker: true,
+        timePickerIncrement: 10,
+        timePicker12Hour: false,
+        format: date_format,
+
+        ranges: {
+           '{% trans "Last 2 hours" %}': [default_start, default_end],
+           '{% trans "Last 12 hours" %}': [moment().subtract('hours', 12), moment()],
+           '{% trans "Today" %}': [moment().startOf('day'), moment()],
+           '{% trans "Yesterday" %}': [moment().subtract('days', 1).startOf('day'), moment().subtract('days', 1).endOf('day')],
+           '{% trans "Last 7 Days" %}': [moment().subtract('days', 6), moment()],
+         },
+
+        locale: {
+            applyLabel: '{% trans "Apply" %}',
+            cancelLabel: '{% trans "Cancel" %}',
+            fromLabel: '{% trans "From" %}',
+            toLabel: '{% trans "To" %}',
+            customRangeLabel: '{% trans "Custom Range" %}',
+        }
+
+      }, function(start, end) {
+        $('#upaas-stats-dates-label').html(start.format(date_format) + separator + end.format(date_format));
+        render(start, end);
+      });
+
+      render(default_start, default_end);
+
     });

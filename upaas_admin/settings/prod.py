@@ -234,6 +234,12 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'css/zeroclipboard.css',
     },
+    'daterangepicker': {
+        'source_filenames': (
+            'daterangepicker/daterangepicker.less',
+        ),
+        'output_filename': 'css/daterangepicker.css',
+    },
 }
 
 PIPELINE_JS = {
@@ -269,6 +275,13 @@ PIPELINE_JS = {
         ),
         'output_filename': 'js/graphite.js',
     },
+    'daterangepicker': {
+        'source_filenames': (
+            'daterangepicker/daterangepicker.js',
+        ),
+        'output_filename': 'js/daterangepicker.js',
+    },
+
 }
 
 
