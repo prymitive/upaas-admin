@@ -17,14 +17,15 @@
         %span.label.label-primary.pull-right
           = instance.stats.version
     .panel-body.upaas-instance-panel
-      - var queue_style = 'width: ' + Math.round((instance.stats.listen_queue/instance.stats.listen_queue_max)*100) + '%;';
-      - var queue_progress_class = 'progress-bar-default';
-      - if (instance.stats.listen_queue > 80) {
-        - queue_progress_class = 'progress-bar-danger';
-      - else if (instance.stats.listen_queue > 50) {
-        - queue_progress_class = 'progress-bar-warning';
-      .progress.upaas-instance-queue-progressbar
-        .progress-bar{class: queue_progress_class, role: 'progressbar', 'aria-valuenow': Math.min(instance.stats.listen_queue, instance.stats.listen_queue_max), 'aria-valuemin': 0, 'aria-valuemax': instance.stats.listen_queue_max, style: queue_style}
+      - if (instance.stats != null) {
+        - var queue_style = 'width: ' + Math.round((instance.stats.listen_queue/instance.stats.listen_queue_max)*100) + '%;';
+        - var queue_progress_class = 'progress-bar-default';
+        - if (instance.stats.listen_queue > 80) {
+          - queue_progress_class = 'progress-bar-danger';
+        - else if (instance.stats.listen_queue > 50) {
+          - queue_progress_class = 'progress-bar-warning';
+        .progress.upaas-instance-queue-progressbar
+          .progress-bar{class: queue_progress_class, role: 'progressbar', 'aria-valuenow': Math.min(instance.stats.listen_queue, instance.stats.listen_queue_max), 'aria-valuemin': 0, 'aria-valuemax': instance.stats.listen_queue_max, style: queue_style}
       %table.table.table-bordered.table-condensed.upaas-instance-table
         %thead
           %tr
