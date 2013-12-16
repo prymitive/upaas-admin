@@ -77,7 +77,7 @@
       },
       'metric-avg_rt': {
         target: [
-            "{{ carbon_root }}.*.{{ app.id }}.worker.0.avg_response_time",
+            "scale({{ carbon_root }}.*.{{ app.id }}.core.avg_response_time, 0.001)",
         ],
         title: "{% trans "Response time" %}",
         hideLegend: true,
@@ -86,7 +86,7 @@
       },
       'metric-requests': {
         target: [
-            "summarize(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.worker.0.requests), '1sec')",
+            "scaleToSeconds(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.worker.0.requests), 1)"
         ],
         title: "{% trans "Requests" %}",
         areaMode: "stacked",
@@ -96,7 +96,7 @@
       },
       'metric-rss': {
         target: [
-            "stacked({{ carbon_root }}.*.{{ app.id }}.core.total_rss)",
+            "{{ carbon_root }}.*.{{ app.id }}.core.total_rss",
         ],
         title: "{% trans "Memory usage" %}",
         areaMode: "stacked",
@@ -107,7 +107,7 @@
       },
       'metric-tx': {
         target: [
-            "stacked(summarize(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.core.total_tx), '1sec'))",
+            "scaleToSeconds(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.core.total_tx), 1)",
         ],
         title: "{% trans "Bytes sent" %}",
         areaMode: "stacked",
@@ -144,7 +144,7 @@
         startDate: default_start,
         endDate: default_end,
         minDate: '{{ app.date_created|date:"c" }}',
-        maxDate: moment(),
+        maxDate: moment().add('minutes', 10),
 
         timePicker: true,
         timePickerIncrement: 10,
