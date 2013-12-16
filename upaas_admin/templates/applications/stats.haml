@@ -9,23 +9,26 @@
 - block app_content
 
   .row
-    .pull-right
-      %label{'for': 'upaas-select-stats'}
-        {% trans "Pick metric and time range" %}:
+    .btn-toolbar
       .btn-group
         %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
-          - trans "Workers count"
+          %span#upaas-metrics-type-label
+            - trans "Workers count"
           %span.caret
         %ul.dropdown-menu.pull-right{'role':'menu'}
           %li
             %a{'id':'metric-requests', 'href':'#'}
               - trans "Requests"
+          %li
             %a{'id':'metric-avg_rt', 'href':'#'}
               - trans "Response times"
+          %li
             %a{'id':'metric-workers', 'href':'#'}
               - trans "Workers count"
+          %li
             %a{'id':'metric-rss', 'href':'#'}
               - trans "Memory usage"
+          %li
             %a{'id':'metric-tx', 'href':'#'}
               - trans "Bandwidth"
       %button#upaas-stats-dates.btn.btn-default{'type':'button'}
@@ -35,6 +38,8 @@
 
   .row
     %p
+
+  .row
     #graph-placeholder
       %img#graph
 
@@ -48,31 +53,82 @@
   - compressed_js 'daterangepicker'
 
   :javascript
-    function render(start, end) {
-      $("#graph").graphite({
-          from: moment(start).format("HH:mm_YYYYMMDD"),
-          until: moment(end).format("HH:mm_YYYYMMDD"),
+    var default_start = moment().subtract('hours', 2);
+    var default_end = moment();
 
-          target: [
-              "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
-              "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
-          ],
-          title: "{% trans "Workers" %}",
-          areaMode: "stacked",
-          hideLegend: false,
-          yUnitSystem: "binary",
-          lineMode: "staircase",
+    var metric = 'metric-workers';
+    var start = default_start;
+    var end = default_end;
 
-          width: $('#graph-placeholder').width(),
-          url: "{{ render_url }}",
-          tz: "{{ TIME_ZONE }}",
-          bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
+    var graph_options = {
+      'metric-workers': {
+        target: [
+            "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
+            "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
+        ],
+        title: "{% trans "Workers" %}",
+        areaMode: "stacked",
+        hideLegend: false,
+        lineMode: "staircase",
+        vtitle: "{% trans "count" %}"
+      },
+      'metric-avg_rt': {
+        target: [
+            "{{ carbon_root }}.*.{{ app.id }}.worker.0.avg_response_time",
+        ],
+        title: "{% trans "Average response time" %}",
+        hideLegend: true,
+        lineMode: "staircase",
+        vtitle: "{% trans "milliseconds" %}"
+      },
+      'metric-requests': {
+        target: [
+            "summarize(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.worker.0.requests), '1sec')",
+        ],
+        title: "{% trans "Requests" %}",
+        areaMode: "stacked",
+        hideLegend: true,
+        lineMode: "staircase",
+        vtitle: "{% trans "number per second" %}"
+      },
+      'metric-rss': {
+        target: [
+            "stacked({{ carbon_root }}.*.{{ app.id }}.core.total_rss)",
+        ],
+        title: "{% trans "Memory usage" %}",
+        areaMode: "stacked",
+        hideLegend: true,
+        lineMode: "staircase",
+        vtitle: "{% trans "bytes" %}",
+        yUnitSystem: "binary"
+      },
+      'metric-tx': {
+        target: [
+            "stacked({{ carbon_root }}.*.{{ app.id }}.core.total_tx)",
+        ],
+        title: "{% trans "Bytes sent" %}",
+        areaMode: "stacked",
+        hideLegend: true,
+        lineMode: "staircase",
+        vtitle: "{% trans "bytes" %}",
+        yUnitSystem: "binary"
+      }
+    }
+
+    function render() {
+      var options = graph_options[metric];
+      $.extend(options, {
+        from: moment(start).format("HH:mm_YYYYMMDD"),
+        until: moment(end).format("HH:mm_YYYYMMDD"),
+        width: $('#graph-placeholder').width(),
+        url: "{{ render_url }}",
+        tz: "{{ TIME_ZONE }}",
+        bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
+      $("#graph").graphite(options);
     }
 
     $(document).ready(function(){
-      var default_start = moment().subtract('hours', 2);
-      var default_end = moment();
       var separator = ' - ';
       var date_format = 'YYYY/MM/DD H:mm';
 
@@ -108,11 +164,19 @@
             customRangeLabel: '{% trans "Custom Range" %}',
         }
 
-      }, function(start, end) {
+      }, function(date_from, date_until) {
+        start = date_from;
+        end = date_until;
         $('#upaas-stats-dates-label').html(start.format(date_format) + separator + end.format(date_format));
-        render(start, end);
+        render();
       });
 
-      render(default_start, default_end);
+      $(".dropdown-menu li a").click(function(){
+        metric = $(this).attr('id');
+        $('#upaas-metrics-type-label').html($(this).text());
+        render();
+      });
+
+      render();
 
     });
