@@ -104,13 +104,13 @@
       },
       'metric-tx': {
         target: [
-            "stacked({{ carbon_root }}.*.{{ app.id }}.core.total_tx)",
+            "stacked(summarize(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.core.total_tx), '1sec'))",
         ],
         title: "{% trans "Bytes sent" %}",
         areaMode: "stacked",
         hideLegend: true,
         lineMode: "staircase",
-        vtitle: "{% trans "bytes" %}",
+        vtitle: "{% trans "bytes per second" %}",
         yUnitSystem: "binary"
       }
     }
