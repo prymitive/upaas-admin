@@ -21,7 +21,7 @@
               - trans "Requests"
           %li
             %a{'id':'metric-avg_rt', 'href':'#'}
-              - trans "Response times"
+              - trans "Response time"
           %li
             %a{'id':'metric-workers', 'href':'#'}
               - trans "Workers count"
@@ -30,11 +30,14 @@
               - trans "Memory usage"
           %li
             %a{'id':'metric-tx', 'href':'#'}
-              - trans "Bandwidth"
+              - trans "Bytes sent"
       %button#upaas-stats-dates.btn.btn-default{'type':'button'}
         %span#upaas-stats-dates-label
           - trans "Select time range"
         %span.caret
+      %button#upaas-stats-refresh.btn.btn-primary.pull-right{'type':'button'}
+        %i.fa.fa-refresh
+        - trans "Refresh"
 
   .row
     %p
@@ -66,7 +69,7 @@
             "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
             "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
         ],
-        title: "{% trans "Workers" %}",
+        title: "{% trans "Workers count" %}",
         areaMode: "stacked",
         hideLegend: false,
         lineMode: "staircase",
@@ -76,7 +79,7 @@
         target: [
             "{{ carbon_root }}.*.{{ app.id }}.worker.0.avg_response_time",
         ],
-        title: "{% trans "Average response time" %}",
+        title: "{% trans "Response time" %}",
         hideLegend: true,
         lineMode: "staircase",
         vtitle: "{% trans "milliseconds" %}"
@@ -176,6 +179,8 @@
         $('#upaas-metrics-type-label').html($(this).text());
         render();
       });
+
+      $("#upaas-stats-refresh").click(render);
 
       render();
 
