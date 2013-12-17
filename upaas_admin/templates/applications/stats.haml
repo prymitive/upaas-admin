@@ -15,7 +15,7 @@
           %span#upaas-metrics-type-label
             - trans "Workers count"
           %span.caret
-        %ul.dropdown-menu.pull-right{'role':'menu'}
+        %ul.dropdown-menu.pull-left{'role':'menu'}
           %li
             %a{'id':'metric-requests', 'href':'#'}
               - trans "Requests"
@@ -138,7 +138,7 @@
       $('#upaas-stats-dates').daterangepicker({
         applyClass: 'btn-primary',
         showDropdowns: true,
-        opens: 'left',
+        opens: 'right',
         separator: separator,
 
         startDate: default_start,

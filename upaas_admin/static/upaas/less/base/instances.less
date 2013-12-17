@@ -1,7 +1,33 @@
+@import "../../../bootstrap/less/variables";
+
+
+.upaas-instance-panel {
+  padding: 0;
+}
 
 
 .upaas-instance-queue-progressbar {
   margin: 0;
   height: 2px;
   border-radius: 0;
+}
+
+
+.upaas-instance-table {
+  width: 100%;
+  font-size: 85%;
+  margin-bottom: 0;
+
+  tr.idle {
+    background-color: @state-success-bg;
+  }
+
+  tr.busy {
+    background-color: @state-danger-bg;
+  }
+
+  tr.summary {
+    font-weight: bold;
+  }
+
 }

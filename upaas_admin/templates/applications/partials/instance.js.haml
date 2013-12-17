@@ -80,20 +80,18 @@
               - else {
                 - total_avg_rt_summary = Math.round(total_avg_rt / total_workers / 1000) + ' ms';
                 %tr
-                  %td
+                  %td{'colspan':'2'}
                     = total_workers
                     :plain
                       /
                     = instance.stats.workers.length
-                  %td
-                  %td
+                  %td{'colspan':'2'}
                     = window.UPAAS.bytes_to_human(total_rss);
                     :plain
                       /
                     = window.UPAAS.bytes_to_human(instance.backend.limits.backend_memory_bytes);
                   %td
                     = total_harakiri
-                  %td
                   %td
                     = total_requests
                   %td
