@@ -144,7 +144,7 @@
         startDate: default_start,
         endDate: default_end,
         minDate: '{{ app.date_created|date:"c" }}',
-        maxDate: moment().add('minutes', 10),
+        maxDate: moment().add('hours', 1),
 
         timePicker: true,
         timePickerIncrement: 10,
