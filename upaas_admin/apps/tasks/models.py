@@ -48,7 +48,9 @@ class MongoLogHandler(logging.StreamHandler):
             timestamp=datetime.datetime.fromtimestamp(record.created),
             source=record.name, level=record.levelno, message=record.msg)
         self.messages.append(msg)
-        if len(self.messages) >= self.flush_count:
+        if record.__dict__.get('force_flush'):
+            self.flush()
+        elif len(self.messages) >= self.flush_count:
             self.flush()
         elif datetime.datetime.now() - self.last_flush >= datetime.timedelta(
                 seconds=self.flush_time):
