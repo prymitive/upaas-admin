@@ -130,8 +130,10 @@
     }
 
     function render() {
-      if ( ((moment() - end) / 1000) < 300 ) {
+      var diff = Math.round(moment() - end) / 1000;
+      if (diff < 300) {
         end = moment();
+        start.add('seconds', diff);
       }
       var options = graph_options[metric];
       $.extend(options, {
@@ -194,11 +196,11 @@
         render();
       });
 
-      autorefresh_timer = window.setTimeout(render, autorefresh_delay);
+      autorefresh_timer = window.setInterval(render, autorefresh_delay);
       $("#upaas-stats-autorefresh").click(function(){
         if ($(this).is(':checked')) {
           if (autorefresh_timer == null) {
-            autorefresh_timer = window.setTimeout(render, autorefresh_delay);
+            autorefresh_timer = window.setInterval(render, autorefresh_delay);
           }
         } else {
           if (autorefresh_timer != null) {
