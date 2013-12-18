@@ -11,6 +11,13 @@ $(document).ready(function(){
 
     $('.upaas-help-tooltip').tooltip({container: '.upaas-content'});
 
+    // http://jsfiddle.net/VEKYN/
+    $('.upaas-dropdown-menu-form').on('click', function(e) {
+        if($(this).hasClass('upaas-dropdown-menu-form')) {
+            e.stopPropagation();
+        }
+    });
+
     if (Django.user.is_authenticated) {
         Dajaxice.upaas_admin.apps.applications.apps_updates(
             window.UPAAS.apps_updates_callback

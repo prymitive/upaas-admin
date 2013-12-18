@@ -13,7 +13,7 @@
       .btn-group
         %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
           %span#upaas-metrics-type-label
-            - trans "Workers count"
+            - trans "Requests"
           %span.caret
         %ul.dropdown-menu.pull-left{'role':'menu'}
           %li
@@ -35,9 +35,17 @@
         %span#upaas-stats-dates-label
           - trans "Select time range"
         %span.caret
-      %button#upaas-stats-refresh.btn.btn-primary.pull-right{'type':'button'}
-        %i.fa.fa-refresh
-        - trans "Refresh"
+      .btn-group.pull-right
+        %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
+          %i.fa.fa-refresh
+          - trans "Refresh"
+        %button.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+          %span.caret
+        %ul.dropdown-menu.upaas-dropdown-menu-form{'role':'menu'}
+          %li
+            %label.checkbox
+              %input#upaas-stats-autorefresh{'type':'checkbox', 'checked':'checked'}
+                - trans "Auto refresh"
 
   .row
     %p
@@ -59,9 +67,12 @@
     var default_start = moment().subtract('hours', 2);
     var default_end = moment();
 
-    var metric = 'metric-workers';
+    var metric = 'metric-requests';
     var start = default_start;
     var end = default_end;
+
+    var autorefresh_delay = 5000;
+    var autorefresh_timer = window.setTimeout(render, autorefresh_delay);
 
     var graph_options = {
       'metric-workers': {
@@ -119,6 +130,9 @@
     }
 
     function render() {
+      if ( ((moment() - end) / 1000) < 300 ) {
+        end = moment();
+      }
       var options = graph_options[metric];
       $.extend(options, {
         from: moment(start).format("HH:mm_YYYYMMDD"),
@@ -178,6 +192,19 @@
         metric = $(this).attr('id');
         $('#upaas-metrics-type-label').html($(this).text());
         render();
+      });
+
+      $("#upaas-stats-autorefresh").click(function(){
+        if ($(this).is(':checked')) {
+          if (autorefresh_timer == null) {
+            autorefresh_timer = window.setTimeout(render, autorefresh_delay);
+          }
+        } else {
+          if (autorefresh_timer != null) {
+            window.clearTimeout(autorefresh_timer);
+            autorefresh_timer = null;
+          }
+        }
       });
 
       $("#upaas-stats-refresh").click(render);
