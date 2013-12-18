@@ -71,8 +71,8 @@
     var start = default_start;
     var end = default_end;
 
-    var autorefresh_delay = 5000;
-    var autorefresh_timer = window.setTimeout(render, autorefresh_delay);
+    var autorefresh_delay = 30000;
+    var autorefresh_timer = null;
 
     var graph_options = {
       'metric-workers': {
@@ -194,6 +194,7 @@
         render();
       });
 
+      autorefresh_timer = window.setTimeout(render, autorefresh_delay);
       $("#upaas-stats-autorefresh").click(function(){
         if ($(this).is(':checked')) {
           if (autorefresh_timer == null) {
