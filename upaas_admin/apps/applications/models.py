@@ -309,7 +309,7 @@ class Package(Document):
                 self.application.system_domain))
             for domain in self.application.domains:
                 options.append('subscribe2 = server=%s:%d,key=%s' % (
-                    router.private_ip, router.subscription_port, domain))
+                    router.private_ip, router.subscription_port, domain.name))
 
         options.append('\n')
         return options
