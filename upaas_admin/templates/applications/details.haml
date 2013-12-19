@@ -33,7 +33,7 @@
     %dd
       - for domain in app.domains
         - if app.run_plan
-          %a{'href':'={ domain.name }', 'target':'_blank'}
+          %a{'href':'http://={ domain.name }', 'target':'_blank'}
             = domain.name
         - else
           .text-muted
