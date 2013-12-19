@@ -1,0 +1,24 @@
+- extends 'site.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb app.name "app_details" app.safe_id
+  - breadcrumb "Assign custom domain" "app_assign_domain"
+
+
+- block content
+
+  .well
+    - if form.needs_validation
+      %p
+        - trans "Before assigning any custom domain to this application you must add this TXT record to the DNS domain you wish to add"
+      %blockquote
+        %p
+          = form.app.domain_validation_code
+    - crispy form

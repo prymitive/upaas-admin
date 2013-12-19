@@ -84,7 +84,8 @@ apps:
   # app directory inside the chroot
   home: /home/app
   # automatic domain for apps
-  domain: upaas.local
+  domains:
+    system: upaas.local
   # minimal port for app sockets
   tcp:
     # port range for app sockets, all ports from this range must be free

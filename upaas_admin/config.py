@@ -50,7 +50,11 @@ class UPaaSConfig(base.Config):
             "uid": base.StringEntry(required=True),
             "gid": base.StringEntry(required=True),
             "home": base.StringEntry(required=True),
-            "domain": base.StringEntry(default="localdomain"),
+            "domains": {
+                "system": base.StringEntry(required=True,
+                                           default="localdomain"),
+                "validation": base.BooleanEntry(default=True),
+            },
             "tcp": {
                 "port_min": base.IntegerEntry(required=True),
                 "port_max": base.IntegerEntry(required=True),

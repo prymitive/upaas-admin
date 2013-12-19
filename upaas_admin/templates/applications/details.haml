@@ -34,10 +34,14 @@
       - for domain in app.domains
         - if app.run_plan
           %a{'href':'={ domain }', 'target':'_blank'}
-            = domain
+            = domain.name
         - else
           .text-muted
-            = domain
+            = domain.name
+        - if domain.validated
+          %i.text-success.fa.fa-check-circle-o.upaas-help-tooltip{'title':'{% trans "Domain validated using TXT record" %}'}
+        - if not forloop.last
+          %br
       - empty
         .muted
           .text-muted
@@ -52,3 +56,8 @@
       - else
         .text-muted
           - trans "None"
+
+  .row.text-center
+    %a.btn.btn-default{'href':'{% url "app_assign_domain" app.safe_id %}'}
+      %i.fa.fa-globe
+      - trans "Assign custom domain"

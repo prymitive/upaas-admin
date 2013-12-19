@@ -7,8 +7,11 @@ gid: www-data
 # app directory inside the chroot
 home: /home/app
 
-# automatic domain for apps
-domain: upaas.local
+domains:
+  # automatic domain for apps
+  system: localdomain
+  # does user needs to prove domain ownership by adding txt record
+  validation: True
 
 # minimal port for app sockets
 tcp:

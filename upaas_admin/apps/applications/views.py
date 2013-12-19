@@ -28,12 +28,13 @@ from upaas_admin.common.mixin import (
     LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
 from upaas_admin.apps.applications.mixin import (
     OwnedAppsMixin, OwnedPackagesMixin, OwnedAppTasksMixin, AppActionView)
-from upaas_admin.apps.applications.models import Application, Package
+from upaas_admin.apps.applications.models import (Application, Package,
+                                                  ApplicationDomain)
 from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
     UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm,
     RollbackApplicationForm, ApplicatiomMetadataFromPackageForm,
-    DeletePackageForm)
+    DeletePackageForm, AssignApplicatiomDomainForm)
 from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
                                               EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
@@ -543,3 +544,27 @@ class DownloadPackageMetadataView(LoginRequiredMixin, OwnedPackagesMixin,
             'Content-Disposition'] = 'attachment; filename="%s-%s.yml"' % (
             self.object.application.name, self.object.safe_id)
         return response
+
+
+class AssignApplicationDomainView(AppActionView):
+    template_name = 'assign_domain.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    form_class = AssignApplicatiomDomainForm
+
+    def get_success_url(self):
+        return reverse('app_details', args=[self.object.safe_id])
+
+    def get_form(self, form_class):
+        form = super(AssignApplicationDomainView, self).get_form(form_class)
+        form.app = self.object
+        form.domain_validated = False
+        form.needs_validation = settings.UPAAS_CONFIG.apps.domains.validation
+        return form
+
+    def form_valid(self, form):
+        domain = ApplicationDomain(name=form.cleaned_data['domain'],
+                                   validated=form.domain_validated)
+        self.object.update(add_to_set__domains=domain)
+        return super(AssignApplicationDomainView, self).form_valid(form)

@@ -13,8 +13,9 @@ import time
 import re
 from copy import deepcopy
 
-from mongoengine import (Document, DateTimeField, StringField, LongField,
-                         ReferenceField, ListField, QuerySetManager, NULLIFY,
+from mongoengine import (Document, EmbeddedDocument, EmbeddedDocumentField,
+                         DateTimeField, StringField, LongField, ReferenceField,
+                         ListField, QuerySetManager, BooleanField, NULLIFY,
                          signals)
 
 from django.utils.translation import ugettext_lazy as _
@@ -380,6 +381,12 @@ class Package(Document):
         utils.rmdirs(directory)
 
 
+class ApplicationDomain(EmbeddedDocument):
+    date_created = DateTimeField(required=True, default=datetime.datetime.now)
+    name = StringField(required=True)
+    validated = BooleanField()
+
+
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, min_length=2, max_length=60,
@@ -390,7 +397,8 @@ class Application(Document):
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
-    domains = ListField(StringField, unique=False)  # FIXME uniqness
+    #FIXME uniqness
+    domains = ListField(EmbeddedDocumentField(ApplicationDomain))
 
     _default_manager = QuerySetManager()
 
@@ -457,7 +465,7 @@ class Application(Document):
         """
         Returns automatic system domain for this application.
         """
-        return '%s.%s' % (self.safe_id, self.upaas_config.apps.domain)
+        return '%s.%s' % (self.safe_id, self.upaas_config.apps.domains.system)
 
     @property
     def run_plan(self):
@@ -529,6 +537,13 @@ class Application(Document):
         Returns list of running build tasks for this application.
         """
         return self.build_tasks.filter(status=TaskStatus.running)
+
+    @property
+    def domain_validation_code(self):
+        """
+        String used for domain ownership validation.
+        """
+        return u"upaas-app-id=%s" % self.safe_id
 
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])

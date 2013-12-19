@@ -5,6 +5,10 @@
 """
 
 
+import logging
+
+from dns.resolver import query, NXDOMAIN, NoAnswer
+
 from upaas.config.metadata import MetadataConfig
 
 from crispy_forms.layout import HTML
@@ -16,6 +20,9 @@ from django.utils.translation import ugettext_lazy as _
 from upaas_admin.common.forms import (CrispyForm, CrispyMongoForm,
                                       InlineCrispyMongoForm)
 from upaas_admin.apps.applications.models import Application
+
+
+log = logging.getLogger(__name__)
 
 
 class _MetadataForm(object):
@@ -126,3 +133,43 @@ class DeletePackageForm(CrispyForm):
     layout = ['confirm']
 
     confirm = forms.BooleanField(required=True)
+
+
+class AssignApplicatiomDomainForm(CrispyForm):
+
+    submit_label = 'Assign'
+    layout = ['domain']
+
+    domain = forms.CharField(required=True)
+
+    def clean_domain(self):
+        domain = self.cleaned_data['domain']
+        try:
+            txt_records = query(domain, 'TXT')
+        except NXDOMAIN:
+            raise forms.ValidationError(_(
+                u"Domain {domain} does not exist").format(domain=domain))
+        except NoAnswer:
+            raise forms.ValidationError(_(
+                u"No TXT record for domain {domain}").format(domain=domain))
+        except Exception, e:
+            log.error(_(u"Exception during '{domain}' validation: {e}").format(
+                domain=domain, e=e))
+            raise forms.ValidationError(_(
+                u"Unhandled exception during domain validation, please try "
+                u"again later"))
+        else:
+            if Application.objects(domains__name=domain):
+                raise forms.ValidationError(_(u"Domain {domain} was already "
+                                              u"assigned").format(
+                    domain=domain))
+            if self.needs_validation:
+                for record in txt_records:
+                    if self.app.domain_validation_code in record.strings:
+                        self.domain_validated = True
+                        return domain
+                raise forms.ValidationError(_(
+                    u"No validation code in TXT record for {domain}").format(
+                    domain=domain))
+            else:
+                return domain
