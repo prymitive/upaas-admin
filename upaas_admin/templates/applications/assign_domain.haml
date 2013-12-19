@@ -17,7 +17,7 @@
   .well
     - if form.needs_validation
       %p
-        - trans "Before assigning any custom domain to this application you must add this TXT record to the DNS domain you wish to add"
+        {% trans "Before assigning any custom domains to this application you must add this TXT record to the DNS domain you wish to add" %}:
       %blockquote
         %p
           = form.app.domain_validation_code
