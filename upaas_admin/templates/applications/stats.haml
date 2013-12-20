@@ -77,8 +77,8 @@
     var graph_options = {
       'metric-workers': {
         target: [
-            "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
-            "alias(stacked({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
+            "alias(sumSeries({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
+            "alias(sumSeries({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
         ],
         title: "{% trans "Workers count" %}",
         areaMode: "stacked",
