@@ -383,6 +383,7 @@ class Package(Document):
 
 class ApplicationDomain(EmbeddedDocument):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
+    # FIXME addining unique=True here doesn't work, fix it
     name = StringField(required=True)
     validated = BooleanField()
 
@@ -397,7 +398,6 @@ class Application(Document):
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
-    #FIXME uniqness
     domains = ListField(EmbeddedDocumentField(ApplicationDomain))
 
     _default_manager = QuerySetManager()

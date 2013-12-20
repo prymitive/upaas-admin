@@ -153,10 +153,10 @@ class AssignApplicatiomDomainForm(CrispyForm):
             raise forms.ValidationError(_(
                 u"No TXT record for domain {domain}").format(domain=domain))
         except Exception, e:
-            log.error(_(u"Exception during '{domain}' validation: {e}").format(
-                domain=domain, e=e))
+            log.error(_(u"Exception during '{domain}' verification: "
+                        u"{e}").format(domain=domain, e=e))
             raise forms.ValidationError(_(
-                u"Unhandled exception during domain validation, please try "
+                u"Unhandled exception during domain verification, please try "
                 u"again later"))
         else:
             if Application.objects(domains__name=domain):
@@ -169,7 +169,7 @@ class AssignApplicatiomDomainForm(CrispyForm):
                         self.domain_validated = True
                         return domain
                 raise forms.ValidationError(_(
-                    u"No validation code in TXT record for {domain}").format(
+                    u"No verification code in TXT record for {domain}").format(
                     domain=domain))
             else:
                 return domain
