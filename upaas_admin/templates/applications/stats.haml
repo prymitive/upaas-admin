@@ -137,11 +137,11 @@
       }
       var options = graph_options[metric];
       $.extend(options, {
-        from: moment(start).format("HH:mm_YYYYMMDD"),
-        until: moment(end).format("HH:mm_YYYYMMDD"),
         width: $('#graph-placeholder').width(),
         url: "{{ render_url }}",
         tz: "{{ TIME_ZONE }}",
+        from: moment(start).format("HH:mm_YYYYMMDD"),
+        until: moment(end).format("HH:mm_YYYYMMDD"),
         bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
       $("#graph").graphite(options);
