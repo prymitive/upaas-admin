@@ -1,0 +1,65 @@
+os:
+  Debian: &debian
+    packages:
+      - git-core
+      - rake
+      - libxml2
+      - libxml2-dev
+      - libxslt-dev
+      - libcurl4-openssl-dev
+  Ubuntu: *debian
+
+
+interpreter:
+  type: ruby
+  versions:
+    - 1.9.3
+    - 2.0.0
+
+
+repository:
+  clone: git clone --depth=10 --quiet git://github.com/errbit/errbit.git %destination%
+  update:
+    - rm -f Gemfile.lock
+    - git reset --hard
+    - git pull
+  info: git log -n 1
+  changelog: git log --no-merges %old%..%new%"
+
+
+actions:
+  setup:
+    before:
+      - sed -i s/"gem 'gitlab'"/"#gitlab off"/g Gemfile
+      - cp config/config.example.yml config/config.yml
+    main:
+      - gem install bundler
+      - bundle install --without test development
+    after: /bin/bash /tmp/after.sh
+
+
+files:
+  /tmp/after.sh: |
+    if [ -n "$UPAAS_FRESH_PACKAGE" ]; then
+      echo ">>> Generating secret token"
+      echo "Errbit::Application.config.secret_token = '$(bundle exec rake secret)'" > config/initializers/__secret_token.rb
+    fi
+    if [ -n "$UPAAS_FRESH_PACKAGE" ]; then
+      echo ">>> Seeding database"
+      rake db:seed || exit 1
+      echo ">>> Creating MongoDB indexes if needed"
+      rake db:mongoid:create_indexes || exit 1
+    fi
+    echo ">>> Migrating database"
+    rake db:migrate || exit 1
+    echo ">> Precompilling assets"
+    rake assets:precompile || exit 1
+  config/mongoid.yml: |
+    production:
+      sessions:
+        default:
+          database: errbit-dev
+          hosts:
+            - 'localhost:27017'
+      options:
+        identity_map_enabled: true

@@ -29,7 +29,9 @@ repository:
 
 actions:
   setup:
-    before: cp config/config.example.yml config/config.yml
+    before:
+      - sed -i s/"gem 'gitlab'"/"#gitlab off"/g Gemfile
+      - cp config/config.example.yml config/config.yml
     main:
       - gem install bundler
       - bundle install --without test development
