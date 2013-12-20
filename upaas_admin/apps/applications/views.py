@@ -567,5 +567,5 @@ class AssignApplicationDomainView(AppActionView):
         domain = ApplicationDomain(name=form.cleaned_data['domain'],
                                    validated=form.domain_validated)
         self.object.update(add_to_set__domains=domain)
-        self.object.upgrade_application()
+        self.object.update_application()
         return super(AssignApplicationDomainView, self).form_valid(form)
