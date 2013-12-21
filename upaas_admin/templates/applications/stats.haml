@@ -8,48 +8,53 @@
 
 - block app_content
 
-  .btn-toolbar
-    .btn-group
-      %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
-        %span#upaas-metrics-type-label
-          - trans "Requests"
-        %span.caret
-      %ul.dropdown-menu.pull-left{'role':'menu'}
-        %li
-          %a{'id':'metric-requests', 'href':'#'}
+  - if graphite_settings.render_url
+
+    .btn-toolbar
+      .btn-group
+        %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+          %span#upaas-metrics-type-label
             - trans "Requests"
-        %li
-          %a{'id':'metric-avg_rt', 'href':'#'}
-            - trans "Response time"
-        %li
-          %a{'id':'metric-workers', 'href':'#'}
-            - trans "Workers count"
-        %li
-          %a{'id':'metric-rss', 'href':'#'}
-            - trans "Memory usage"
-        %li
-          %a{'id':'metric-tx', 'href':'#'}
-            - trans "Bytes sent"
-    %button#upaas-stats-dates.btn.btn-default{'type':'button'}
-      %span#upaas-stats-dates-label
-        - trans "Select time range"
-      %span.caret
-    .btn-group.pull-right
-      %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
-        %i#upaas-stats-refresh-icon.fa.fa-refresh
-        - trans "Refresh"
-      %button#upaas-stats-refresh-options.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+          %span.caret
+        %ul.dropdown-menu.pull-left{'role':'menu'}
+          %li
+            %a{'id':'metric-requests', 'href':'#'}
+              - trans "Requests"
+          %li
+            %a{'id':'metric-avg_rt', 'href':'#'}
+              - trans "Response time"
+          %li
+            %a{'id':'metric-workers', 'href':'#'}
+              - trans "Workers count"
+          %li
+            %a{'id':'metric-rss', 'href':'#'}
+              - trans "Memory usage"
+          %li
+            %a{'id':'metric-tx', 'href':'#'}
+              - trans "Bytes sent"
+      %button#upaas-stats-dates.btn.btn-default{'type':'button'}
+        %span#upaas-stats-dates-label
+          - trans "Select time range"
         %span.caret
-      %ul.dropdown-menu.upaas-dropdown-menu-form{'role':'menu'}
-        %li
-          %label.checkbox
-            %input#upaas-stats-autorefresh{'type':'checkbox', 'checked':'checked'}
-              - trans "Auto refresh"
+      .btn-group.pull-right
+        %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
+          %i#upaas-stats-refresh-icon.fa.fa-refresh
+          - trans "Refresh"
+        %button#upaas-stats-refresh-options.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+          %span.caret
+        %ul.dropdown-menu.upaas-dropdown-menu-form{'role':'menu'}
+          %li
+            %label.checkbox
+              %input#upaas-stats-autorefresh{'type':'checkbox', 'checked':'checked'}
+                - trans "Auto refresh"
 
-  %p
+    %p
 
-  #graph-placeholder
-    %img#graph
+    #graph-placeholder
+      %img#graph
+  - else
+    %h3.text-center.text-muted
+      - trans "Graphite statistics disabled"
 
 
 - block js_bottom
@@ -74,8 +79,8 @@
     var graph_options = {
       'metric-workers': {
         target: [
-            "alias(sumSeries({{ carbon_root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
-            "alias(sumSeries({{ carbon_root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
+            "alias(sumSeries({{ graphite_settings.root }}.*.{{ app.id }}.core.busy_workers), '{% trans "busy" %}')",
+            "alias(sumSeries({{ graphite_settings.root }}.*.{{ app.id }}.core.idle_workers), '{% trans "idle" %}')",
         ],
         title: "{% trans "Workers count" %}",
         areaMode: "stacked",
@@ -86,7 +91,7 @@
       },
       'metric-avg_rt': {
         target: [
-            "scale({{ carbon_root }}.*.{{ app.id }}.core.avg_response_time, 0.001)",
+            "scale({{ graphite_settings.root }}.*.{{ app.id }}.core.avg_response_time, 0.001)",
         ],
         title: "{% trans "Response time" %}",
         hideLegend: true,
@@ -94,7 +99,7 @@
       },
       'metric-requests': {
         target: [
-            "scaleToSeconds(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.worker.0.requests), 1)"
+            "scaleToSeconds(nonNegativeDerivative({{ graphite_settings.root }}.*.{{ app.id }}.worker.0.requests), 1)"
         ],
         title: "{% trans "Requests" %}",
         areaMode: "stacked",
@@ -103,7 +108,7 @@
       },
       'metric-rss': {
         target: [
-            "{{ carbon_root }}.*.{{ app.id }}.core.total_rss",
+            "{{ graphite_settings.root }}.*.{{ app.id }}.core.total_rss",
         ],
         title: "{% trans "Memory usage" %}",
         areaMode: "stacked",
@@ -115,7 +120,7 @@
       },
       'metric-tx': {
         target: [
-            "scaleToSeconds(nonNegativeDerivative({{ carbon_root }}.*.{{ app.id }}.core.total_tx), 1)",
+            "scaleToSeconds(nonNegativeDerivative({{ graphite_settings.root }}.*.{{ app.id }}.core.total_tx), 1)",
         ],
         title: "{% trans "Bytes sent" %}",
         areaMode: "stacked",
@@ -134,7 +139,7 @@
       var options = graph_options[metric];
       $.extend(options, {
         width: $('#graph-placeholder').width(),
-        url: "{{ render_url }}",
+        url: "{{ graphite_settings.render_url }}",
         tz: "{{ TIME_ZONE }}",
         from: moment(start).format("HH:mm_YYYYMMDD"),
         until: moment(end).format("HH:mm_YYYYMMDD"),

@@ -193,8 +193,7 @@ class ApplicationStatsView(LoginRequiredMixin, OwnedAppsMixin,
 
     def get_context_data(self, **kwargs):
         context = super(ApplicationStatsView, self).get_context_data(**kwargs)
-        context['carbon_root'] = settings.UPAAS_CONFIG.apps.graphite.root
-        context['render_url'] = settings.UPAAS_CONFIG.apps.graphite.render_url
+        context['graphite_settings'] = settings.UPAAS_CONFIG.apps.graphite
         return context
 
 
