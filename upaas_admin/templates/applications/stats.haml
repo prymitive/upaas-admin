@@ -37,7 +37,7 @@
         %span.caret
       .btn-group.pull-right
         %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
-          %i.fa.fa-refresh
+          %i#upaas-stats-refresh-icon.fa.fa-refresh
           - trans "Refresh"
         %button.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
           %span.caret
@@ -144,6 +144,7 @@
         bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
       $("#graph").graphite(options);
+      $('#upaas-stats-refresh-icon').addClass('fa-spin');
     }
 
     $(document).ready(function(){
@@ -210,6 +211,10 @@
       });
 
       $("#upaas-stats-refresh").click(render);
+
+      $('#graph').load(function() {
+        $('#upaas-stats-refresh-icon').removeClass('fa-spin');
+      });
 
       render();
 
