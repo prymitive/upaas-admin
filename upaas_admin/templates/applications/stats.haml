@@ -84,7 +84,8 @@
         areaMode: "stacked",
         hideLegend: false,
         lineMode: "staircase",
-        vtitle: "{% trans "count" %}"
+        vtitle: "{% trans "count" %}",
+        yMin: 0
       },
       'metric-avg_rt': {
         target: [
@@ -114,7 +115,8 @@
         hideLegend: true,
         lineMode: "staircase",
         vtitle: "{% trans "bytes" %}",
-        yUnitSystem: "binary"
+        yUnitSystem: "binary",
+        yMin: 0
       },
       'metric-tx': {
         target: [
