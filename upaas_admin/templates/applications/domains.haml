@@ -13,41 +13,41 @@
 
 - block app_content
 
-  .row
-    %table.table.table-striped
+  %table.table.table-striped
 
-      %thead
+    %thead
+      %tr
+        %th
+          - trans "Added"
+        %th
+          - trans "Domain name"
+        %th
+          - trans "Verified"
+        %th
+
+    %tbody
+      - for domain in app.domains
         %tr
-          %th
-            - trans "Added"
-          %th
-            - trans "Domain name"
-          %th
-            - trans "Verified"
-          %th
+          %td
+            = domain.date_created
+          %td
+            %a{'href':'http://{{ domain.name }}'}
+              = domain.name
+          %td
+            - if domain.validated
+              %i.fa.fa-thumbs-o-up.text-success
+            - else
+              %i.fa.fa-thumbs-o-down
+          %td
+            %a.btn.btn-danger.pull-right.btn-sm{'href':'{% url "app_remove_domain" app.safe_id domain.name %}'}
+              %i.fa.fa-trash-o
+      - empty
+        %tr
+          %td.text-center.text-muted{'colspan':'4'}
+            - trans "No custom domains"
 
-      %tbody
-        - for domain in app.domains
-          %tr
-            %td
-              = domain.date_created
-            %td
-              %a{'href':'http://{{ domain.name }}'}
-                = domain.name
-            %td
-              - if domain.validated
-                %i.fa.fa-thumbs-o-up.text-success
-              - else
-                %i.fa.fa-thumbs-o-down
-            %td
-              %a.btn.btn-danger.pull-right.btn-sm{'href':'{% url "app_remove_domain" app.safe_id domain.name %}'}
-                %i.fa.fa-trash-o
-        - empty
-          %tr
-            %td.text-center.text-muted{'colspan':'4'}
-              - trans "No custom domains"
+  %p
 
-  .row
-    %a.btn.btn-default{'href':'{% url "app_assign_domain" app.safe_id %}'}
-      %i.fa.fa-plus
-      - trans "Assign custom domain"
+  %a.btn.btn-default{'href':'{% url "app_assign_domain" app.safe_id %}'}
+    %i.fa.fa-plus
+    - trans "Assign custom domain"

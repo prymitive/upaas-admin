@@ -8,51 +8,48 @@
 
 - block app_content
 
-  .row
-    .btn-toolbar
-      .btn-group
-        %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
-          %span#upaas-metrics-type-label
-            - trans "Requests"
-          %span.caret
-        %ul.dropdown-menu.pull-left{'role':'menu'}
-          %li
-            %a{'id':'metric-requests', 'href':'#'}
-              - trans "Requests"
-          %li
-            %a{'id':'metric-avg_rt', 'href':'#'}
-              - trans "Response time"
-          %li
-            %a{'id':'metric-workers', 'href':'#'}
-              - trans "Workers count"
-          %li
-            %a{'id':'metric-rss', 'href':'#'}
-              - trans "Memory usage"
-          %li
-            %a{'id':'metric-tx', 'href':'#'}
-              - trans "Bytes sent"
-      %button#upaas-stats-dates.btn.btn-default{'type':'button'}
-        %span#upaas-stats-dates-label
-          - trans "Select time range"
+  .btn-toolbar
+    .btn-group
+      %button.btn.btn-default.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+        %span#upaas-metrics-type-label
+          - trans "Requests"
         %span.caret
-      .btn-group.pull-right
-        %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
-          %i#upaas-stats-refresh-icon.fa.fa-refresh
-          - trans "Refresh"
-        %button#upaas-stats-refresh-options.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
-          %span.caret
-        %ul.dropdown-menu.upaas-dropdown-menu-form{'role':'menu'}
-          %li
-            %label.checkbox
-              %input#upaas-stats-autorefresh{'type':'checkbox', 'checked':'checked'}
-                - trans "Auto refresh"
+      %ul.dropdown-menu.pull-left{'role':'menu'}
+        %li
+          %a{'id':'metric-requests', 'href':'#'}
+            - trans "Requests"
+        %li
+          %a{'id':'metric-avg_rt', 'href':'#'}
+            - trans "Response time"
+        %li
+          %a{'id':'metric-workers', 'href':'#'}
+            - trans "Workers count"
+        %li
+          %a{'id':'metric-rss', 'href':'#'}
+            - trans "Memory usage"
+        %li
+          %a{'id':'metric-tx', 'href':'#'}
+            - trans "Bytes sent"
+    %button#upaas-stats-dates.btn.btn-default{'type':'button'}
+      %span#upaas-stats-dates-label
+        - trans "Select time range"
+      %span.caret
+    .btn-group.pull-right
+      %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
+        %i#upaas-stats-refresh-icon.fa.fa-refresh
+        - trans "Refresh"
+      %button#upaas-stats-refresh-options.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+        %span.caret
+      %ul.dropdown-menu.upaas-dropdown-menu-form{'role':'menu'}
+        %li
+          %label.checkbox
+            %input#upaas-stats-autorefresh{'type':'checkbox', 'checked':'checked'}
+              - trans "Auto refresh"
 
-  .row
-    %p
+  %p
 
-  .row
-    #graph-placeholder
-      %img#graph
+  #graph-placeholder
+    %img#graph
 
 
 - block js_bottom
