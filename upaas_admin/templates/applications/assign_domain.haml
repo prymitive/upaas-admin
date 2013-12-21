@@ -22,5 +22,8 @@
       %blockquote
         %p
           = form.app.domain_validation_code
-      %hr
+    %p
+      {% trans "To access this application using custom domain you must add DNS A record pointing to uWSGI routers:" %}
+      {{ form.app.router_ip_list|join:", " }}
+    %hr
     - crispy form
