@@ -39,7 +39,7 @@
         %button#upaas-stats-refresh.btn.btn-primary{'type':'button'}
           %i#upaas-stats-refresh-icon.fa.fa-refresh
           - trans "Refresh"
-        %button.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
+        %button#upaas-stats-refresh-options.btn.btn-primary.dropdown-toggle{'type':'button', 'data-toggle':'dropdown'}
           %span.caret
         %ul.dropdown-menu.upaas-dropdown-menu-form{'role':'menu'}
           %li
@@ -197,7 +197,7 @@
       });
 
       autorefresh_timer = window.setInterval(render, autorefresh_delay);
-      $("#upaas-stats-autorefresh").click(function(){
+      $('#upaas-stats-autorefresh').click(function(){
         if ($(this).is(':checked')) {
           if (autorefresh_timer == null) {
             autorefresh_timer = window.setInterval(render, autorefresh_delay);
@@ -210,10 +210,23 @@
         }
       });
 
-      $("#upaas-stats-refresh").click(render);
+      $('#upaas-stats-refresh').click(render);
 
       $('#graph').load(function() {
-        $('#upaas-stats-refresh-icon').removeClass('fa-spin');
+        $('#upaas-stats-refresh-icon')
+          .removeClass('fa-spin fa-exclamation-circle')
+          .addClass('fa-refresh');
+        $('#upaas-stats-refresh, #upaas-stats-refresh-options')
+          .addClass('btn-primary')
+          .removeClass('btn-danger');
+      });
+      $('#graph').error(function() {
+        $('#upaas-stats-refresh-icon')
+          .removeClass('fa-spin fa-refresh')
+          .addClass('fa-exclamation-circle');
+        $('#upaas-stats-refresh, #upaas-stats-refresh-options')
+          .removeClass('btn-primary')
+          .addClass('btn-danger');
       });
 
       render();
