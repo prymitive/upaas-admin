@@ -58,8 +58,7 @@
 
       - empty
         %tr
-          %td{'colspan':'4'}
-            .text-center
-              - trans "No packages built yet"
+          %td.text-center.text-muted{'colspan':'4'}
+            - trans "No packages built yet"
 
   - include "partials/pagination_footer.html"

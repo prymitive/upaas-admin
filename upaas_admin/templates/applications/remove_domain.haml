@@ -1,0 +1,23 @@
+- extends 'applications/base.html'
+
+
+- load i18n
+- load django_bootstrap_breadcrumbs
+- load crispy_forms_tags
+
+
+- block breadcrumbs
+  = block.super
+  - breadcrumb app.name "app_details" app.safe_id
+  - breadcrumb "Manage domains" "app_domains" app.safe_id
+  - breadcrumb "Remove domain" "app_remove_domain"
+
+
+- block content
+
+  .well
+
+    %p
+      {% trans "Are you sure you want to remove domain" %} {{ form.domain.value }} ?
+
+    - crispy form

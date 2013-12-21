@@ -173,3 +173,14 @@ class AssignApplicatiomDomainForm(CrispyForm):
                     domain=domain))
             else:
                 return domain
+
+
+class RemoveApplicatiomDomainForm(CrispyForm):
+
+    submit_label = 'Remove'
+    submit_css_class = 'btn-danger'
+    submit_icon_class = 'fa fa-trash-o'
+    layout = ['domain', 'confirm']
+
+    domain = forms.CharField(widget=forms.HiddenInput(), required=True)
+    confirm = forms.BooleanField(required=True)

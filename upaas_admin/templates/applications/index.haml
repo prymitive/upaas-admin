@@ -55,8 +55,7 @@
 
       - empty
         %tr
-          %td{'colspan':'4'}
-            .text-center
-              - trans "No applications registered yet"
+          %td.text-center.text-muted{'colspan':'4'}
+            - trans "No applications registered yet"
 
   - include "partials/pagination_footer.html"

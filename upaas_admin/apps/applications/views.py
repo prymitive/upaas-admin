@@ -34,7 +34,8 @@ from upaas_admin.apps.applications.forms import (
     RegisterApplicationForm, UpdateApplicationMetadataForm,
     UpdateApplicationMetadataInlineForm, BuildPackageForm, StopApplicationForm,
     RollbackApplicationForm, ApplicatiomMetadataFromPackageForm,
-    DeletePackageForm, AssignApplicatiomDomainForm)
+    DeletePackageForm, AssignApplicatiomDomainForm,
+    RemoveApplicatiomDomainForm)
 from upaas_admin.apps.scheduler.forms import (ApplicationRunPlanForm,
                                               EditApplicationRunPlanForm)
 from upaas_admin.apps.applications.http import application_error
@@ -546,6 +547,16 @@ class DownloadPackageMetadataView(LoginRequiredMixin, OwnedPackagesMixin,
         return response
 
 
+class ApplicationDomainsView(LoginRequiredMixin, OwnedAppsMixin,
+                             AppTemplatesDirMixin, PaginationMixin,
+                             MongoDetailView):
+
+    template_name = 'domains.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+
+
 class AssignApplicationDomainView(AppActionView):
     template_name = 'assign_domain.html'
     model = Application
@@ -554,7 +565,7 @@ class AssignApplicationDomainView(AppActionView):
     form_class = AssignApplicatiomDomainForm
 
     def get_success_url(self):
-        return reverse('app_details', args=[self.object.safe_id])
+        return reverse('app_domains', args=[self.object.safe_id])
 
     def get_form(self, form_class):
         form = super(AssignApplicationDomainView, self).get_form(form_class)
@@ -569,3 +580,27 @@ class AssignApplicationDomainView(AppActionView):
         self.object.update(add_to_set__domains=domain)
         self.object.update_application()
         return super(AssignApplicationDomainView, self).form_valid(form)
+
+
+class RemoveApplicationDomainView(AppActionView):
+    template_name = 'remove_domain.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    form_class = RemoveApplicatiomDomainForm
+
+    def validate_action(self, request):
+        if self.kwargs.get('domain') not in [
+                d.name for d in self.object.domains]:
+            raise Http404
+
+    def get_success_url(self):
+        return reverse('app_domains', args=[self.object.safe_id])
+
+    def get_initial(self):
+        return {'domain': self.kwargs.get('domain')}
+
+    def form_valid(self, form):
+        self.object.update(pull__domains__name=form.cleaned_data['domain'])
+        self.object.update_application()
+        return super(RemoveApplicationDomainView, self).form_valid(form)
