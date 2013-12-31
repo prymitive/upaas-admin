@@ -61,7 +61,7 @@ urlpatterns = patterns(
     url(r'^password/changed$',
         'django.contrib.auth.views.password_change_done',
         {'template_name': 'users/password_changed.html'},
-        name='password_changed'),
+        name='password_change_done'),
 
     url(r'^djs/', include('djangojs.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
