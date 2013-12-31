@@ -22,7 +22,11 @@ services:
   - mongodb
 
 cache:
+  apt: true
   directories:
-  - $HOME/.pip-cache/
-  - $HOME/virtualenv/python2.6/lib/python2.6/site-packages
-  - $HOME/virtualenv/python2.7/lib/python2.7/site-packages
+    - $HOME/.pip-cache/
+    - $HOME/virtualenv/python2.6/lib/python2.6/site-packages
+    - $HOME/virtualenv/python2.7/lib/python2.7/site-packages
+
+virtualenv:
+  system_site_packages: true
