@@ -42,7 +42,6 @@ class UserTest(MongoEngineTestCase):
         self.assertEqual(u.last_name, self.LAST_NAME)
         self.assertEqual(u.email, self.EMAIL)
         self.assertFalse(u.is_superuser)
-        u.delete()
 
     def test_login_view_get(self):
         url = reverse('site_login')
@@ -56,9 +55,13 @@ class UserTest(MongoEngineTestCase):
         url = reverse('site_login')
         resp = self.client.post(url, {'username': self.LOGIN,
                                       'password': self.PASSWORD})
-
         self.assertEqual(302, resp.status_code)
-        u.delete()
+
+    def test_login_view_post_invalid(self):
+        url = reverse('site_login')
+        resp = self.client.post(url, {'username': self.LOGIN,
+                                      'password': 'invalid'})
+        self.assertEqual(200, resp.status_code)
 
     def test_api_key_get(self):
         u = self.create_user()
@@ -70,7 +73,6 @@ class UserTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'apikey-input')
         self.assertContains(resp, u.apikey)
-        u.delete()
 
     def test_api_key_reset(self):
         u = self.create_user()
@@ -90,4 +92,24 @@ class UserTest(MongoEngineTestCase):
         self.assertContains(resp, 'apikey-input')
         self.assertNotContains(resp, old_apikey)
         self.assertContains(resp, u.apikey)
-        u.delete()
+
+    def test_password_change(self):
+        u = self.create_user()
+        self.client.login(username=self.LOGIN, password=self.PASSWORD)
+        new_password = 'myNewPassw0rd'
+
+        url = reverse('password')
+        resp = self.client.post(url, {'old_password': self.PASSWORD,
+                                      'new_password1': new_password,
+                                      'new_password2': new_password})
+        self.assertEqual(resp.status_code, 302)
+
+        url = reverse('site_login')
+
+        resp = self.client.post(url, {'username': self.LOGIN,
+                                      'password': self.PASSWORD})
+        self.assertEqual(200, resp.status_code)
+
+        resp = self.client.post(url, {'username': self.LOGIN,
+                                      'password': new_password})
+        self.assertEqual(302, resp.status_code)
