@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from tastypie_mongoengine.resources import MongoEngineResource

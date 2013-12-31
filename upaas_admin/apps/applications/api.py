@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 import mongoengine
@@ -51,23 +53,23 @@ class ApplicationResource(MongoEngineResource):
         return bundle
 
     def obj_create(self, bundle, request=None, **kwargs):
-        log.debug(_(u"Going to create new application for user "
-                    u"'{name}'").format(name=bundle.request.user.username))
+        log.debug(_("Going to create new application for user "
+                    "'{name}'").format(name=bundle.request.user.username))
         try:
             return super(MongoEngineResource, self).obj_create(
                 bundle, request=request, owner=bundle.request.user, **kwargs)
-        except mongoengine.ValidationError, e:
-            log.warning(_(u"Can't create new application, invalid data "
-                          u"payload: {msg}").format(msg=e.message))
+        except mongoengine.ValidationError as e:
+            log.warning(_("Can't create new application, invalid data "
+                          "payload: {msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
-        except mongoengine.NotUniqueError, e:
-            log.warning(_(u"Can't create new application, duplicated fields: "
-                          u"{msg}").format(msg=e.message))
+        except mongoengine.NotUniqueError as e:
+            log.warning(_("Can't create new application, duplicated fields: "
+                          "{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
 
     def authorized_read_list(self, object_list, bundle):
-        log.debug(_(u"Limiting query to user owned apps (length: "
-                    u"{length})").format(length=len(object_list)))
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
         return object_list.filter(owner=bundle.request.user)
 
     def read_detail(self, object_list, bundle):
@@ -90,10 +92,10 @@ class ApplicationResource(MongoEngineResource):
         return bundle.obj.owner == bundle.request.user
 
     def delete_list(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def delete_detail(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def prepend_urls(self):
         return [
@@ -123,10 +125,10 @@ class ApplicationResource(MongoEngineResource):
                 return self.create_response(request, app.build_package())
             else:
                 return HttpResponseBadRequest(
-                    _(u"No metadata registered for app '{name}' with id "
-                      u"'{id}'").format(name=app.name, id=app.id))
+                    _("No metadata registered for app '{name}' with id "
+                      "'{id}'").format(name=app.name, id=app.id))
         else:
-            return HttpResponseNotFound(_(u"No such application"))
+            return HttpResponseNotFound(_("No such application"))
 
     def build_fresh_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
@@ -138,10 +140,10 @@ class ApplicationResource(MongoEngineResource):
                     request, app.build_package(force_fresh=True))
             else:
                 return HttpResponseBadRequest(
-                    _(u"No metadata registered for app '{name}' with id "
-                      u"'{id}'").format(name=app.name, id=app.id))
+                    _("No metadata registered for app '{name}' with id "
+                      "'{id}'").format(name=app.name, id=app.id))
         else:
-            return HttpResponseNotFound(_(u"No such application"))
+            return HttpResponseNotFound(_("No such application"))
 
     def start_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
@@ -152,11 +154,11 @@ class ApplicationResource(MongoEngineResource):
                 return self.create_response(request, app.start_application())
             else:
                 return HttpResponseBadRequest(
-                    _(u"No package built or no metadata registered for app "
-                      u"'{name}' with id '{id}'").format(name=app.name,
-                                                         id=app.id))
+                    _("No package built or no metadata registered for app "
+                      "'{name}' with id '{id}'").format(name=app.name,
+                                                        id=app.id))
         else:
-            return HttpResponseNotFound(_(u"No such application"))
+            return HttpResponseNotFound(_("No such application"))
 
     def stop_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
@@ -165,16 +167,16 @@ class ApplicationResource(MongoEngineResource):
         if app:
             if not app.run_plan:
                 return HttpResponseBadRequest(_(
-                    u"Application is already stopped"))
+                    "Application is already stopped"))
             if app.metadata and app.current_package:
                 return self.create_response(request, app.stop_application())
             else:
                 return HttpResponseBadRequest(
-                    _(u"No package built or no metadata registered for app "
-                      u"'{name}' with id '{id}'").format(name=app.name,
-                                                         id=app.id))
+                    _("No package built or no metadata registered for app "
+                      "'{name}' with id '{id}'").format(name=app.name,
+                                                        id=app.id))
         else:
-            return HttpResponseNotFound(_(u"No such application"))
+            return HttpResponseNotFound(_("No such application"))
 
     def update_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
@@ -184,9 +186,9 @@ class ApplicationResource(MongoEngineResource):
             if app.run_plan:
                 return self.create_response(request, app.update_application())
             else:
-                return HttpResponseBadRequest(_(u"Application is stopped"))
+                return HttpResponseBadRequest(_("Application is stopped"))
         else:
-            return HttpResponseNotFound(_(u"No such application"))
+            return HttpResponseNotFound(_("No such application"))
 
 
 class PackageResource(MongoEngineResource):
@@ -201,8 +203,8 @@ class PackageResource(MongoEngineResource):
         authorization = Authorization()
 
     def authorized_read_list(self, object_list, bundle):
-        log.debug(_(u"Limiting query to user owned apps (length: "
-                    u"{length})").format(length=len(object_list)))
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
         return object_list.filter(
             application__in=bundle.request.user.applications)
 
@@ -210,19 +212,19 @@ class PackageResource(MongoEngineResource):
         return bundle.obj.application.owner == bundle.request.user
 
     def create_list(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def create_detail(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def update_list(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def update_detail(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def delete_list(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def delete_detail(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))

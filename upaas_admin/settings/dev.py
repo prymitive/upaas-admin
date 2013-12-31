@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from upaas_admin.settings.prod import *
 
 

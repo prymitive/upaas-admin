@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from mongoengine.base import BaseField
 
 from IPy import IP

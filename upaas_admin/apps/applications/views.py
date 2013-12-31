@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from difflib import unified_diff
@@ -266,20 +268,20 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
         self.app = self.get_object()
         if self.app.run_plan:
             return application_error(request, self.app,
-                                     _(u"Application is already started"))
+                                     _("Application is already started"))
         elif not self.app.can_start:
             return application_error(request, self.app,
-                                     _(u"Application cannot be started yet"))
+                                     _("Application cannot be started yet"))
         return super(StartApplicationView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         self.app = self.get_object()
         if self.app.run_plan:
             return application_error(request, self.app,
-                                     _(u"Application is already started"))
+                                     _("Application is already started"))
         elif not self.app.can_start:
             return application_error(request, self.app,
-                                     _(u"Application cannot be started yet"))
+                                     _("Application cannot be started yet"))
         return super(StartApplicationView, self).post(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -325,7 +327,7 @@ class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
         self.app = self.get_object()
         if not self.app.run_plan:
             return application_error(request, self.app,
-                                     _(u"Application is stopped"))
+                                     _("Application is stopped"))
         return super(EditApplicationRunPlanView, self).get(request, *args,
                                                            **kwargs)
 
@@ -333,7 +335,7 @@ class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
         self.app = self.get_object()
         if not self.app.run_plan:
             return application_error(request, self.app,
-                                     _(u"Application is stopped"))
+                                     _("Application is stopped"))
         return super(EditApplicationRunPlanView, self).post(request, *args,
                                                             **kwargs)
 
@@ -387,7 +389,7 @@ class StopApplicationView(AppActionView):
     def validate_action(self, request):
         if not self.object.run_plan:
             return application_error(request, self.object,
-                                     _(u"Application is already stopped"))
+                                     _("Application is already stopped"))
 
     def action(self, form):
         if self.object:
@@ -408,8 +410,8 @@ class PackageDetailView(LoginRequiredMixin, OwnedPackagesMixin,
             context['app'] = self.object.application
         context['metadiff'] = list(unified_diff(
             self.object.application.metadata.splitlines(1),
-            self.object.metadata.splitlines(1), fromfile=__(u"Application"),
-            tofile=__(u"Package")))
+            self.object.metadata.splitlines(1), fromfile=__("Application"),
+            tofile=__("Package")))
         return context
 
 
@@ -451,7 +453,7 @@ class PackageDeleteView(LoginRequiredMixin, OwnedPackagesMixin,
             return HttpResponseRedirect(self.get_success_url())
         else:
             return application_error(self.request, self.object.application,
-                                     _(u"Package in use"))
+                                     _("Package in use"))
 
 
 class BuildPackageView(AppActionView):
@@ -486,8 +488,8 @@ class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
     def validate_action(self, request):
         if self.object == self.object.application.current_package:
             return application_error(
-                request, self.object, _(u"Selected package is already current "
-                                        u"for this application"))
+                request, self.object, _("Selected package is already current "
+                                        "for this application"))
 
     def action(self, form):
         if self.object:

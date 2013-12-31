@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from getpass import getpass
 
 from django.core.management.base import BaseCommand, CommandError

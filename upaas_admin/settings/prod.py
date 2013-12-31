@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import os
 import sys
 import logging
@@ -295,7 +297,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 loglevel = UPAAS_CONFIG.admin.loglevel.upper()
 if not logging.getLevelName(loglevel):
-    log.error(u"Invalid log level name '%s', ignoring" % loglevel)
+    log.error("Invalid log level name '%s', ignoring" % loglevel)
     loglevel = 'INFO'
 
 LOGGING = {
@@ -361,7 +363,7 @@ TEST_RUNNER = 'upaas_admin.common.tests.MongoEngineTestRunner'
 
 if UPAAS_CONFIG.admin.debug:
 
-    logging.warning(u"Debug mode enabled!")
+    logging.warning("Debug mode enabled!")
 
     DEBUG = UPAAS_CONFIG.admin.debug
     TEMPLATE_DEBUG = DEBUG

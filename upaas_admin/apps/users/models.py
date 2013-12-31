@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import hmac
 import uuid
 import hashlib

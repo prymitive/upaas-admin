@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import datetime
 import logging
 from random import randrange
@@ -77,8 +79,8 @@ class BackendServer(Document):
                 ports.append(backend_conf.socket)
                 ports.append(backend_conf.stats)
             else:
-                log.warning(_(u"Backend {backend} not found in run plan for "
-                              u"{name}").format(
+                log.warning(_("Backend {backend} not found in run plan for "
+                              "{name}").format(
                             backend=self.name, name=run_plan.application.name))
         return ports
 
@@ -95,7 +97,7 @@ class BackendServer(Document):
         if not self.worker_ping:
             return False
         limit = datetime.datetime.now() - datetime.timedelta(seconds=300)
-        for timestamp in self.worker_ping.values():
+        for timestamp in list(self.worker_ping.values()):
             if timestamp < limit:
                 return False
         return True
@@ -110,8 +112,8 @@ class BackendServer(Document):
         """
         ports = []
         if self.ports_available <= 0:
-            log.error(u"No more free port available, used all %d "
-                      u"ports" % self.maximum_ports)
+            log.error("No more free port available, used all %d "
+                      "ports" % self.maximum_ports)
             return
         while True:
             #TODO random can take very long to find free port if port usage is

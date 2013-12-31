@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from django.views.generic import TemplateView, FormView
@@ -44,15 +46,15 @@ class ResetApiKeyView(LoginRequiredMixin, AppTemplatesDirMixin, FormView):
         return form
 
     def form_invalid(self, form):
-        messages.error(self.request, _(u"Invalid form, possible bug"))
+        messages.error(self.request, _("Invalid form, possible bug"))
         return super(ResetApiKeyView, self).form_invalid(form)
 
     def form_valid(self, form):
-        log.info(_(u"Resetting API key for") +
-                 u" %s" % self.request.user.username)
+        log.info(_("Resetting API key for {login}").format(
+            login=self.request.user.username))
         self.request.user.apikey = User.generate_apikey()
         self.request.user.save()
-        messages.success(self.request, _(u"New API key generated"))
+        messages.success(self.request, _("New API key generated"))
         return super(ResetApiKeyView, self).form_valid(form)
 
 

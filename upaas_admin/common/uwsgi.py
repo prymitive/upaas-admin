@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from socket import socket, AF_INET
 import json
 import logging
@@ -25,12 +27,12 @@ def fetch_json_stats(addr, port, timeout=5):
                 break
             js += data
         s.close()
-    except Exception, e:
-        log.debug(u"Couldn't get stats from %s:%s: %s" % (addr, port, e))
+    except Exception as e:
+        log.debug("Couldn't get stats from %s:%s: %s" % (addr, port, e))
     else:
         if js:
             try:
                 return json.loads(js)
-            except Exception, e:
-                log.error(u"Couldn't decode stats JSON data from %s:%s: %s" % (
+            except Exception as e:
+                log.error("Couldn't decode stats JSON data from %s:%s: %s" % (
                     addr, port, e))

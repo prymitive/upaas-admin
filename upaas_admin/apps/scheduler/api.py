@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 import mongoengine
@@ -49,13 +51,13 @@ class RunPlanResource(MongoEngineResource):
 
     def obj_create(self, bundle, request=None, **kwargs):
         #FIXME handle reference field properly using mongoengine-tastypie
-        log.debug(_(u"Going to create new run plan for user "
-                  u"'{name}'").format(name=bundle.request.user.username))
+        log.debug(_("Going to create new run plan for user "
+                    "'{name}'").format(name=bundle.request.user.username))
         app = Application.objects(id=bundle.data['application'],
                                   owner=bundle.request.user).first()
         if not app or not app.current_package:
-            msg = unicode(_(u"Can't create new run plan, app not found, or"
-                            u" no packages built yet"))
+            msg = str(_("Can't create new run plan, app not found, or"
+                        " no packages built yet"))
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
@@ -66,12 +68,12 @@ class RunPlanResource(MongoEngineResource):
             return super(MongoEngineResource, self).obj_create(bundle,
                                                                request=request,
                                                                **kwargs)
-        except mongoengine.ValidationError, e:
-            log.warning(_(u"Can't create new run plan, invalid data payload: "
-                        "{msg}").format(msg=e.message))
+        except mongoengine.ValidationError as e:
+            log.warning(_("Can't create new run plan, invalid data payload: "
+                          "{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
         except mongoengine.NotUniqueError:
-            msg = unicode(_(u"Application is already running"))
+            msg = str(_("Application is already running"))
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 
@@ -81,8 +83,8 @@ class RunPlanResource(MongoEngineResource):
         return super(RunPlanResource, self).obj_update(bundle, **kwargs)
 
     def authorized_read_list(self, object_list, bundle):
-        log.debug(_(u"Limiting query to user owned apps (length: "
-                    u"{length})").format(length=len(object_list)))
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
         return object_list.filter(
             application__in=bundle.request.user.applications)
 
@@ -106,7 +108,7 @@ class RunPlanResource(MongoEngineResource):
         return bundle.obj.owner == bundle.request.user
 
     def delete_list(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))
 
     def delete_detail(self, object_list, bundle):
-        raise Unauthorized(_(u"Unauthorized for such operation"))
+        raise Unauthorized(_("Unauthorized for such operation"))

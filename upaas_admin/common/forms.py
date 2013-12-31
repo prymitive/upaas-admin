@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from mongoforms import MongoForm
 from mongoforms.fields import MongoFormFieldGenerator
 
@@ -25,7 +27,7 @@ class IPField(GenericIPAddressField):
             return None
         try:
             return IP(value)
-        except ValueError, e:
+        except ValueError as e:
             raise ValidationError(e)
 
 

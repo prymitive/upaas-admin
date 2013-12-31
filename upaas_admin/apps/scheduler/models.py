@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from mongoengine import (Document, EmbeddedDocument, QuerySetManager,
                          IntField, ReferenceField, EmbeddedDocumentField,
                          ListField)

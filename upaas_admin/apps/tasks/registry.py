@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from django.utils.importlib import import_module
@@ -20,7 +22,7 @@ log = logging.getLogger(__name__)
 def register(cls):
     global REGISTERED_TASKS
     if cls.__name__ not in REGISTERED_TASKS:
-        log.debug(u"Registering task class: %s" % cls.__name__)
+        log.debug("Registering task class: %s" % cls.__name__)
         REGISTERED_TASKS[cls.__name__] = cls
         for bcls in cls.__bases__:
             register(bcls)
@@ -62,7 +64,7 @@ def tasks_autodiscover():
         except ImportError:
             continue
 
-        log.debug(u"Loading tasks module: %s.tasks" % app)
+        log.debug("Loading tasks module: %s.tasks" % app)
         import_module("%s.tasks" % app)
 
     LOADING_TASKS = False

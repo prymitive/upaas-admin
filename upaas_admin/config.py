@@ -5,7 +5,10 @@
 """
 
 
+from __future__ import unicode_literals
+
 from upaas.config import base
+from upaas.compat import unicode, basestring
 
 
 class UPaaSConfig(base.Config):

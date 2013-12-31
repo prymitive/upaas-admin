@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.template import RequestContext, Context
@@ -15,7 +17,7 @@ from functools import partial
 def base_error(request, status=500, template_name=None):
     try:
         context = RequestContext(request)
-    except Exception, e:
+    except Exception as e:
         context = Context()
     return HttpResponse(
         content=render_to_string(template_name, context_instance=context),

@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from dns.resolver import query, NXDOMAIN, NoAnswer
@@ -33,8 +35,8 @@ class _MetadataForm(object):
             meta = metadata.read()
             MetadataConfig.from_string(meta)
             metadata = meta
-        except Exception, e:
-            raise forms.ValidationError(_(u"%s" % e))
+        except Exception as e:
+            raise forms.ValidationError(_("%s" % e))
         return metadata
 
 
@@ -53,10 +55,10 @@ class RegisterApplicationForm(CrispyMongoForm, _MetadataForm):
     def clean_name(self):
         name = self.cleaned_data['name']
         if ' ' in name:
-            raise forms.ValidationError(_(u"Name cannot contain spaces"))
+            raise forms.ValidationError(_("Name cannot contain spaces"))
         if self.owner.applications.filter(name=name).first():
             raise forms.ValidationError(_(
-                u"Application with name {name} already registered").format(
+                "Application with name {name} already registered").format(
                 name=name))
         return self.cleaned_data['name']
 
@@ -78,7 +80,7 @@ class UpdateApplicationMetadataInlineForm(InlineCrispyMongoForm,
 
     submit_label = 'Update'
     layout = [
-        HTML(u"<b>%s:</b>" % _(u"New metadata")),
+        HTML("<b>%s:</b>" % _("New metadata")),
         'metadata'
     ]
 
@@ -148,20 +150,20 @@ class AssignApplicatiomDomainForm(CrispyForm):
             txt_records = query(domain, 'TXT')
         except NXDOMAIN:
             raise forms.ValidationError(_(
-                u"Domain {domain} does not exist").format(domain=domain))
+                "Domain {domain} does not exist").format(domain=domain))
         except NoAnswer:
             raise forms.ValidationError(_(
-                u"No TXT record for domain {domain}").format(domain=domain))
-        except Exception, e:
-            log.error(_(u"Exception during '{domain}' verification: "
-                        u"{e}").format(domain=domain, e=e))
+                "No TXT record for domain {domain}").format(domain=domain))
+        except Exception as e:
+            log.error(_("Exception during '{domain}' verification: "
+                        "{e}").format(domain=domain, e=e))
             raise forms.ValidationError(_(
-                u"Unhandled exception during domain verification, please try "
-                u"again later"))
+                "Unhandled exception during domain verification, please try "
+                "again later"))
         else:
             if Application.objects(domains__name=domain):
-                raise forms.ValidationError(_(u"Domain {domain} was already "
-                                              u"assigned").format(
+                raise forms.ValidationError(_("Domain {domain} was already "
+                                              "assigned").format(
                     domain=domain))
             if self.needs_validation:
                 for record in txt_records:
@@ -169,7 +171,7 @@ class AssignApplicatiomDomainForm(CrispyForm):
                         self.domain_validated = True
                         return domain
                 raise forms.ValidationError(_(
-                    u"No verification code in TXT record for {domain}").format(
+                    "No verification code in TXT record for {domain}").format(
                     domain=domain))
             else:
                 return domain

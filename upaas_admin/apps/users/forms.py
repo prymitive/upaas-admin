@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.forms import PasswordChangeForm
@@ -27,7 +29,7 @@ class ResetApiKeyForm(CrispyForm):
     def clean_apikey(self):
         if self._current_apikey != self.cleaned_data.get('apikey'):
             raise forms.ValidationError(
-                _(u"Current API key verification failed"))
+                _("Current API key verification failed"))
 
 
 class SelfEditAccountForm(MongoForm):

@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 ICON_PENDING = 'fa fa-clock-o'
 ICON_STARTED = 'fa fa-refresh fa-spin'
 ICON_FAILED = 'fa fa-times-circle-o'

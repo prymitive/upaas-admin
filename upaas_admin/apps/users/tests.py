@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django.core.urlresolvers import reverse
 
 from upaas_admin.common.tests import MongoEngineTestCase
@@ -14,8 +16,8 @@ from upaas_admin.apps.users.models import User
 class UserTest(MongoEngineTestCase):
 
     LOGIN = 'testlogin'
-    FIRST_NAME = u'ąćźółęż'
-    LAST_NAME = u'CAPITAL'
+    FIRST_NAME = 'ąćźółęż'
+    LAST_NAME = 'CAPITAL'
     EMAIL = 'email@domain.com'
     PASSWORD = '123456789źćż'
 
@@ -42,7 +44,8 @@ class UserTest(MongoEngineTestCase):
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertIn('You need to login to access this page', resp.content)
+        self.assertContains('You need to login to access this page',
+                            resp.content)
 
     def test_login_view_post(self):
         u = self.create_user()

@@ -4,6 +4,9 @@
     :contact: l.mierzwa@gmail.com
 """
 
+
+from __future__ import unicode_literals
+
 import os
 import datetime
 import logging
@@ -70,7 +73,7 @@ class Package(Document):
 
     @classmethod
     def pre_delete(cls, sender, document, **kwargs):
-        log.debug(_(u"Pre delete signal on package {id}").format(
+        log.debug(_("Pre delete signal on package {id}").format(
             id=document.safe_id))
         document.delete_package_file(null_filename=False)
 
@@ -96,28 +99,28 @@ class Package(Document):
         return os.path.join(settings.UPAAS_CONFIG.paths.apps, self.safe_id)
 
     def delete_package_file(self, null_filename=True):
-        log.debug(_(u"Deleting package file for {pkg}").format(
+        log.debug(_("Deleting package file for {pkg}").format(
             pkg=self.safe_id))
         if not self.filename:
-            log.debug(_(u"Package {pkg} has no filename, skipping "
-                        u"delete").format(pkg=self.safe_id))
+            log.debug(_("Package {pkg} has no filename, skipping "
+                        "delete").format(pkg=self.safe_id))
             return
 
         storage = find_storage_handler(self.upaas_config)
         if not storage:
-            log.error(_(u"Storage handler '{handler}' not found, cannot "
-                        u"package file").format(
+            log.error(_("Storage handler '{handler}' not found, cannot "
+                        "package file").format(
                 handler=self.upaas_config.storage.handler))
             return
 
-        log.debug(_(u"Checking if package file {path} is stored").format(
+        log.debug(_("Checking if package file {path} is stored").format(
             path=self.filename))
         if storage.exists(self.filename):
-            log.info(_(u"Removing package {pkg} file from storage").format(
+            log.info(_("Removing package {pkg} file from storage").format(
                 pkg=self.safe_id))
             storage.delete(self.filename)
         if null_filename:
-            log.info(_(u"Clearing filename for package {pkg}").format(
+            log.info(_("Clearing filename for package {pkg}").format(
                 pkg=self.safe_id))
             del self.filename
             self.save()
@@ -138,8 +141,8 @@ class Package(Document):
                     opt_name = opt.split('=')[0].rstrip(' ')
                     if regexp.match(opt_name):
                         options.append(opt)
-                        log.info(_(u"Adding safe uWSGI option from metadata: "
-                                   u"{opt}").format(opt=opt))
+                        log.info(_("Adding safe uWSGI option from metadata: "
+                                   "{opt}").format(opt=opt))
                         break
 
         return options
@@ -151,7 +154,7 @@ class Package(Document):
         """
 
         def _load_template(path):
-            log.info(u"Loading uWSGI template from: %s" % path)
+            log.info("Loading uWSGI template from: %s" % path)
             for search_path in UPAAS_CONFIG_DIRS:
                 template_path = os.path.join(search_path, path)
                 if os.path.exists(template_path):
@@ -200,7 +203,7 @@ class Package(Document):
         }
 
         if config.apps.graphite.carbon:
-            variables['carbon_servers'] = u' '.join(
+            variables['carbon_servers'] = ' '.join(
                 config.apps.graphite.carbon)
             variables['carbon_timeout'] = config.apps.graphite.timeout
             variables['carbon_frequency'] = config.apps.graphite.frequency
@@ -221,23 +224,24 @@ class Package(Document):
 
         # interpretere default settings for any version
         try:
-            for key, value in config.interpreters[self.interpreter_name][
-                    'any']['settings'].items():
+            for key, value in list(config.interpreters[self.interpreter_name][
+                    'any']['settings'].items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = value
         except (AttributeError, KeyError):
             pass
         # interpretere default settings for current version
         try:
-            for key, value in config.interpreters[self.interpreter_name][
-                    self.interpreter_version]['settings'].items():
+            for key, value in list(config.interpreters[self.interpreter_name][
+                    self.interpreter_version]['settings'].items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = value
         except (AttributeError, KeyError):
             pass
         # interpreter settings from metadata
         try:
-            for key, val in self.metadata_config.interpreter.settings.items():
+            for key, val in list(
+                    self.metadata_config.interpreter.settings.items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = val
         except KeyError:
@@ -271,11 +275,11 @@ class Package(Document):
         options = ['[uwsgi]']
 
         options.append('\n# starting uWSGI config variables list')
-        for key, value in variables.items():
+        for key, value in list(variables.items()):
             options.append('var_%s = %s' % (key, value))
 
         options.append('\n# starting ENV variables list')
-        for key, value in envs.items():
+        for key, value in list(envs.items()):
             options.append('env = %s=%s' % (key, value))
 
         options.append('\n# starting options from app metadata')
@@ -315,21 +319,21 @@ class Package(Document):
         return options
 
     def save_vassal_config(self, backend):
-        log.info(u"Generating uWSGI vassal configuration")
-        options = u"\n".join(self.generate_uwsgi_config(backend))
+        log.info("Generating uWSGI vassal configuration")
+        options = "\n".join(self.generate_uwsgi_config(backend))
 
         if os.path.exists(self.application.vassal_path):
             current_hash = calculate_file_sha256(self.application.vassal_path)
             new_hash = calculate_string_sha256(options)
             if current_hash == new_hash:
-                log.info(u"Vassal is present and valid, skipping rewrite")
+                log.info("Vassal is present and valid, skipping rewrite")
                 return
 
-        log.info(u"Saving vassal configuration to "
-                 u"'%s'" % self.application.vassal_path)
+        log.info("Saving vassal configuration to "
+                 "'%s'" % self.application.vassal_path)
         with open(self.application.vassal_path, 'w') as vassal:
             vassal.write(options)
-        log.info(u"Vassal saved")
+        log.info("Vassal saved")
 
     def unpack(self):
         upaas_config = self.upaas_config
@@ -340,44 +344,44 @@ class Package(Document):
 
         storage = find_storage_handler(upaas_config)
         if not storage:
-            log.error(u"Storage handler '%s' not "
-                      u"found" % upaas_config.storage.handler)
+            log.error("Storage handler '%s' not "
+                      "found" % upaas_config.storage.handler)
 
         workdir = os.path.join(directory, "system")
         pkg_path = os.path.join(directory, self.filename)
 
         if os.path.exists(self.package_path):
-            log.error(u"Package directory already exists: "
-                      u"%s" % self.package_path)
-            raise UnpackError(u"Package directory already exists")
+            log.error("Package directory already exists: "
+                      "%s" % self.package_path)
+            raise UnpackError("Package directory already exists")
 
-        log.info(u"Fetching package '%s'" % self.filename)
+        log.info("Fetching package '%s'" % self.filename)
         try:
             storage.get(self.filename, pkg_path)
         except StorageError:
-            log.error(u"Storage error while fetching package "
-                      u"'%s'" % self.filename)
+            log.error("Storage error while fetching package "
+                      "'%s'" % self.filename)
             utils.rmdirs(directory)
-            raise StorageError(u"Can't fetch package '%s' from "
-                               u"storage" % self.filename)
+            raise StorageError("Can't fetch package '%s' from "
+                               "storage" % self.filename)
 
-        log.info(u"Unpacking package")
-        os.mkdir(workdir, 0755)
+        log.info("Unpacking package")
+        os.mkdir(workdir, 0o755)
         if not tar.unpack_tar(pkg_path, workdir):
-            log.error(u"Error while unpacking package to '%s'" % workdir)
+            log.error("Error while unpacking package to '%s'" % workdir)
             utils.rmdirs(directory)
-            raise UnpackError(u"Error during package unpack")
+            raise UnpackError("Error during package unpack")
 
-        log.info(u"Package unpacked, moving into '%s'" % self.package_path)
+        log.info("Package unpacked, moving into '%s'" % self.package_path)
         try:
             shutil.move(workdir, self.package_path)
-        except shutil.Error, e:
-            log.error(u"Error while moving unpacked package to final "
-                      u"destination: %s" % e)
+        except shutil.Error as e:
+            log.error("Error while moving unpacked package to final "
+                      "destination: %s" % e)
             utils.rmdirs(directory, self.package_path)
-            raise UnpackError(u"Can't move to final directory "
-                              u"'%s'" % self.package_path)
-        log.info(u"Package moved")
+            raise UnpackError("Can't move to final directory "
+                              "'%s'" % self.package_path)
+        log.info("Package moved")
         utils.rmdirs(directory)
 
 
@@ -543,7 +547,7 @@ class Application(Document):
         """
         String used for domain ownership validation.
         """
-        return u"upaas-app-id=%s" % self.safe_id
+        return "upaas-app-id=%s" % self.safe_id
 
     @property
     def router_ip_list(self):
@@ -554,8 +558,8 @@ class Application(Document):
 
     def build_package(self, force_fresh=False):
         if self.pending_build_tasks:
-            log.info(_(u"Application {name} is already queued for "
-                       u"building").format(name=self.name))
+            log.info(_("Application {name} is already queued for "
+                       "building").format(name=self.name))
         else:
             task = Task.put('BuildPackageTask', application=self,
                             metadata=self.metadata,
@@ -567,14 +571,14 @@ class Application(Document):
         if self.current_package:
             run_plan = self.run_plan
             if not run_plan:
-                log.error(u"Trying to start '%s' without run plan" % self.name)
+                log.error("Trying to start '%s' without run plan" % self.name)
                 return
 
             backends = select_best_backends(run_plan,
                                             package=self.current_package)
             if not backends:
-                log.error(_(u"Can't start '{name}', no backend "
-                            u"available").format(name=self.name))
+                log.error(_("Can't start '{name}', no backend "
+                            "available").format(name=self.name))
                 run_plan.delete()
                 return
 
@@ -582,7 +586,7 @@ class Application(Document):
             vtask = None
             if len(backends) > 1:
                 vtask = VirtualTask(
-                    title=_(u"Starting application {name}").format(
+                    title=_("Starting application {name}").format(
                         name=self.name))
                 vtask.save()
                 kwargs['parent'] = vtask
@@ -592,13 +596,13 @@ class Application(Document):
 
             tasks = []
             for backend_conf in backends:
-                log.info(_(u"Set backend '{backend}' in '{name}' run "
-                           u"plan").format(backend=backend_conf.backend.name,
-                                           name=self.name))
+                log.info(_("Set backend '{backend}' in '{name}' run "
+                           "plan").format(backend=backend_conf.backend.name,
+                                          name=self.name))
                 tasks.append(Task.put('StartApplicationTask',
                                       backend=backend_conf.backend,
                                       application=self, limit=1, **kwargs))
-            if vtask and len(filter(None, tasks)) == 0:
+            if vtask and len([_f for _f in tasks if _f]) == 0:
                 vtask.delete()
 
     def stop_application(self):
@@ -614,7 +618,7 @@ class Application(Document):
             vtask = None
             if len(self.run_plan.backends) > 1:
                 vtask = VirtualTask(
-                    title=_(u"Stopping application {name}").format(
+                    title=_("Stopping application {name}").format(
                         name=self.name))
                 vtask.save()
                 kwargs['parent'] = vtask
@@ -624,7 +628,7 @@ class Application(Document):
                 tasks.append(Task.put('StopApplicationTask',
                                       backend=backend_conf.backend,
                                       application=self, limit=1, **kwargs))
-            if vtask and len(filter(None, tasks)) == 0:
+            if vtask and len([_f for _f in tasks if _f]) == 0:
                 vtask.delete()
 
     def upgrade_application(self):
@@ -636,7 +640,7 @@ class Application(Document):
             vtask = None
             if len(self.run_plan.backends) > 1:
                 vtask = VirtualTask(
-                    title=_(u"Upgrading application {name}").format(
+                    title=_("Upgrading application {name}").format(
                         name=self.name))
                 vtask.save()
                 kwargs['parent'] = vtask
@@ -646,7 +650,7 @@ class Application(Document):
                 tasks.append(Task.put('UpgradeApplicationTask',
                                       backend=backend_conf.backend,
                                       application=self, limit=1, **kwargs))
-            if vtask and len(filter(None, tasks)) == 0:
+            if vtask and len([_f for _f in tasks if _f]) == 0:
                 vtask.delete()
 
     def update_application(self):
@@ -657,15 +661,15 @@ class Application(Document):
             current_backends = [bc.backend for bc in run_plan.backends]
             new_backends = select_best_backends(run_plan)
             if not new_backends:
-                log.error(_(u"Can't update '{name}', no backend "
-                            u"available").format(name=self.name))
+                log.error(_("Can't update '{name}', no backend "
+                            "available").format(name=self.name))
                 return
 
             kwargs = {}
             vtask = None
             if len(current_backends) > 1 or len(new_backends) > 1:
                 vtask = VirtualTask(
-                    title=_(u"Updating application {name}").format(
+                    title=_("Updating application {name}").format(
                         name=self.name))
                 vtask.save()
                 kwargs['parent'] = vtask
@@ -694,14 +698,14 @@ class Application(Document):
 
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
-                    log.info(_(u"Stopping {name} on old backend "
-                               u"{backend}").format(name=self.name,
-                                                    backend=backend.name))
+                    log.info(_("Stopping {name} on old backend "
+                               "{backend}").format(name=self.name,
+                                                   backend=backend.name))
                     tasks.append(Task.put('StopApplicationTask',
                                           backend=backend, application=self,
                                           **kwargs))
 
-            if vtask and len(filter(None, tasks)) == 0:
+            if vtask and len([_f for _f in tasks if _f]) == 0:
                 vtask.delete()
 
     def trim_package_files(self):
@@ -712,8 +716,8 @@ class Application(Document):
         """
         storage = find_storage_handler(self.upaas_config)
         if not storage:
-            log.error(u"Storage handler '%s' not found, cannot trim "
-                      u"packages" % self.upaas_config.storage.handler)
+            log.error("Storage handler '%s' not found, cannot trim "
+                      "packages" % self.upaas_config.storage.handler)
             return
 
         removed = 0
@@ -725,8 +729,8 @@ class Application(Document):
             pkg.delete_package_file(null_filename=True)
 
         if removed:
-            log.info(u"Removed %d package file(s) for app %s" % (removed,
-                                                                 self.name))
+            log.info("Removed %d package file(s) for app %s" % (removed,
+                                                                self.name))
 
     def remove_unpacked_packages(self, exclude=None, timeout=None):
         """
@@ -734,13 +738,13 @@ class Application(Document):
         """
         if timeout is None:
             timeout = self.upaas_config.commands.timelimit
-        log.info(_(u"Cleaning packages for {name}").format(name=self.name))
+        log.info(_("Cleaning packages for {name}").format(name=self.name))
         for pkg in self.packages:
             if exclude and pkg.id in exclude:
                 # skip current package!
                 continue
             if os.path.isdir(pkg.package_path):
-                log.info(_(u"Removing package directory {path}").format(
+                log.info(_("Removing package directory {path}").format(
                     path=pkg.package_path))
 
                 # if there are running pids inside package dir we will need to
@@ -752,22 +756,22 @@ class Application(Document):
                 pids = processes.directory_pids(pkg.package_path)
                 while pids:
                     if datetime.datetime.now() > timeout_at:
-                        log.error(_(u"Timeout reached while waiting for pids "
-                                    u"in {path} to die, killing any remaining "
-                                    u"processes").format(
+                        log.error(_("Timeout reached while waiting for pids "
+                                    "in {path} to die, killing any remaining "
+                                    "processes").format(
                             path=pkg.package_path))
                         break
-                    log.info(_(u"Waiting for {pids} pid(s) in {path} to "
-                               u"terminate").format(pids=len(pids),
-                                                    path=pkg.package_path))
+                    log.info(_("Waiting for {pids} pid(s) in {path} to "
+                               "terminate").format(pids=len(pids),
+                                                   path=pkg.package_path))
                     time.sleep(2)
                     pids = processes.directory_pids(pkg.package_path)
 
                 try:
                     processes.kill_and_remove_dir(pkg.package_path)
-                except OSError, e:
-                    log.error(_(u"Exception during package directory cleanup: "
-                                u"{e}").format(e=e))
+                except OSError as e:
+                    log.error(_("Exception during package directory cleanup: "
+                                "{e}").format(e=e))
 
 
 signals.pre_delete.connect(Package.pre_delete, sender=Package)

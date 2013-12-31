@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django.conf.urls import patterns, url
 
 from upaas_admin.apps.users.views import *
