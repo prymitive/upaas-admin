@@ -24,7 +24,8 @@ class AdminCreateUserForm(MongoForm):
 
     class Meta:
         document = User
-        exclude = ('is_staff', 'last_login', 'date_joined', 'apikey')
+        exclude = ('is_staff', 'last_login', 'date_joined', 'apikey',
+                   'user_permissions')
 
     password = forms.CharField(widget=forms.PasswordInput, required=True)
 
@@ -39,7 +40,7 @@ class AdminEditUserForm(MongoForm):
     class Meta:
         document = User
         exclude = ('username', 'password', 'is_staff', 'last_login',
-                   'date_joined', 'apikey')
+                   'date_joined', 'apikey', 'user_permissions')
 
 
 class AdminUserLimitsForm(MongoForm):
