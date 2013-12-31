@@ -24,6 +24,6 @@ services:
 
 cache:
   directories:
-    - $HOME/.pip-cache/
-    - /home/travis/virtualenv/python2.6/lib/python2.6/site-packages
-    - /home/travis/virtualenv/python2.7/lib/python2.7/site-packages
+  - $HOME/.pip-cache/
+  - /home/travis/virtualenv/python2.6/lib/python2.6/site-packages
+  - /home/travis/virtualenv/python2.7/lib/python2.7/site-packages
