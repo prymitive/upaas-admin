@@ -5,13 +5,14 @@ Workaround for bug https://github.com/MongoEngine/mongoengine/issues/531
 Delete this file and fix users/models.py import once it's fixed upstream
 """
 
-
 from __future__ import unicode_literals
 
 from mongoengine import *
 
 from django.utils.encoding import smart_str
-from django.contrib.auth.models import _user_has_perm, _user_get_all_permissions, _user_has_module_perms
+from django.contrib.auth.models import (_user_has_perm,
+                                        _user_get_all_permissions,
+                                        _user_has_module_perms)
 from django.db import models
 from django.contrib.contenttypes.models import ContentTypeManager
 from django.contrib import auth
@@ -42,6 +43,7 @@ except ImportError:
 
     def make_password(raw_password):
         from random import random
+
         algo = 'sha1'
         salt = get_hexdigest(algo, str(random()), str(random()))[:5]
         hash = get_hexdigest(algo, salt, raw_password)
@@ -51,7 +53,8 @@ except ImportError:
 class ContentType(Document):
     name = StringField(max_length=100)
     app_label = StringField(max_length=100)
-    model = StringField(max_length=100, verbose_name=_('python model class name'),
+    model = StringField(max_length=100,
+                        verbose_name=_('python model class name'),
                         unique_with='app_label')
     objects = ContentTypeManager()
 
@@ -68,6 +71,7 @@ class ContentType(Document):
     def model_class(self):
         "Returns the Python model class for this type of content."
         from django.db import models
+
         return models.get_model(self.app_label, self.model)
 
     def get_object_for_this_type(self, **kwargs):
@@ -77,7 +81,8 @@ class ContentType(Document):
         method. The ObjectNotExist exception, if thrown, will not be caught,
         so code that calls this method should catch it.
         """
-        return self.model_class()._default_manager.using(self._state.db).get(**kwargs)
+        return self.model_class()._default_manager.using(self._state.db).get(
+            **kwargs)
 
     def natural_key(self):
         return (self.app_label, self.model)
@@ -91,7 +96,8 @@ class PermissionManager(models.Manager):
     def get_by_natural_key(self, codename, app_label, model):
         return self.get(
             codename=codename,
-            content_type=ContentType.objects.get_by_natural_key(app_label, model)
+            content_type=ContentType.objects.get_by_natural_key(app_label,
+                                                                model)
         )
 
 
@@ -120,8 +126,8 @@ class Permission(Document):
     name = StringField(max_length=50, verbose_name=_('username'))
     content_type = ReferenceField(ContentType)
     codename = StringField(max_length=100, verbose_name=_('codename'))
-        # FIXME: don't access field of the other class
-        # unique_with=['content_type__app_label', 'content_type__model'])
+    # FIXME: don't access field of the other class
+    # unique_with=['content_type__app_label', 'content_type__model'])
 
     objects = PermissionManager()
 
@@ -129,7 +135,8 @@ class Permission(Document):
         verbose_name = _('permission')
         verbose_name_plural = _('permissions')
         # unique_together = (('content_type', 'codename'),)
-        # ordering = ('content_type__app_label', 'content_type__model', 'codename')
+        # ordering = ('content_type__app_label', 'content_type__model',
+        # 'codename')
 
     def __unicode__(self):
         return u"%s | %s | %s" % (
@@ -139,6 +146,7 @@ class Permission(Document):
 
     def natural_key(self):
         return (self.codename,) + self.content_type.natural_key()
+
     natural_key.dependencies = ['contenttypes.contenttype']
 
 
@@ -159,7 +167,9 @@ class Group(Document):
     e-mail messages.
     """
     name = StringField(max_length=80, unique=True, verbose_name=_('name'))
-    permissions = ListField(ReferenceField(Permission, verbose_name=_('permissions'), required=False))
+    permissions = ListField(
+        ReferenceField(Permission, verbose_name=_('permissions'),
+                       required=False))
 
     class Meta:
         verbose_name = _('group')
@@ -201,11 +211,16 @@ class UserManager(models.Manager):
         u.save(using=self._db)
         return u
 
-    def make_random_password(self, length=10, allowed_chars='abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'):
-        "Generates a random password with the given length and given allowed_chars"
+    def make_random_password(self, length=10, allowed_chars='abcdefghjkmnpqrst'
+                                                            'uvwxyzABCDEFGHJKL'
+                                                            'MNPQRSTUVWXYZ2345'
+                                                            '6789'):
+        # Generates a random password with the given length and given
+        # allowed_chars
         # Note that default value of allowed_chars does not have "I" or letters
         # that look like it -- just to avoid confusion.
         from random import choice
+
         return ''.join([choice(allowed_chars) for i in range(length)])
 
 
@@ -215,7 +230,9 @@ class User(Document):
     """
     username = StringField(max_length=30, required=True,
                            verbose_name=_('username'),
-                           help_text=_("Required. 30 characters or fewer. Letters, numbers and @/./+/-/_ characters"))
+                           help_text=_(
+                               "Required. 30 characters or fewer. Letters, "
+                               "numbers and @/./+/-/_ characters"))
 
     first_name = StringField(max_length=30,
                              verbose_name=_('first name'))
@@ -225,23 +242,32 @@ class User(Document):
     email = EmailField(verbose_name=_('e-mail address'))
     password = StringField(max_length=128,
                            verbose_name=_('password'),
-                           help_text=_("Use '[algo]$[iterations]$[salt]$[hexdigest]' or use the <a href=\"password/\">change password form</a>."))
+                           help_text=_("Use '[algo]$[iterations]$[salt]$["
+                                       "hexdigest]' or use the <a "
+                                       "href=\"password/\">change password "
+                                       "form</a>."))
     is_staff = BooleanField(default=False,
                             verbose_name=_('staff status'),
-                            help_text=_("Designates whether the user can log into this admin site."))
+                            help_text=_("Designates whether the user can log "
+                                        "into this admin site."))
     is_active = BooleanField(default=True,
                              verbose_name=_('active'),
-                             help_text=_("Designates whether this user should be treated as active. Unselect this instead of deleting accounts."))
+                             help_text=_("Designates whether this user should "
+                                         "be treated as active. Unselect this "
+                                         "instead of deleting accounts."))
     is_superuser = BooleanField(default=False,
                                 verbose_name=_('superuser status'),
-                                help_text=_("Designates that this user has all permissions without explicitly assigning them."))
+                                help_text=_("Designates that this user has all"
+                                            " permissions without explicitly "
+                                            "assigning them."))
     last_login = DateTimeField(default=datetime_now,
                                verbose_name=_('last login'))
     date_joined = DateTimeField(default=datetime_now,
                                 verbose_name=_('date joined'))
 
-    user_permissions = ListField(ReferenceField(Permission), verbose_name=_('user permissions'),
-                                                help_text=_('Permissions for the user.'))
+    user_permissions = ListField(ReferenceField(Permission),
+                                 verbose_name=_('user permissions'),
+                                 help_text=_('Permissions for the user.'))
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -352,6 +378,7 @@ class User(Document):
     def email_user(self, subject, message, from_email=None):
         "Sends an e-mail to this User."
         from django.core.mail import send_mail
+
         send_mail(subject, message, from_email, [self.email])
 
     def get_profile(self):
@@ -361,6 +388,7 @@ class User(Document):
         """
         if not hasattr(self, '_profile_cache'):
             from django.conf import settings
+
             if not getattr(settings, 'AUTH_PROFILE_MODULE', False):
                 raise SiteProfileNotAvailable('You need to set AUTH_PROFILE_MO'
                                               'DULE in your project settings')
@@ -368,16 +396,18 @@ class User(Document):
                 app_label, model_name = settings.AUTH_PROFILE_MODULE.split('.')
             except ValueError:
                 raise SiteProfileNotAvailable('app_label and model_name should'
-                        ' be separated by a dot in the AUTH_PROFILE_MODULE set'
-                        'ting')
+                                              ' be separated by a dot in the '
+                                              'AUTH_PROFILE_MODULE setting')
 
             try:
                 model = models.get_model(app_label, model_name)
                 if model is None:
                     raise SiteProfileNotAvailable('Unable to load the profile '
-                        'model, check AUTH_PROFILE_MODULE in your project sett'
-                        'ings')
-                self._profile_cache = model._default_manager.using(self._state.db).get(user__id__exact=self.id)
+                                                  'model, check AUTH_PROFILE_'
+                                                  'MODULE in your project '
+                                                  'settings')
+                self._profile_cache = model._default_manager.using(
+                    self._state.db).get(user__id__exact=self.id)
                 self._profile_cache.user = self
             except (ImportError, ImproperlyConfigured):
                 raise SiteProfileNotAvailable
@@ -397,7 +427,8 @@ class MongoEngineBackend(object):
         if user:
             if password and user.check_password(password):
                 backend = auth.get_backends()[0]
-                user.backend = "%s.%s" % (backend.__module__, backend.__class__.__name__)
+                user.backend = "%s.%s" % (
+                    backend.__module__, backend.__class__.__name__)
                 return user
         return None
 
