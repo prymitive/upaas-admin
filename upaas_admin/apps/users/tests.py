@@ -22,11 +22,16 @@ class UserTest(MongoEngineTestCase):
     PASSWORD = '123456789źćż'
 
     def create_user(self):
+        u = User.objects(username=self.LOGIN).first()
+        if u:
+            u.delete()
+
         u = User(username=self.LOGIN, first_name=self.FIRST_NAME,
                  last_name=self.LAST_NAME, email=self.EMAIL,
                  is_superuser=False)
         u.set_password(self.PASSWORD)
         u.save()
+
         return u
 
     def test_user_creation(self):
@@ -44,8 +49,7 @@ class UserTest(MongoEngineTestCase):
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertContains('You need to login to access this page',
-                            resp.content)
+        self.assertContains(resp, 'You need to login to access this page')
 
     def test_login_view_post(self):
         u = self.create_user()
@@ -54,4 +58,36 @@ class UserTest(MongoEngineTestCase):
                                       'password': self.PASSWORD})
 
         self.assertEqual(302, resp.status_code)
+        u.delete()
+
+    def test_api_key_get(self):
+        u = self.create_user()
+        self.client.login(username=self.LOGIN, password=self.PASSWORD)
+
+        url = reverse('users_profile')
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'apikey-input')
+        self.assertContains(resp, u.apikey)
+        u.delete()
+
+    def test_api_key_reset(self):
+        u = self.create_user()
+        self.client.login(username=self.LOGIN, password=self.PASSWORD)
+        old_apikey = u.apikey
+
+        url = reverse('users_apikey_reset')
+        resp = self.client.post(url, {'apikey': old_apikey})
+        self.assertEqual(resp.status_code, 302)
+
+        u.reload()
+
+        url = reverse('users_profile')
+        resp = self.client.get(url)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'apikey-input')
+        self.assertNotContains(resp, old_apikey)
+        self.assertContains(resp, u.apikey)
         u.delete()
