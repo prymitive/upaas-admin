@@ -10,10 +10,10 @@ install:
   - sudo apt-get -yy install nodejs
   - sudo npm install -g less
   - pip install -U pip
-  - pip install -Ur requirements.txt --use-mirrors --download-cache $HOME/.pip-cache || echo "pip failed"
+  - pip install -Ur requirements.txt --use-mirrors --download-cache $HOME/.pip-cache
   - pip install -Ur requirements-test.txt --use-mirrors --download-cache $HOME/.pip-cache
-  - pip install -U --no-deps mongoengine==0.8.6
-  - ./setup.py develop
+  - pip install --no-deps mongoengine==0.8.6
+  - ./setup.py develop --ignore-conflicts-at-my-risk
 
 script:
   - py.test -vs --pep8
