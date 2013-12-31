@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from django.core.urlresolvers import reverse
 
 from upaas_admin.common.tests import MongoEngineTestCase
+
 from upaas_admin.apps.users.models import User
 
 
@@ -17,7 +18,7 @@ class UserTest(MongoEngineTestCase):
 
     LOGIN = 'testlogin'
     FIRST_NAME = 'ąćźółęż'
-    LAST_NAME = 'CAPITAL'
+    LAST_NAME = 'CAP1TAL'
     EMAIL = 'email@domain.com'
     PASSWORD = '123456789źćż'
 

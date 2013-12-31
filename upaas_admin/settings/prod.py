@@ -163,10 +163,6 @@ MIDDLEWARE_CLASSES += (
 
 AUTH_USER_MODEL = 'mongo_auth.MongoUser'
 
-AUTHENTICATION_BACKENDS = (
-    'mongoengine.django.auth.MongoEngineBackend',
-)
-
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
 LOGIN_REDIRECT_URL = '/'
@@ -178,6 +174,7 @@ ALLOWED_HOSTS = UPAAS_CONFIG.admin.domains or ['*']
 #==============================================================================
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
+SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 

@@ -17,10 +17,10 @@ from mongoengine import connect
 from mongoengine.connection import disconnect
 
 from django.test import TestCase
-from django.test.simple import DjangoTestSuiteRunner
+from django.test.runner import DiscoverRunner
 
 
-class MongoEngineTestRunner(DjangoTestSuiteRunner):
+class MongoEngineTestRunner(DiscoverRunner):
 
     mongodb_name = "testrun-%d" % time.time()
 
