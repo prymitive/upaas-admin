@@ -33,6 +33,7 @@ def _django_runner(request):
     request.addfinalizer(runner.teardown_test_environment)
 
     runner._db_config = runner.setup_databases()
+
     def db_teardown():
         return runner.teardown_databases(runner._db_config)
     request.addfinalizer(db_teardown)
