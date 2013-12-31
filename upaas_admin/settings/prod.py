@@ -154,8 +154,6 @@ TEMPLATE_LOADERS = (
 #==============================================================================
 
 MIDDLEWARE_CLASSES += (
-    'django.middleware.gzip.GZipMiddleware',
-    'pipeline.middleware.MinifyHTMLMiddleware',
 )
 
 
