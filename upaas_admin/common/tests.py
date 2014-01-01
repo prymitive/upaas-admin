@@ -48,3 +48,7 @@ class MongoEngineTestCase(TestCase):
 
     def _post_teardown(self):
         pass
+
+    def login_as_user(self):
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])

@@ -13,6 +13,7 @@ import pytest
 
 from django.conf import settings
 from django.test.utils import get_runner
+from django.utils.html import escape
 
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.applications.models import Application
@@ -80,16 +81,20 @@ def create_app(request):
                                       'tests/meta/redmine.yml')
     }
 
+    with open(data['metadata_path'], 'rb') as metadata:
+        data['metadata'] = metadata.read()
+
+    data['metadata_html'] = escape(data['metadata'])
+
     app = Application.objects(name=data['name']).first()
     if app:
         app.delete()
 
     create_user(request)
 
-    with open(data['metadata_path'], 'rb') as metadata:
-        app = Application(name=data['name'], owner=request.instance.user,
-                          metadata=metadata.read())
-        app.save()
+    app = Application(name=data['name'], owner=request.instance.user,
+                      metadata=data['metadata'])
+    app.save()
 
     def cleanup():
         app.delete()

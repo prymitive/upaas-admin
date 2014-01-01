@@ -47,20 +47,16 @@ class UserTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_user")
     def test_api_key_get(self):
-        self.client.login(username=self.user_data['login'],
-                          password=self.user_data['password'])
-
+        self.login_as_user()
         url = reverse('users_profile')
         resp = self.client.get(url)
-
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'apikey-input')
         self.assertContains(resp, self.user.apikey)
 
     @pytest.mark.usefixtures("create_user")
     def test_api_key_reset(self):
-        self.client.login(username=self.user_data['login'],
-                          password=self.user_data['password'])
+        self.login_as_user()
         old_apikey = self.user.apikey
 
         url = reverse('users_apikey_reset')
@@ -79,8 +75,7 @@ class UserTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_user")
     def test_password_change(self):
-        self.client.login(username=self.user_data['login'],
-                          password=self.user_data['password'])
+        self.login_as_user()
         new_password = 'myNewPassw0rd'
 
         url = reverse('password')
@@ -103,16 +98,14 @@ class UserTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_user")
     def test_limits_get(self):
-        self.client.login(username=self.user_data['login'],
-                          password=self.user_data['password'])
+        self.login_as_user()
         url = reverse('users_limits')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
     @pytest.mark.usefixtures("create_user")
     def test_tasks_get(self):
-        self.client.login(username=self.user_data['login'],
-                          password=self.user_data['password'])
+        self.login_as_user()
         url = reverse('users_tasks')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
