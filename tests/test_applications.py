@@ -50,3 +50,16 @@ class ApplicationTest(MongoEngineTestCase):
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200)
             self.assertContains(resp, 'redmine')
+
+    @pytest.mark.usefixtures("create_app")
+    def test_build_package_post(self):
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
+        url = reverse('build_package', args=[self.app.safe_id])
+        resp = self.client.post(url, {})
+        self.assertEqual(resp.status_code, 302)
+
+        url = reverse('users_tasks')
+        resp = self.client.get(url)
+        self.assertContains(
+            resp, "Building new package for %s" % self.app_data['name'])

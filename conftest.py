@@ -12,10 +12,10 @@ import os
 import pytest
 
 from django.conf import settings
-from django.test import Client
 from django.test.utils import get_runner
 
 from upaas_admin.apps.users.models import User
+from upaas_admin.apps.applications.models import Application
 
 
 def is_configured():
@@ -70,3 +70,30 @@ def create_user(request):
 
     request.instance.user = u
     request.instance.user_data = data
+
+
+@pytest.fixture(scope="function")
+def create_app(request):
+    data = {
+        'name': 'redmine',
+        'metadata_path': os.path.join(os.path.dirname(__file__),
+                                      'tests/meta/redmine.yml')
+    }
+
+    app = Application.objects(name=data['name']).first()
+    if app:
+        app.delete()
+
+    create_user(request)
+
+    with open(data['metadata_path'], 'rb') as metadata:
+        app = Application(name=data['name'], owner=request.instance.user,
+                          metadata=metadata.read())
+        app.save()
+
+    def cleanup():
+        app.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.app = app
+    request.instance.app_data = data
