@@ -27,6 +27,18 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
 
     @pytest.mark.usefixtures("create_user")
+    def test_index_paged_get(self):
+        self.login_as_user()
+
+        url = reverse('site_index') + '?page=1'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        url = reverse('site_index') + '?page=a'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_user")
     def test_register_get(self):
         self.login_as_user()
         url = reverse('app_register')
@@ -48,6 +60,15 @@ class ApplicationTest(MongoEngineTestCase):
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200)
             self.assertContains(resp, 'redmine')
+
+    @pytest.mark.usefixtures("create_user")
+    def test_register_invalid_post(self):
+        self.login_as_user()
+        url = reverse('app_register')
+
+        resp = self.client.post(url, {'name': 'redmine'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required.")
 
     @pytest.mark.usefixtures("create_app")
     def test_build_package_post(self):
@@ -88,9 +109,29 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertContains(resp, escape(new_metadata))
 
     @pytest.mark.usefixtures("create_app")
+    def test_app_metadata_download(self):
+        self.login_as_user()
+
+        url = reverse('app_metadata_yml', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.content, self.app_data['metadata'])
+
+    @pytest.mark.usefixtures("create_app")
     def test_app_packages_get(self):
         self.login_as_user()
         url = reverse('app_packages', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_packages_paged_get(self):
+        self.login_as_user()
+
+        url = reverse('app_packages', args=[self.app.safe_id]) + '?page=1'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        url = reverse('app_packages', args=[self.app.safe_id]) + '?page=a'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
@@ -116,6 +157,59 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
 
     @pytest.mark.usefixtures("create_app")
+    def test_app_tasks_paged_get(self):
+        self.login_as_user()
+
+        url = reverse('app_tasks', args=[self.app.safe_id]) + '?page=1'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        url = reverse('app_tasks', args=[self.app.safe_id]) + '?page=a'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_domains_get(self):
+        self.login_as_user()
+        url = reverse('app_domains', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_domains_paged_get(self):
+        self.login_as_user()
+
+        url = reverse('app_domains', args=[self.app.safe_id]) + '?page=1'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        url = reverse('app_domains', args=[self.app.safe_id]) + '?page=a'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_assign_domain_get(self):
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_assign_domain_invalid_post(self):
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.post(url, {'domain': 'www.google.com'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'No TXT record for domain www.google.com')
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_start_invalid_get(self):
+        self.login_as_user()
+        url = reverse('app_start', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 406)
+
+    @pytest.mark.usefixtures("create_app")
     def test_app_start_invalid_post(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])
@@ -123,10 +217,24 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 406)
 
     @pytest.mark.usefixtures("create_app")
+    def test_app_stop_invalid_get(self):
+        self.login_as_user()
+        url = reverse('app_stop', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 406)
+
+    @pytest.mark.usefixtures("create_app")
     def test_app_stop_invalid_post(self):
         self.login_as_user()
         url = reverse('app_stop', args=[self.app.safe_id])
         resp = self.client.post(url, {'confirm': True})
+        self.assertEqual(resp.status_code, 406)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_edit_run_plan_invalid_get(self):
+        self.login_as_user()
+        url = reverse('app_edit_run_plan', args=[self.app.safe_id])
+        resp = self.client.get(url)
         self.assertEqual(resp.status_code, 406)
 
     @pytest.mark.usefixtures("create_app")

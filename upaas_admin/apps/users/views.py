@@ -69,15 +69,14 @@ class UserTasksView(LoginRequiredMixin, AppTemplatesDirMixin, PaginationMixin,
     tab_label = _('Tasks')
 
     def get(self, request, *args, **kwargs):
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
         self.object_list = request.user.tasks.order_by('-date_created',
                                                        'parent')
         paginator = Paginator(self.object_list, self.paginate_by,
                               request=request)
-        tasks = paginator.page(page)
+        try:
+            tasks = paginator.page(request.GET.get('page', 1))
+        except PageNotAnInteger:
+            tasks = paginator.page(1)
         context = self.get_context_data(tasks=tasks.object_list,
                                         task_statuses=TaskStatus,
                                         page_obj=tasks)

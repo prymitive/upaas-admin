@@ -58,16 +58,15 @@ class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
     tab_label = _('Applications')
 
     def get(self, request, *args, **kwargs):
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
         self.object_list = request.user.applications
         paginator = Paginator(self.object_list, self.paginate_by,
                               request=request)
-        tasks = paginator.page(page)
-        context = self.get_context_data(object_list=tasks.object_list,
-                                        page_obj=tasks)
+        try:
+            apps = paginator.page(request.GET.get('page', 1))
+        except PageNotAnInteger:
+            apps = paginator.page(1)
+        context = self.get_context_data(object_list=apps.object_list,
+                                        page_obj=apps)
         return self.render_to_response(context)
 
 
@@ -153,15 +152,14 @@ class ApplicationPackagesView(LoginRequiredMixin, OwnedAppsMixin,
     tab_label = _('Packages')
 
     def get(self, request, *args, **kwargs):
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
         self.object = self.get_object()
         self.object_list = Package.objects(application=self.object)
         paginator = Paginator(self.object_list, self.paginate_by,
                               request=request)
-        packages = paginator.page(page)
+        try:
+            packages = paginator.page(request.GET.get('page', 1))
+        except PageNotAnInteger:
+            packages = paginator.page(1)
         context = self.get_context_data(object=self.object,
                                         packages=packages.object_list,
                                         page_obj=packages)
@@ -213,16 +211,15 @@ class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
     tab_label = _('Tasks')
 
     def get(self, request, *args, **kwargs):
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
         self.object = self.get_object()
         self.object_list = self.object.tasks.order_by('-date_created',
                                                       'parent')
         paginator = Paginator(self.object_list, self.paginate_by,
                               request=request)
-        tasks = paginator.page(page)
+        try:
+            tasks = paginator.page(request.GET.get('page', 1))
+        except PageNotAnInteger:
+            tasks = paginator.page(1)
         context = self.get_context_data(object=self.object,
                                         tasks=tasks.object_list,
                                         task_statuses=TaskStatus,
