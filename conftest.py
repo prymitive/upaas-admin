@@ -12,7 +12,10 @@ import os
 import pytest
 
 from django.conf import settings
+from django.test import Client
 from django.test.utils import get_runner
+
+from upaas_admin.apps.users.models import User
 
 
 def is_configured():
@@ -39,3 +42,31 @@ def _django_runner(request):
     request.addfinalizer(db_teardown)
 
     return runner
+
+
+@pytest.fixture(scope="function")
+def create_user(request):
+    data = {
+        'login': 'testlogin',
+        'first_name': 'ąćźółęż',
+        'last_name': 'CAP1TAL',
+        'email': 'email@domain.com',
+        'password': '123456789źćż',
+    }
+
+    u = User.objects(username=data['login']).first()
+    if u:
+        u.delete()
+
+    u = User(username=data['login'], first_name=data['first_name'],
+             last_name=data['last_name'], email=data['email'],
+             is_superuser=False)
+    u.set_password(data['password'])
+    u.save()
+
+    def cleanup():
+        u.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.user = u
+    request.instance.user_data = data

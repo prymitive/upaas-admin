@@ -7,42 +7,22 @@
 
 from __future__ import unicode_literals
 
+import pytest
+
 from django.core.urlresolvers import reverse
 
 from upaas_admin.common.tests import MongoEngineTestCase
 
-from upaas_admin.apps.users.models import User
-
 
 class UserTest(MongoEngineTestCase):
 
-    LOGIN = 'testlogin'
-    FIRST_NAME = 'ąćźółęż'
-    LAST_NAME = 'CAP1TAL'
-    EMAIL = 'email@domain.com'
-    PASSWORD = '123456789źćż'
-
-    def create_user(self):
-        u = User.objects(username=self.LOGIN).first()
-        if u:
-            u.delete()
-
-        u = User(username=self.LOGIN, first_name=self.FIRST_NAME,
-                 last_name=self.LAST_NAME, email=self.EMAIL,
-                 is_superuser=False)
-        u.set_password(self.PASSWORD)
-        u.save()
-
-        return u
-
+    @pytest.mark.usefixtures("create_user")
     def test_user_creation(self):
-        u = self.create_user()
-
-        self.assertEqual(u.username, self.LOGIN)
-        self.assertEqual(u.first_name, self.FIRST_NAME)
-        self.assertEqual(u.last_name, self.LAST_NAME)
-        self.assertEqual(u.email, self.EMAIL)
-        self.assertFalse(u.is_superuser)
+        self.assertEqual(self.user.username, self.user_data['login'])
+        self.assertEqual(self.user.first_name, self.user_data['first_name'])
+        self.assertEqual(self.user.last_name, self.user_data['last_name'])
+        self.assertEqual(self.user.email, self.user_data['email'])
+        self.assertFalse(self.user.is_superuser)
 
     def test_login_view_get(self):
         url = reverse('site_login')
@@ -51,40 +31,43 @@ class UserTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'You need to login to access this page')
 
+    @pytest.mark.usefixtures("create_user")
     def test_login_view_post(self):
-        u = self.create_user()
         url = reverse('site_login')
-        resp = self.client.post(url, {'username': self.LOGIN,
-                                      'password': self.PASSWORD})
-        self.assertEqual(302, resp.status_code)
+        resp = self.client.post(url, {'username': self.user_data['login'],
+                                      'password': self.user_data['password']})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], 'http://testserver/')
 
     def test_login_view_post_invalid(self):
         url = reverse('site_login')
-        resp = self.client.post(url, {'username': self.LOGIN,
+        resp = self.client.post(url, {'username': 'invalid',
                                       'password': 'invalid'})
-        self.assertEqual(200, resp.status_code)
+        self.assertEqual(resp.status_code, 200)
 
+    @pytest.mark.usefixtures("create_user")
     def test_api_key_get(self):
-        u = self.create_user()
-        self.client.login(username=self.LOGIN, password=self.PASSWORD)
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
 
         url = reverse('users_profile')
         resp = self.client.get(url)
 
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'apikey-input')
-        self.assertContains(resp, u.apikey)
+        self.assertContains(resp, self.user.apikey)
 
+    @pytest.mark.usefixtures("create_user")
     def test_api_key_reset(self):
-        u = self.create_user()
-        self.client.login(username=self.LOGIN, password=self.PASSWORD)
-        old_apikey = u.apikey
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
+        old_apikey = self.user.apikey
 
         url = reverse('users_apikey_reset')
         resp = self.client.post(url, {'apikey': old_apikey})
         self.assertEqual(resp.status_code, 302)
 
-        u.reload()
+        self.user.reload()
 
         url = reverse('users_profile')
         resp = self.client.get(url)
@@ -92,25 +75,44 @@ class UserTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'apikey-input')
         self.assertNotContains(resp, old_apikey)
-        self.assertContains(resp, u.apikey)
+        self.assertContains(resp, self.user.apikey)
 
+    @pytest.mark.usefixtures("create_user")
     def test_password_change(self):
-        u = self.create_user()
-        self.client.login(username=self.LOGIN, password=self.PASSWORD)
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
         new_password = 'myNewPassw0rd'
 
         url = reverse('password')
-        resp = self.client.post(url, {'old_password': self.PASSWORD,
-                                      'new_password1': new_password,
-                                      'new_password2': new_password})
+        resp = self.client.post(url, {
+            'old_password': self.user_data['password'],
+            'new_password1': new_password,
+            'new_password2': new_password})
         self.assertEqual(resp.status_code, 302)
 
         url = reverse('site_login')
 
-        resp = self.client.post(url, {'username': self.LOGIN,
-                                      'password': self.PASSWORD})
-        self.assertEqual(200, resp.status_code)
+        resp = self.client.post(url, {'username': self.user_data['login'],
+                                      'password': self.user_data['password']})
+        self.assertEqual(resp.status_code, 200)
 
-        resp = self.client.post(url, {'username': self.LOGIN,
+        resp = self.client.post(url, {'username': self.user_data['login'],
                                       'password': new_password})
-        self.assertEqual(302, resp.status_code)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], 'http://testserver/')
+
+    @pytest.mark.usefixtures("create_user")
+    def test_limits_get(self):
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
+        url = reverse('users_limits')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_tasks_get(self):
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
+        url = reverse('users_tasks')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
