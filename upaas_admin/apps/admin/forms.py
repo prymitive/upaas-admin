@@ -11,12 +11,11 @@ from django import forms
 
 from mongoforms import MongoForm
 
-from mongoengine.django.auth import make_password
-
 from upaas_admin.common.forms import ContribFormFieldGenerator
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import UserLimits
+from upaas_admin.common.hacks.mongoengine_auth import make_password
 
 
 #FIXME patch crispy form-horizontal to support checkboxes and move to crispy

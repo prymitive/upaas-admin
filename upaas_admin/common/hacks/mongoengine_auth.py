@@ -2,7 +2,8 @@
 """
 Fixed copy of mongoengine/django/auth.py from 0.8.6
 Workaround for bug https://github.com/MongoEngine/mongoengine/issues/531
-Delete this file and fix users/models.py import once it's fixed upstream
+Delete this file and fix users/models.py and admin/forms.py imports once it's
+fixed upstream
 """
 
 from __future__ import unicode_literals
@@ -285,7 +286,7 @@ class User(Document):
     def get_full_name(self):
         """Returns the users first and last names, separated by a space.
         """
-        full_name = u'%s %s' % (self.first_name or '', self.last_name or '')
+        full_name = '%s %s' % (self.first_name or '', self.last_name or '')
         return full_name.strip()
 
     def is_anonymous(self):
