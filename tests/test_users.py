@@ -55,6 +55,15 @@ class UserTest(MongoEngineTestCase):
         self.assertContains(resp, self.user.apikey)
 
     @pytest.mark.usefixtures("create_user")
+    def test_api_key_invalid_reset(self):
+        self.login_as_user()
+
+        url = reverse('users_apikey_reset')
+        resp = self.client.post(url, {'apikey': '12345'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Current API key verification failed")
+
+    @pytest.mark.usefixtures("create_user")
     def test_api_key_reset(self):
         self.login_as_user()
         old_apikey = self.user.apikey
