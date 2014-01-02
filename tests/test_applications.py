@@ -9,6 +9,12 @@ from __future__ import unicode_literals
 
 import os
 
+try:
+    from io import StringIO
+except ImportError:
+    # noinspection PyCompatibility
+    from StringIO import StringIO
+
 import pytest
 
 from django.core.urlresolvers import reverse
@@ -61,6 +67,17 @@ class ApplicationTest(MongoEngineTestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertContains(resp, 'redmine')
 
+    @pytest.mark.usefixtures("create_app")
+    def test_register_duplicated_post(self):
+        self.login_as_user()
+        url = reverse('app_register')
+
+        resp = self.client.post(url, {'name': self.app_data['name'],
+                                      'metadata': self.app_data['metadata']})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Application with name %s already "
+                                  "registered" % self.app_data['name'])
+
     @pytest.mark.usefixtures("create_user")
     def test_register_invalid_post(self):
         self.login_as_user()
@@ -69,6 +86,21 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.post(url, {'name': 'redmine'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required.")
+
+        resp = self.client.post(url, {'name': 'red mine'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Name cannot contain spaces")
+
+        resp = self.client.post(url, {'name': 'r'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Ensure this value has at least 2 characters"
+                                  " (it has 1).")
+
+        metadata = StringIO(':::')
+        metadata.name = 'meta.yml'
+        resp = self.client.post(url, {'name': 'redmine', 'metadata': metadata})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Missing required configuration entry:")
 
     @pytest.mark.usefixtures("create_app")
     def test_build_package_post(self):
