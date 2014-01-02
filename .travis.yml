@@ -10,8 +10,8 @@ install:
   - sudo apt-get -yy install nodejs
   - sudo npm install -g less
   - pip install -U pip
-  - pip install -Ur requirements.txt --use-mirrors --download-cache $HOME/.pip-cache
-  - pip install -Ur requirements-test.txt --use-mirrors --download-cache $HOME/.pip-cache
+  - pip install -Ur requirements.txt --use-mirrors
+  - pip install -Ur requirements-test.txt --use-mirrors
   - pip install --no-deps mongoengine==0.8.6
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
 
@@ -20,13 +20,6 @@ script:
 
 services:
   - mongodb
-
-cache:
-  apt: true
-  directories:
-    - $HOME/.pip-cache/
-    - $HOME/virtualenv/python2.6/lib/python2.6/site-packages
-    - $HOME/virtualenv/python2.7/lib/python2.7/site-packages
 
 virtualenv:
   system_site_packages: true
