@@ -43,9 +43,6 @@ class MongoEngineTestCase(TestCase):
     def _fixture_setup(self):
         pass
 
-    def _fixture_teardown(self):
-        pass
-
     def _post_teardown(self):
         pass
 

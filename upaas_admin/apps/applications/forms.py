@@ -146,26 +146,25 @@ class AssignApplicatiomDomainForm(CrispyForm):
 
     def clean_domain(self):
         domain = self.cleaned_data['domain']
-        try:
-            txt_records = query(domain, 'TXT')
-        except NXDOMAIN:
+        if Application.objects(domains__name=domain):
             raise forms.ValidationError(_(
-                "Domain {domain} does not exist").format(domain=domain))
-        except NoAnswer:
-            raise forms.ValidationError(_(
-                "No TXT record for domain {domain}").format(domain=domain))
-        except Exception as e:
-            log.error(_("Exception during '{domain}' verification: "
-                        "{e}").format(domain=domain, e=e))
-            raise forms.ValidationError(_(
-                "Unhandled exception during domain verification, please try "
-                "again later"))
-        else:
-            if Application.objects(domains__name=domain):
-                raise forms.ValidationError(_("Domain {domain} was already "
-                                              "assigned").format(
-                    domain=domain))
-            if self.needs_validation:
+                "Domain {domain} was already assigned").format(domain=domain))
+        if self.needs_validation:
+            try:
+                txt_records = query(domain, 'TXT')
+            except NXDOMAIN:
+                raise forms.ValidationError(_(
+                    "Domain {domain} does not exist").format(domain=domain))
+            except NoAnswer:
+                raise forms.ValidationError(_(
+                    "No TXT record for domain {domain}").format(domain=domain))
+            except Exception as e:
+                log.error(_("Exception during '{domain}' verification: "
+                            "{e}").format(domain=domain, e=e))
+                raise forms.ValidationError(_(
+                    "Unhandled exception during domain verification, please "
+                    "try again later"))
+            else:
                 for record in txt_records:
                     if self.app.domain_validation_code in record.strings:
                         self.domain_validated = True
@@ -173,8 +172,8 @@ class AssignApplicatiomDomainForm(CrispyForm):
                 raise forms.ValidationError(_(
                     "No verification code in TXT record for {domain}").format(
                     domain=domain))
-            else:
-                return domain
+        else:
+            return domain
 
 
 class RemoveApplicatiomDomainForm(CrispyForm):

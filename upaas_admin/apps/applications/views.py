@@ -23,7 +23,7 @@ from mongoengine.errors import ValidationError, DoesNotExist
 
 from tabination.views import TabView
 
-from pure_pagination import Paginator, PageNotAnInteger
+from pure_pagination import Paginator, PageNotAnInteger, EmptyPage
 from pure_pagination.mixins import PaginationMixin
 
 from upaas_admin.common.mixin import (
@@ -65,6 +65,8 @@ class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
             apps = paginator.page(request.GET.get('page', 1))
         except PageNotAnInteger:
             apps = paginator.page(1)
+        except EmptyPage:
+            raise Http404
         context = self.get_context_data(object_list=apps.object_list,
                                         page_obj=apps)
         return self.render_to_response(context)
@@ -160,6 +162,8 @@ class ApplicationPackagesView(LoginRequiredMixin, OwnedAppsMixin,
             packages = paginator.page(request.GET.get('page', 1))
         except PageNotAnInteger:
             packages = paginator.page(1)
+        except EmptyPage:
+            raise Http404
         context = self.get_context_data(object=self.object,
                                         packages=packages.object_list,
                                         page_obj=packages)
@@ -220,6 +224,8 @@ class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
             tasks = paginator.page(request.GET.get('page', 1))
         except PageNotAnInteger:
             tasks = paginator.page(1)
+        except EmptyPage:
+            raise Http404
         context = self.get_context_data(object=self.object,
                                         tasks=tasks.object_list,
                                         task_statuses=TaskStatus,
@@ -546,9 +552,9 @@ class DownloadPackageMetadataView(LoginRequiredMixin, OwnedPackagesMixin,
 
 
 class ApplicationDomainsView(LoginRequiredMixin, OwnedAppsMixin,
-                             AppTemplatesDirMixin, PaginationMixin,
-                             MongoDetailView):
+                             AppTemplatesDirMixin, MongoDetailView):
 
+    #FIXME pagination
     template_name = 'domains.html'
     model = Application
     slug_field = 'id'

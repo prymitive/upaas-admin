@@ -117,3 +117,17 @@ class UserTest(MongoEngineTestCase):
         url = reverse('users_tasks')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_tasks_paged_get(self):
+        self.login_as_user()
+        url = reverse('users_tasks')
+
+        resp = self.client.get(url + '?page=1')
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(url + '?page=a')
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(url + '?page=10')
+        self.assertEqual(resp.status_code, 404)
