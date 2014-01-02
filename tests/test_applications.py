@@ -248,7 +248,7 @@ class ApplicationTest(MongoEngineTestCase):
     def test_app_start_invalid_post(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])
-        resp = self.client.post(url, {'confirm': True})
+        resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 406)
 
     @pytest.mark.usefixtures("create_app")
@@ -278,3 +278,38 @@ class ApplicationTest(MongoEngineTestCase):
         url = reverse('app_edit_run_plan', args=[self.app.safe_id])
         resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 406)
+
+    @pytest.mark.usefixtures("create_pkg")
+    @pytest.mark.usefixtures("create_backend")
+    def test_app_start_edit_stop(self):
+        self.login_as_user()
+
+        url = reverse('app_start', args=[self.app.safe_id])
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
+        self.assertEqual(resp.status_code, 302)
+        self.app.reload()
+        self.assertNotEqual(self.app.run_plan, None)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 406)
+
+        resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
+        self.assertEqual(resp.status_code, 406)
+
+        url = reverse('app_edit_run_plan', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {'workers_min': 2, 'workers_max': 3})
+        self.assertEqual(resp.status_code, 302)
+
+        url = reverse('app_stop', args=[self.app.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {'confirm': True})
+        self.assertEqual(resp.status_code, 302)

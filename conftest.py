@@ -16,7 +16,9 @@ from django.test.utils import get_runner
 from django.utils.html import escape
 
 from upaas_admin.apps.users.models import User
-from upaas_admin.apps.applications.models import Application
+from upaas_admin.apps.applications.models import Application, Package
+from upaas_admin.apps.servers.models import BackendServer
+from upaas.distro import distro_name, distro_version, distro_arch
 
 
 def is_configured():
@@ -102,3 +104,67 @@ def create_app(request):
 
     request.instance.app = app
     request.instance.app_data = data
+
+
+@pytest.fixture(scope="function")
+def create_pkg(request):
+    create_app(request)
+
+    pkg = Package(metadata=request.instance.app_data['metadata'],
+                  application=request.instance.app,
+                  interpreter_name=request.instance.app.interpreter_name,
+                  interpreter_version=request.instance.app.interpreter_version,
+                  filename='pkg', bytes=1024, checksum='abcdefg',
+                  builder='fake builder', distro_name=distro_name(),
+                  distro_version=distro_version(), distro_arch=distro_arch())
+    pkg.save()
+
+    def cleanup():
+        pkg.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.app.current_package = pkg
+    request.instance.app.save()
+
+    request.instance.pkg = pkg
+
+
+@pytest.fixture(scope="function")
+def create_pkg_list(request):
+    create_app(request)
+
+    pkg_list = []
+
+    for i in range(0, 33):
+        pkg = Package(
+            metadata=request.instance.app_data['metadata'],
+            application=request.instance.app,
+            interpreter_name=request.instance.app.interpreter_name,
+            interpreter_version=request.instance.app.interpreter_version,
+            filename='pkg%d' % i, bytes=1024, checksum='abcdefg',
+            builder='fake builder', distro_name=distro_name(),
+            distro_version=distro_version(), distro_arch=distro_arch())
+        pkg.save()
+        pkg_list.append(pkg)
+
+    def cleanup():
+        for pkg in pkg_list:
+            pkg.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.app.current_package = pkg_list[0]
+    request.instance.app.save()
+
+    request.instance.pkg_list = pkg_list
+
+
+@pytest.fixture(scope="function")
+def create_backend(request):
+    backend = BackendServer(name='backend', ip='127.0.0.1')
+    backend.save()
+
+    def cleanup():
+        backend.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.backend = backend
