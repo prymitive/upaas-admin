@@ -55,11 +55,11 @@ class ApplicationTest(MongoEngineTestCase):
         with open(metadata_path, 'rb') as metadata:
             resp = self.client.post(url, {'name': 'redmine',
                                           'metadata': metadata})
-            self.assertEqual(resp.status_code, 302)
-            url = resp['Location']
-            resp = self.client.get(url)
-            self.assertEqual(resp.status_code, 200)
-            self.assertContains(resp, 'redmine')
+        self.assertEqual(resp.status_code, 302)
+        url = resp['Location']
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'redmine')
 
     @pytest.mark.usefixtures("create_app")
     def test_register_duplicated_post(self):
@@ -94,6 +94,15 @@ class ApplicationTest(MongoEngineTestCase):
             resp = self.client.post(url, {'name': 'redmine',
                                           'metadata': metadata})
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, escape(
+            "expected '<document start>', but found "))
+
+        metadata_path = os.path.join(os.path.dirname(__file__),
+                                     'meta/invalid.yml')
+        with open(metadata_path, 'rb') as metadata:
+            resp = self.client.post(url, {'name': 'invalid',
+                                          'metadata': metadata})
+        self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Missing required configuration entry:")
 
     @pytest.mark.usefixtures("create_app")
@@ -125,7 +134,7 @@ class ApplicationTest(MongoEngineTestCase):
                                          'meta/errbit-stable.yml')
         with open(new_metadata_path, 'rb') as new_metadata_file:
             resp = self.client.post(url, {'metadata': new_metadata_file})
-            self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 302)
 
         url = reverse('app_metadata', args=[self.app.safe_id])
         resp = self.client.get(url)
