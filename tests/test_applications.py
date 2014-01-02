@@ -9,16 +9,11 @@ from __future__ import unicode_literals
 
 import os
 
-try:
-    from io import StringIO
-except ImportError:
-    # noinspection PyCompatibility
-    from StringIO import StringIO
-
 import pytest
 
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from upaas_admin.common.tests import MongoEngineTestCase
 
@@ -96,8 +91,7 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertContains(resp, "Ensure this value has at least 2 characters"
                                   " (it has 1).")
 
-        metadata = StringIO(':::')
-        metadata.name = 'meta.yml'
+        metadata = SimpleUploadedFile('meta.yml', ':::')
         resp = self.client.post(url, {'name': 'redmine', 'metadata': metadata})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Missing required configuration entry:")
