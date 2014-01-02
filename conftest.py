@@ -17,7 +17,7 @@ from django.utils.html import escape
 
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.applications.models import Application, Package
-from upaas_admin.apps.servers.models import BackendServer
+from upaas_admin.apps.servers.models import BackendServer, RouterServer
 from upaas.distro import distro_name, distro_version, distro_arch
 
 
@@ -168,3 +168,16 @@ def create_backend(request):
     request.addfinalizer(cleanup)
 
     request.instance.backend = backend
+
+
+@pytest.fixture(scope="function")
+def create_router(request):
+    router = RouterServer(name='backend', private_ip='127.0.0.1',
+                          public_ip='127.0.0.1')
+    router.save()
+
+    def cleanup():
+        router.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.router = router
