@@ -90,7 +90,7 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertContains(resp, "Ensure this value has at least 2 characters"
                                   " (it has 1).")
 
-        with open(os.path.basename(__file__), 'rb') as metadata:
+        with open(__file__, 'rb') as metadata:
             resp = self.client.post(url, {'name': 'redmine',
                                           'metadata': metadata})
         self.assertEqual(resp.status_code, 200)
