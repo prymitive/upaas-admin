@@ -282,13 +282,11 @@ class Task(Document):
         """
         Returns list of created tasks of given class with given filter.
         """
-        ret = []
         klass = find_task_class(task_class)
         if klass:
-            ret = klass.objects(**kwargs)
+            return klass.objects(**kwargs)
         else:
             log.error("Task class not found: %s" % task_class)
-        return ret
 
     @classmethod
     def put(cls, task_class, limit=None, *args, **kwargs):

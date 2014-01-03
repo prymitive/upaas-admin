@@ -8,6 +8,7 @@
 from __future__ import unicode_literals
 
 import os
+from socket import gethostname
 
 import pytest
 
@@ -167,7 +168,8 @@ def create_pkg_list(request):
 
 @pytest.fixture(scope="function")
 def create_backend(request):
-    backend = BackendServer(name='backend', ip='127.0.0.1')
+    name = gethostname()
+    backend = BackendServer(name=name, ip='127.0.0.1')
     backend.save()
 
     def cleanup():
@@ -175,6 +177,7 @@ def create_backend(request):
     request.addfinalizer(cleanup)
 
     request.instance.backend = backend
+    request.instance.backend_name = name
 
 
 @pytest.fixture(scope="function")

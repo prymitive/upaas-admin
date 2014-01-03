@@ -48,7 +48,7 @@ bootstrap:
     LC_ALL: C
     LANG: C
   commands:
-    - debootstrap --components=main,universe,multiverse,restricted `lsb_release -sc` %workdir%
+    - mkdir -p %workdir%
   # maximum number of days to keep bootstraped os image,
   # if image is older we will created new one
   maxage: 7

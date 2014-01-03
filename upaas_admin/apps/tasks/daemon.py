@@ -53,6 +53,9 @@ class DaemonCommand(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--workers', dest='workers', type=int, default=2,
                     help='Number of workers to spawn'),
+        make_option('--task-limit', dest='task_limit', type=int, default=0,
+                    help='Exit after processing given number of tasks '
+                         '(default is no limit)'),
     )
 
     task_class = None
@@ -61,6 +64,7 @@ class DaemonCommand(BaseCommand):
         super(DaemonCommand, self).__init__(*args, **kwargs)
         self.pool = None
         self.is_exiting = False
+        self.tasks_done = 0
 
     def worker_exit_handler(self, *args):
         log.info("Going to shutdown, waiting for worker(s) to terminate")
@@ -119,9 +123,11 @@ class DaemonCommand(BaseCommand):
         self.register_backend()
 
         workers_count = options['workers']
+        task_limit = options['task_limit']
         log.info("Started master process with pid %d, running %d worker (s), "
-                 "task class: %s" % (os.getpid(), workers_count,
-                                     self.task_class.__name__))
+                 "task class: %s, task limit %d" % (
+                     os.getpid(), workers_count, self.task_class.__name__,
+                     task_limit))
         self.pool = multiprocessing.Pool(workers_count, worker_init)
 
         results = []
@@ -135,13 +141,20 @@ class DaemonCommand(BaseCommand):
             if len(results) < workers_count:
                 task = self.pop_task()
                 if task:
+                    self.tasks_done += 1
                     log.info("Got task '%s' - %s" % (task.id,
                                                      task.__class__.__name__))
                     result = self.pool.apply_async(execute_task, [task])
                     results.append(result)
-                    time.sleep(1)
+                    if task_limit and self.tasks_done >= task_limit:
+                        log.info("Task limit reached (%d), exiting",
+                                 task_limit)
+                        self.is_exiting = True
+                    else:
+                        time.sleep(1)
                 else:
-                    log.debug("No task popped, sleeping")
+                    log.debug("No task popped, sleeping (done: %d, limit: "
+                              "%d)" % (self.tasks_done, task_limit))
                     time.sleep(2)
             else:
                 completed = []

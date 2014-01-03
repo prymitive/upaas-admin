@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 
 import pytest
 
-from django.core.management import call_command
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 
@@ -20,9 +19,6 @@ from upaas_admin.apps.servers.models import RouterServer, BackendServer
 
 
 class AdminTest(MongoEngineTestCase):
-
-    def test_create_indexes_cmd(self):
-        self.assertEqual(call_command('create_indexes'), None)
 
     @pytest.mark.usefixtures("create_user")
     def test_superuser_required_get(self):
