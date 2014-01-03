@@ -12,6 +12,8 @@ install:
   - pip install -Ur requirements.txt --use-mirrors
   - pip install -Ur requirements-test.txt --use-mirrors
   - pip install --no-deps mongoengine==0.8.6
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
 
 script:
