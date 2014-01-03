@@ -239,6 +239,13 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 406)
 
+    @pytest.mark.usefixtures("create_user")
+    def test_app_start_404_get(self):
+        self.login_as_user()
+        url = reverse('app_start', args=['123456'])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
     @pytest.mark.usefixtures("create_app")
     def test_app_start_invalid_post(self):
         self.login_as_user()
@@ -267,6 +274,13 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 406)
 
+    @pytest.mark.usefixtures("create_user")
+    def test_app_edit_run_plan_404_get(self):
+        self.login_as_user()
+        url = reverse('app_edit_run_plan', args=['123456'])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
     @pytest.mark.usefixtures("create_app")
     def test_app_edit_run_plan_invalid_post(self):
         self.login_as_user()
@@ -280,7 +294,6 @@ class ApplicationTest(MongoEngineTestCase):
         self.login_as_user()
 
         url = reverse('app_start', args=[self.app.safe_id])
-
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 

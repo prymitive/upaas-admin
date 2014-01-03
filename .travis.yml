@@ -17,7 +17,8 @@ install:
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
 
 script:
-  - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.tests py.test -v --pep8 --cov upaas_admin --cov-config .coveragerc
+  - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.tests coverage run --rcfile=.coveragerc `which py.test` -v --pep8
+  - coverage report
 
 services:
   - mongodb
