@@ -117,6 +117,14 @@ class AdminTest(MongoEngineTestCase):
         self.assertEqual(u.is_superuser, False)
 
     @pytest.mark.usefixtures("create_superuser")
+    def test_admin_user_limits_create_get(self):
+        self.login_as_user()
+
+        url = reverse('admin_user_limits_create', args=[self.user.safe_id])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    @pytest.mark.usefixtures("create_superuser")
     def test_admin_user_limits_create_invalid_post(self):
         self.login_as_user()
         url = reverse('admin_user_limits_create', args=[self.user.safe_id])
