@@ -76,6 +76,13 @@ def create_user(request):
 
 
 @pytest.fixture(scope="function")
+def create_superuser(request):
+    create_user(request)
+    request.instance.user.is_superuser = True
+    request.instance.user.save()
+
+
+@pytest.fixture(scope="function")
 def create_app(request):
     data = {
         'name': 'redmine',

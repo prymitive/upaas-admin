@@ -21,10 +21,14 @@ class UserLimits(Document):
     """
     user = ReferenceField('User', dbref=False, unique=True, required=True)
 
-    running_apps = IntField(verbose_name=_('running applications limit'))
-    packages_per_app = IntField(verbose_name=_('stored packages limit'))
-    workers = IntField(verbose_name=_('total running workers limit'))
-    memory_per_worker = IntField(verbose_name=_('memory per worker limit'))
+    running_apps = IntField(verbose_name=_('running applications limit'),
+                            min_value=0)
+    packages_per_app = IntField(verbose_name=_('stored packages limit'),
+                                min_value=2)
+    workers = IntField(verbose_name=_('total running workers limit'),
+                       min_value=0)
+    memory_per_worker = IntField(verbose_name=_('memory per worker limit'),
+                                 min_value=16)
 
     meta = {
         'indexes': ['user'],
@@ -67,7 +71,7 @@ class ApplicationRunPlan(Document):
                            verbose_name=_('minimum number of workers'))
     workers_max = IntField(required=True, min_value=1, default=1,
                            verbose_name=_('maximum number of workers'))
-    memory_per_worker = IntField(required=True,
+    memory_per_worker = IntField(required=True, min_value=16,
                                  verbose_name=_('memory per worker limit'))
 
     _default_manager = QuerySetManager()

@@ -31,7 +31,6 @@ class AdminCreateUserForm(MongoForm):
     def clean_password(self):
         if self.cleaned_data['password']:
             return make_password(self.cleaned_data['password'])
-        return None
 
 
 class AdminEditUserForm(MongoForm):
