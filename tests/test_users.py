@@ -12,6 +12,7 @@ import pytest
 from django.core.urlresolvers import reverse
 
 from upaas_admin.common.tests import MongoEngineTestCase
+from upaas_admin.apps.users.models import User
 
 
 class UserTest(MongoEngineTestCase):
@@ -131,3 +132,17 @@ class UserTest(MongoEngineTestCase):
 
         resp = self.client.get(url + '?page=10')
         self.assertEqual(resp.status_code, 404)
+
+    def test_user_model_apikey_class_meth(self):
+        apikey = User.generate_apikey()
+        self.assertNotEqual(apikey, None)
+        self.assertEqual(len(apikey), 40)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_user_model_full_name_or_login_meth(self):
+        self.assertEqual(self.user.full_name_or_login,
+                         self.user.get_full_name())
+        self.user.first_name = None
+        self.user.last_name = None
+        self.user.save()
+        self.assertEqual(self.user.full_name_or_login, self.user.username)

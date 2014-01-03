@@ -62,6 +62,7 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'redmine')
+        self.assertEqual(len(self.user.applications), 1)
 
     @pytest.mark.usefixtures("create_app")
     def test_register_duplicated_post(self):
@@ -287,6 +288,14 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
         self.assertNotEqual(self.app.run_plan, None)
+
+        self.assertEqual(self.user.limits_usage['running_apps'], 1)
+        self.assertEqual(self.user.limits_usage['workers'], 4)
+
+        self.assertEqual(self.user.running_applications, [self.app])
+
+        self.assertEqual(len(self.user.tasks), 1)
+        self.assertEqual(len(self.user.recent_tasks), 1)
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 406)

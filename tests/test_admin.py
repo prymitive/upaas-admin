@@ -148,6 +148,12 @@ class AdminTest(MongoEngineTestCase):
         self.assertEqual(l.workers, 8)
         self.assertEqual(l.packages_per_app, 4)
 
+        self.assertEqual(self.user.limits_settings, l)
+        self.assertEqual(self.user.limits['running_apps'], 0)
+        self.assertEqual(self.user.limits['memory_per_worker'], 16)
+        self.assertEqual(self.user.limits['workers'], 8)
+        self.assertEqual(self.user.limits['packages_per_app'], 4)
+
         url = reverse('admin_user_limits_edit', args=[l.safe_id])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
