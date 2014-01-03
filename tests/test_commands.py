@@ -41,3 +41,7 @@ class AdminTest(MongoEngineTestCase):
         self.assertNotEqual(self.app.pending_build_tasks, [])
         self.assertEqual(
             call_command('builder_worker', task_limit=1), None)
+
+# root required
+#    def test_bootstrap_os_image_cmd(self):
+#        self.assertEqual(call_command('bootstrap_os_image'), None)
