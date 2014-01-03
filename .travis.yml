@@ -18,7 +18,10 @@ install:
 
 script:
   - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.tests coverage run --rcfile=.coveragerc `which py.test` -v --pep8
+
+after_success:
   - coverage report
+  - coveralls
 
 services:
   - mongodb
