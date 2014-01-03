@@ -117,7 +117,6 @@ class AdminTest(MongoEngineTestCase):
         u.delete()
         self.assertEqual(User.objects(username='newuser').first(), None)
 
-
     @pytest.mark.usefixtures("create_superuser")
     def test_admin_user_limits_create_edit_delete(self):
         self.login_as_user()
