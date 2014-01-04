@@ -2,5 +2,4 @@
 omit =
     upaas_admin/settings/*
     upaas_admin/common/hacks/*
-include =
-    upaas_admin/*
+source = upaas_admin
