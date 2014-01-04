@@ -26,7 +26,7 @@ setup(
     author="Łukasz Mierzwa",
     author_email='l.mierzwa@gmail.com',
     url='',
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests"]),
     include_package_data=True,
     scripts=['upaas_admin/upaas_admin'],
     **required
