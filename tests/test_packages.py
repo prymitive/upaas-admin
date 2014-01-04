@@ -7,6 +7,8 @@
 
 from __future__ import unicode_literals
 
+import os
+
 import pytest
 
 from django.core.urlresolvers import reverse
@@ -121,3 +123,47 @@ class PackageTest(MongoEngineTestCase):
         url = reverse('pkg_metadata_yml', args=[self.pkg.safe_id])
         resp = self.client.get(url)
         self.assertEqual(resp.content, self.app_data['metadata'])
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_pkg_metadata_config_method(self):
+        self.assertNotEqual(self.pkg.metadata_config, {})
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_pkg_package_path_method(self):
+        self.assertEqual(self.pkg.package_path, '/tmp/%s' % self.pkg.safe_id)
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_uwsgi_options_from_metadata_method(self):
+        self.assertEqual(self.pkg.uwsgi_options_from_metadata(),
+                         ['route = ^/ basicauth:UPAAS,admin:adm123'])
+
+    @pytest.mark.usefixtures("create_pkg")
+    @pytest.mark.usefixtures("create_backend")
+    def test_generate_uwsgi_config_method(self):
+        self.login_as_user()
+        url = reverse('app_start', args=[self.app.safe_id])
+        resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
+        self.assertEqual(resp.status_code, 302)
+        self.app.reload()
+        self.assertNotEqual(
+            self.pkg.generate_uwsgi_config(self.app.run_plan.backends[0]), [])
+
+    @pytest.mark.usefixtures("create_pkg")
+    @pytest.mark.usefixtures("create_backend")
+    def test_save_vassal_config_method(self):
+        self.login_as_user()
+        url = reverse('app_start', args=[self.app.safe_id])
+        resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
+        self.assertEqual(resp.status_code, 302)
+        self.app.reload()
+        self.pkg.save_vassal_config(self.app.run_plan.backends[0])
+        self.assertEqual(
+            os.path.isfile('/tmp/%s.ini' % self.app.safe_id), True)
+        if os.path.isfile('/tmp/%s.ini' % self.app.safe_id):
+            os.unlink('/tmp/%s.ini' % self.app.safe_id)
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_pkg_unpack_missing_method(self):
+        from upaas.storage.exceptions import StorageError
+        with pytest.raises(StorageError):
+            self.pkg.unpack()

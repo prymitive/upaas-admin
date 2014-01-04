@@ -338,3 +338,23 @@ class ApplicationTest(MongoEngineTestCase):
 
         resp = self.client.post(url, {'confirm': True})
         self.assertEqual(resp.status_code, 302)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_interpreter_version_from_app_method(self):
+        self.assertEqual(self.app.interpreter_version, '2.0.0')
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_app_interpreter_version_from_pkg_method(self):
+        self.assertEqual(self.app.interpreter_version, '2.0.0')
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_app_trim_package_files_one_method(self):
+        self.app.trim_package_files()
+
+    @pytest.mark.usefixtures("create_pkg_list")
+    def test_app_trim_package_files_many_method(self):
+        self.app.trim_package_files()
+
+    @pytest.mark.usefixtures("create_pkg_list")
+    def test_app_remove_unpacked_packages_method(self):
+        self.app.remove_unpacked_packages()

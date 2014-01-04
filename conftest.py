@@ -169,6 +169,11 @@ def create_pkg_list(request):
 @pytest.fixture(scope="function")
 def create_backend(request):
     name = gethostname()
+
+    backend = BackendServer.objects(name=name).first()
+    if backend:
+        backend.delete()
+
     backend = BackendServer(name=name, ip='127.0.0.1')
     backend.save()
 
@@ -182,7 +187,11 @@ def create_backend(request):
 
 @pytest.fixture(scope="function")
 def create_router(request):
-    router = RouterServer(name='backend', private_ip='127.0.0.1',
+    router = RouterServer.objects(name='router').first()
+    if router:
+        router.delete()
+
+    router = RouterServer(name='router', private_ip='127.0.0.1',
                           public_ip='127.0.0.1')
     router.save()
 
