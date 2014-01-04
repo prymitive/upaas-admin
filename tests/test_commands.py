@@ -42,6 +42,44 @@ class AdminTest(MongoEngineTestCase):
         self.assertEqual(
             call_command('builder_worker', task_limit=1), None)
 
-# root required
-#    def test_bootstrap_os_image_cmd(self):
-#        self.assertEqual(call_command('bootstrap_os_image'), None)
+    def test_create_user_cmd(self):
+        from upaas_admin.apps.users.models import User
+        self.assertEqual(call_command('create_user', login='mylogin',
+                                      firstname='FirstŁÓŹ',
+                                      lastname='ÓŹĆąLast',
+                                      email='me@domain.com',
+                                      password='12345678'), None)
+        u = User.objects(username='mylogin').first()
+        self.assertNotEqual(u, None)
+        self.assertEqual(u.first_name, 'FirstŁÓŹ')
+        self.assertEqual(u.last_name, 'ÓŹĆąLast')
+        self.assertEqual(u.email, 'me@domain.com')
+        self.assertEqual(u.is_active, True)
+        self.assertEqual(u.is_superuser, False)
+        u.delete()
+
+    def test_create_admin_cmd(self):
+        from upaas_admin.apps.users.models import User
+        self.assertEqual(call_command('create_user', login='mylogin',
+                                      firstname='FirstŁÓŹ',
+                                      lastname='ÓŹĆąLast',
+                                      email='me@domain.com',
+                                      password='12345678',
+                                      admin=True), None)
+        u = User.objects(username='mylogin').first()
+        self.assertNotEqual(u, None)
+        self.assertEqual(u.first_name, 'FirstŁÓŹ')
+        self.assertEqual(u.last_name, 'ÓŹĆąLast')
+        self.assertEqual(u.email, 'me@domain.com')
+        self.assertEqual(u.is_active, True)
+        self.assertEqual(u.is_superuser, True)
+        u.delete()
+
+    def test_bootstrap_os_image_root_required_cmd(self):
+        with pytest.raises(SystemExit):
+            self.assertEqual(call_command('bootstrap_os_image'), None)
+
+    def test_bootstrap_os_image_as_user_cmd(self):
+        with pytest.raises(OSError):
+            self.assertEqual(
+                call_command('bootstrap_os_image', as_user=True), None)

@@ -30,12 +30,15 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--force', action='store_true', dest='force',
                     default=False, help='Generate new OS image even if there '
-                                        'is valid one already generated'),)
+                                        'is valid one already generated'),
+        make_option('--as-user', action='store_true', dest='as_user',
+                    default=False, help="Don't exit if running this command "
+                                        "as non root user"))
 
     def handle(self, *args, **options):
         builder = OSBuilder(settings.UPAAS_CONFIG)
         if options['force'] or not builder.has_valid_os_image():
-            if getuid() != 0:
+            if getuid() != 0 and not options['as_user']:
                 log.error("You must run this command as root user, aborting")
                 exit(1)
             if builder.storage.exists(distro_image_filename()):
