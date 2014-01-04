@@ -469,7 +469,9 @@ class BuildPackageView(AppActionView):
     task = None
 
     def get_success_url(self):
-        return reverse('app_task_details', args=[self.task.safe_id])
+        if self.task:
+            return reverse('app_task_details', args=[self.task.safe_id])
+        return reverse('app_details', args=[self.object.safe_id])
 
     def action(self, form):
         if self.object and self.object.metadata:

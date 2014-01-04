@@ -112,8 +112,17 @@ class ApplicationTest(MongoEngineTestCase):
     def test_build_package_post(self):
         self.login_as_user()
         url = reverse('build_package', args=[self.app.safe_id])
+
         resp = self.client.post(url, {})
         self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.pending_build_tasks), 1)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.pending_build_tasks), 1)
 
         url = reverse('users_tasks')
         resp = self.client.get(url)
