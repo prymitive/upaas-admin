@@ -161,6 +161,10 @@ MIDDLEWARE_CLASSES += (
 # Auth / security
 #==============================================================================
 
+AUTHENTICATION_BACKENDS = (
+    'upaas_admin.common.hacks.mongoengine_auth.MongoEngineBackend',
+)
+
 AUTH_USER_MODEL = 'mongo_auth.MongoUser'
 
 LOGIN_URL = '/login'
