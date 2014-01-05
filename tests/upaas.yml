@@ -107,6 +107,11 @@ apps:
       - "^route"
       - "^(response|final|error)-route$"
 
+  graphite:
+    carbon:
+      - 127.0.0.1:2003
+    render_url: http://localhost/render/
+
 
 defaults:
   limits:
