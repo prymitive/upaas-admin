@@ -129,7 +129,7 @@ interpreters:
     PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   uwsgi:
     # base template path
-    template: ../upaas_admin/var/etc/uwsgi/base.ini
+    template: upaas_admin/var/etc/uwsgi/base.ini
 
   actions:
     setup:
@@ -151,7 +151,7 @@ interpreters:
         RAILS_ENV: production
         RACK_ENV: production
       uwsgi:
-        template: ../upaas_admin/var/etc/uwsgi/templates/ruby.ini
+        template: upaas_admin/var/etc/uwsgi/templates/ruby.ini
       packages:
         - ruby-switch
 
@@ -199,7 +199,7 @@ interpreters:
 
     any:
       uwsgi:
-        template: ../upaas_admin/var/etc/uwsgi/templates/python.ini
+        template: upaas_admin/var/etc/uwsgi/templates/python.ini
       settings:
         module: app
 
@@ -230,7 +230,7 @@ interpreters:
 
     any:
       uwsgi:
-        template: ../upaas_admin/var/etc/uwsgi/templates/php.ini
+        template: upaas_admin/var/etc/uwsgi/templates/php.ini
       setup:
         actions:
           interpreter:
