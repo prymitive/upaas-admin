@@ -27,7 +27,8 @@ from upaas_admin.common.mixin import (
     LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView,
     ModelRelatedPaginationMixin)
 from upaas_admin.apps.applications.mixin import (
-    OwnedAppsMixin, OwnedPackagesMixin, OwnedAppTasksMixin, AppActionView)
+    OwnedAppsMixin, OwnedPackagesMixin, OwnedAppTasksMixin,
+    OwnedAppDomainsMixin, AppActionView)
 from upaas_admin.apps.applications.models import (Application, Package,
                                                   ApplicationDomain)
 from upaas_admin.apps.applications.forms import (
@@ -104,6 +105,24 @@ class ApplicationDetailView(LoginRequiredMixin, OwnedAppsMixin,
     tab_id = 'app_details'
     tab_group = 'app_navigation'
     tab_label = _('Details')
+
+
+class ApplicationDomainsView(LoginRequiredMixin, OwnedAppsMixin,
+                             AppTemplatesDirMixin, ModelRelatedPaginationMixin,
+                             TabView, MongoDetailView):
+
+    template_name = 'domains.html'
+    model = Application
+    slug_field = 'id'
+    context_object_name = 'app'
+    context_paginated_objects_name = 'domains'
+    _is_tab = True
+    tab_id = 'app_domains'
+    tab_group = 'app_navigation'
+    tab_label = _('Domains')
+
+    def paginated_objects(self):
+        return self.object.custom_domains
 
 
 class ApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
@@ -520,20 +539,6 @@ class DownloadPackageMetadataView(LoginRequiredMixin, OwnedPackagesMixin,
         return response
 
 
-class ApplicationDomainsView(LoginRequiredMixin, OwnedAppsMixin,
-                             AppTemplatesDirMixin, ModelRelatedPaginationMixin,
-                             MongoDetailView):
-
-    template_name = 'domains.html'
-    model = Application
-    slug_field = 'id'
-    context_object_name = 'app'
-    context_paginated_objects_name = 'domains'
-
-    def paginated_objects(self):
-        return self.object.custom_domains
-
-
 class AssignApplicationDomainView(LoginRequiredMixin, OwnedAppsMixin,
                                   AppTemplatesDirMixin, CreateView,
                                   SingleObjectMixin):
@@ -545,7 +550,7 @@ class AssignApplicationDomainView(LoginRequiredMixin, OwnedAppsMixin,
     form_class = AssignApplicatiomDomainForm
 
     def get_success_url(self):
-        return reverse('app_domains', args=[self.object.safe_id])
+        return reverse('app_domains', args=[self.app.safe_id])
 
     def get(self, request, *args, **kwargs):
         self.app = self.get_object()
@@ -564,6 +569,12 @@ class AssignApplicationDomainView(LoginRequiredMixin, OwnedAppsMixin,
         except (ValidationError, DoesNotExist):
             raise Http404
 
+    def get_context_data(self, **kwargs):
+        context = super(AssignApplicationDomainView, self).get_context_data(
+            **kwargs)
+        context['app'] = self.app
+        return context
+
     def get_form(self, form_class):
         form = super(AssignApplicationDomainView, self).get_form(form_class)
         form.app = self.app
@@ -579,7 +590,7 @@ class AssignApplicationDomainView(LoginRequiredMixin, OwnedAppsMixin,
         return ret
 
 
-class RemoveApplicationDomainView(LoginRequiredMixin, OwnedPackagesMixin,
+class RemoveApplicationDomainView(LoginRequiredMixin, OwnedAppDomainsMixin,
                                   AppTemplatesDirMixin, FormView, DeleteView,
                                   MongoDetailView):
 
@@ -591,8 +602,7 @@ class RemoveApplicationDomainView(LoginRequiredMixin, OwnedPackagesMixin,
     application = None
 
     def get_success_url(self):
-        return reverse(ApplicationPackagesView.tab_id,
-                       args=[self.application.safe_id])
+        return reverse('app_domains', args=[self.application.safe_id])
 
     def get_context_data(self, **kwargs):
         context = super(RemoveApplicationDomainView, self).get_context_data(
@@ -609,7 +619,7 @@ class RemoveApplicationDomainView(LoginRequiredMixin, OwnedPackagesMixin,
 
     def form_valid(self, form):
         self.get_context_data()
-        ret = super(RemoveApplicationDomainView, self).form_valid(form)
+        ret = self.delete(self.request)
         if self.application:
             self.application.update_application()
         return ret

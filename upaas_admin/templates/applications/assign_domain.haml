@@ -1,4 +1,4 @@
-- extends 'site.html'
+- extends 'applications/base.html'
 
 
 - load i18n
@@ -8,12 +8,11 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb app.name "app_details" app.safe_id
-  - breadcrumb "Manage domains" "app_domains" app.safe_id
-  - breadcrumb "Assign custom domain" "app_assign_domain"
+  - breadcrumb "Domains" "app_domains" app.safe_id
+  - breadcrumb "Assign custom domain" "app_assign_domain" app.safe_id
 
 
-- block content
+- block app_content
 
   .well
     - if form.needs_validation

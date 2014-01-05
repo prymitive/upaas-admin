@@ -16,8 +16,8 @@ import time
 import re
 from copy import deepcopy
 
-from mongoengine import (Document, DictField, DateTimeField, StringField,
-                         LongField, ReferenceField, ListField, QuerySetManager,
+from mongoengine import (Document, DateTimeField, StringField, LongField,
+                         ReferenceField, ListField, QuerySetManager,
                          BooleanField, NULLIFY, signals)
 
 from django.utils.translation import ugettext_lazy as _
@@ -387,7 +387,7 @@ class Package(Document):
 class ApplicationDomain(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     application = ReferenceField('Application', dbref=False, required=True)
-    name = StringField(required=True, unique=True)
+    name = StringField(required=True, unique=True, min_length=4, max_length=64)
     validated = BooleanField()
 
     @property
