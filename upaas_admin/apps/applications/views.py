@@ -23,11 +23,9 @@ from mongoengine.errors import ValidationError, DoesNotExist
 
 from tabination.views import TabView
 
-from pure_pagination import Paginator, PageNotAnInteger, EmptyPage
-from pure_pagination.mixins import PaginationMixin
-
 from upaas_admin.common.mixin import (
-    LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView)
+    LoginRequiredMixin, AppTemplatesDirMixin, DetailTabView, MongoDetailView,
+    ModelRelatedPaginationMixin)
 from upaas_admin.apps.applications.mixin import (
     OwnedAppsMixin, OwnedPackagesMixin, OwnedAppTasksMixin, AppActionView)
 from upaas_admin.apps.applications.models import (Application, Package,
@@ -48,28 +46,19 @@ log = logging.getLogger(__name__)
 
 
 class IndexView(LoginRequiredMixin, OwnedAppsMixin, AppTemplatesDirMixin,
-                PaginationMixin, TabView):
+                ModelRelatedPaginationMixin, TabView):
 
     template_name = 'index.html'
-    paginate_by = 10
     _is_tab = True
     tab_id = 'site_index'
     tab_group = 'users_index'
     tab_label = _('Applications')
 
-    def get(self, request, *args, **kwargs):
-        self.object_list = request.user.applications
-        paginator = Paginator(self.object_list, self.paginate_by,
-                              request=request)
-        try:
-            apps = paginator.page(request.GET.get('page', 1))
-        except PageNotAnInteger:
-            apps = paginator.page(1)
-        except EmptyPage:
-            raise Http404
-        context = self.get_context_data(object_list=apps.object_list,
-                                        page_obj=apps)
-        return self.render_to_response(context)
+    def get_object(self):
+        return None
+
+    def paginated_objects(self):
+        return self.request.user.applications
 
 
 class RegisterApplicationView(LoginRequiredMixin, AppTemplatesDirMixin,
@@ -140,34 +129,22 @@ class ApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,
 
 
 class ApplicationPackagesView(LoginRequiredMixin, OwnedAppsMixin,
-                              AppTemplatesDirMixin, PaginationMixin,
-                              MongoDetailView, TabView):
+                              AppTemplatesDirMixin,
+                              ModelRelatedPaginationMixin, MongoDetailView,
+                              TabView):
 
     template_name = 'packages.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
-    paginate_by = 10
+    context_paginated_objects_name = 'packages'
     _is_tab = True
     tab_id = 'app_packages'
     tab_group = 'app_navigation'
     tab_label = _('Packages')
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object_list = Package.objects(application=self.object)
-        paginator = Paginator(self.object_list, self.paginate_by,
-                              request=request)
-        try:
-            packages = paginator.page(request.GET.get('page', 1))
-        except PageNotAnInteger:
-            packages = paginator.page(1)
-        except EmptyPage:
-            raise Http404
-        context = self.get_context_data(object=self.object,
-                                        packages=packages.object_list,
-                                        page_obj=packages)
-        return self.render_to_response(context)
+    def paginated_objects(self):
+        return Package.objects(application=self.object)
 
 
 class ApplicationInstancesView(LoginRequiredMixin, OwnedAppsMixin,
@@ -202,35 +179,25 @@ class ApplicationStatsView(LoginRequiredMixin, OwnedAppsMixin,
 
 
 class ApplicationTasksView(LoginRequiredMixin, OwnedAppsMixin,
-                           AppTemplatesDirMixin, PaginationMixin,
+                           AppTemplatesDirMixin, ModelRelatedPaginationMixin,
                            MongoDetailView, DetailTabView):
 
     template_name = 'tasks.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
-    paginate_by = 10
+    context_paginated_objects_name = 'tasks'
     tab_id = 'app_tasks'
     tab_group = 'app_navigation'
     tab_label = _('Tasks')
 
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object_list = self.object.tasks.order_by('-date_created',
-                                                      'parent')
-        paginator = Paginator(self.object_list, self.paginate_by,
-                              request=request)
-        try:
-            tasks = paginator.page(request.GET.get('page', 1))
-        except PageNotAnInteger:
-            tasks = paginator.page(1)
-        except EmptyPage:
-            raise Http404
-        context = self.get_context_data(object=self.object,
-                                        tasks=tasks.object_list,
-                                        task_statuses=TaskStatus,
-                                        page_obj=tasks)
-        return self.render_to_response(context)
+    def paginated_objects(self):
+        return self.object.tasks.order_by('-date_created', 'parent')
+
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationTasksView, self).get_context_data(**kwargs)
+        context['task_statuses'] = TaskStatus
+        return context
 
 
 class ApplicationTaskDetailsView(LoginRequiredMixin, OwnedAppTasksMixin,
@@ -554,16 +521,23 @@ class DownloadPackageMetadataView(LoginRequiredMixin, OwnedPackagesMixin,
 
 
 class ApplicationDomainsView(LoginRequiredMixin, OwnedAppsMixin,
-                             AppTemplatesDirMixin, MongoDetailView):
+                             AppTemplatesDirMixin, ModelRelatedPaginationMixin,
+                             MongoDetailView):
 
-    #FIXME pagination
     template_name = 'domains.html'
     model = Application
     slug_field = 'id'
     context_object_name = 'app'
+    context_paginated_objects_name = 'domains'
+
+    def paginated_objects(self):
+        return self.object.custom_domains
 
 
-class AssignApplicationDomainView(AppActionView):
+class AssignApplicationDomainView(LoginRequiredMixin, OwnedAppsMixin,
+                                  AppTemplatesDirMixin, CreateView,
+                                  SingleObjectMixin):
+
     template_name = 'assign_domain.html'
     model = Application
     slug_field = 'id'
@@ -573,40 +547,69 @@ class AssignApplicationDomainView(AppActionView):
     def get_success_url(self):
         return reverse('app_domains', args=[self.object.safe_id])
 
+    def get(self, request, *args, **kwargs):
+        self.app = self.get_object()
+        return super(AssignApplicationDomainView, self).get(request, *args,
+                                                            **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.app = self.get_object()
+        return super(AssignApplicationDomainView, self).post(request, *args,
+                                                             **kwargs)
+
+    def get_object(self, queryset=None):
+        try:
+            return super(AssignApplicationDomainView, self).get_object(
+                queryset=queryset)
+        except (ValidationError, DoesNotExist):
+            raise Http404
+
     def get_form(self, form_class):
         form = super(AssignApplicationDomainView, self).get_form(form_class)
-        form.app = self.object
+        form.app = self.app
         form.domain_validated = False
         form.needs_validation = settings.UPAAS_CONFIG.apps.domains.validation
         return form
 
     def form_valid(self, form):
-        domain = ApplicationDomain(name=form.cleaned_data['domain'],
-                                   validated=form.domain_validated)
-        self.object.update(add_to_set__domains=domain)
-        self.object.update_application()
-        return super(AssignApplicationDomainView, self).form_valid(form)
+        form.instance.application = self.app
+        form.instance.validated = form.domain_validated
+        ret = super(AssignApplicationDomainView, self).form_valid(form)
+        self.app.update_application()
+        return ret
 
 
-class RemoveApplicationDomainView(AppActionView):
+class RemoveApplicationDomainView(LoginRequiredMixin, OwnedPackagesMixin,
+                                  AppTemplatesDirMixin, FormView, DeleteView,
+                                  MongoDetailView):
+
     template_name = 'remove_domain.html'
-    model = Application
+    model = ApplicationDomain
     slug_field = 'id'
-    context_object_name = 'app'
+    context_object_name = 'domain'
     form_class = RemoveApplicatiomDomainForm
-
-    def validate_action(self, request):
-        if self.kwargs.get('domain') not in [
-                d.name for d in self.object.domains]:
-            raise Http404
+    application = None
 
     def get_success_url(self):
-        return reverse('app_domains', args=[self.object.safe_id])
+        return reverse(ApplicationPackagesView.tab_id,
+                       args=[self.application.safe_id])
 
-    def get_initial(self):
-        return {'domain': self.kwargs.get('domain')}
+    def get_context_data(self, **kwargs):
+        context = super(RemoveApplicationDomainView, self).get_context_data(
+            **kwargs)
+        if self.object:
+            self.application = self.object.application
+            context['app'] = self.application
+        context['form'] = self.get_form(self.get_form_class())
+        return context
+
+    def post(self, *args, **kwargs):
+        self.object = self.get_object()
+        return FormView.post(self, *args, **kwargs)
 
     def form_valid(self, form):
-        self.object.update(pull__domains__name=form.cleaned_data['domain'])
-        self.object.update_application()
-        return super(RemoveApplicationDomainView, self).form_valid(form)
+        self.get_context_data()
+        ret = super(RemoveApplicationDomainView, self).form_valid(form)
+        if self.application:
+            self.application.update_application()
+        return ret

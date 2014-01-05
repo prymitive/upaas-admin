@@ -14,6 +14,9 @@ from tabination.views import TabView
 
 from mongoengine.errors import ValidationError, DoesNotExist
 
+from pure_pagination import Paginator, PageNotAnInteger, EmptyPage
+from pure_pagination.mixins import PaginationMixin
+
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.core.exceptions import PermissionDenied
@@ -63,3 +66,28 @@ class MongoDetailView(DetailView):
             return super(MongoDetailView, self).get_object(queryset=queryset)
         except (ValidationError, DoesNotExist):
             raise Http404
+
+
+class ModelRelatedPaginationMixin(PaginationMixin):
+
+    paginate_by = 10
+    context_paginated_objects_name = 'object_list'
+
+    def paginated_objects(self):
+        raise NotImplementedError
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object_list = self.paginated_objects()
+        paginator = Paginator(self.object_list, self.paginate_by,
+                              request=request)
+        try:
+            objects = paginator.page(request.GET.get('page', 1))
+        except PageNotAnInteger:
+            objects = paginator.page(1)
+        except EmptyPage:
+            raise Http404
+        context = self.get_context_data(object=self.object,
+                                        page_obj=objects)
+        context[self.context_paginated_objects_name] = objects.object_list
+        return self.render_to_response(context)

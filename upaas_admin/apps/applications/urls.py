@@ -39,7 +39,7 @@ urlpatterns = patterns(
         ApplicationDomainsView.as_view(), name='app_domains'),
     url(r'^(?P<slug>[-_\w]+)/domains/assign$',
         AssignApplicationDomainView.as_view(), name='app_assign_domain'),
-    url(r'^(?P<slug>[-_\w]+)/domains/remove/(?P<domain>.*)$',
+    url(r'^/domains/remove/(?P<slug>[-_\w]+)$',
         RemoveApplicationDomainView.as_view(), name='app_remove_domain'),
 
     url(r'^(?P<slug>[-_\w]+)/start$', StartApplicationView.as_view(),

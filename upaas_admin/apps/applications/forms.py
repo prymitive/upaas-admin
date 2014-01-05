@@ -21,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from upaas_admin.common.forms import (CrispyForm, CrispyMongoForm,
                                       InlineCrispyMongoForm)
-from upaas_admin.apps.applications.models import Application
+from upaas_admin.apps.applications.models import Application, ApplicationDomain
 
 
 log = logging.getLogger(__name__)
@@ -137,16 +137,18 @@ class DeletePackageForm(CrispyForm):
     confirm = forms.BooleanField(required=True)
 
 
-class AssignApplicatiomDomainForm(CrispyForm):
+class AssignApplicatiomDomainForm(CrispyMongoForm):
 
     submit_label = 'Assign'
-    layout = ['domain']
+    layout = ['name']
 
-    domain = forms.CharField(required=True)
+    class Meta:
+        document = ApplicationDomain
+        fields = ('name',)
 
-    def clean_domain(self):
-        domain = self.cleaned_data['domain']
-        if Application.objects(domains__name=domain):
+    def clean_name(self):
+        domain = self.cleaned_data['name']
+        if ApplicationDomain.objects(name=domain):
             raise forms.ValidationError(_(
                 "Domain {domain} was already assigned").format(domain=domain))
         if self.needs_validation:
@@ -178,10 +180,9 @@ class AssignApplicatiomDomainForm(CrispyForm):
 
 class RemoveApplicatiomDomainForm(CrispyForm):
 
-    submit_label = 'Remove'
+    submit_label = 'Delete'
     submit_css_class = 'btn-danger'
     submit_icon_class = 'fa fa-trash-o'
-    layout = ['domain', 'confirm']
+    layout = ['confirm']
 
-    domain = forms.CharField(widget=forms.HiddenInput(), required=True)
     confirm = forms.BooleanField(required=True)

@@ -227,6 +227,20 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
 
     @pytest.mark.usefixtures("create_app")
+    def test_app_domains_paged_get(self):
+        self.login_as_user()
+        url = reverse('app_domains', args=[self.app.safe_id])
+
+        resp = self.client.get(url + '?page=1')
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(url + '?page=a')
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(url + '?page=10')
+        self.assertEqual(resp.status_code, 404)
+
+    @pytest.mark.usefixtures("create_app")
     def test_app_assign_domain_get(self):
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
@@ -237,7 +251,7 @@ class ApplicationTest(MongoEngineTestCase):
     def test_app_assign_domain_invalid_post(self):
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'domain': 'www.google.com'})
+        resp = self.client.post(url, {'name': 'www.google.com'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'No TXT record for domain www.google.com')
 

@@ -16,10 +16,9 @@ import time
 import re
 from copy import deepcopy
 
-from mongoengine import (Document, EmbeddedDocument, EmbeddedDocumentField,
-                         DateTimeField, StringField, LongField, ReferenceField,
-                         ListField, QuerySetManager, BooleanField, NULLIFY,
-                         signals)
+from mongoengine import (Document, DictField, DateTimeField, StringField,
+                         LongField, ReferenceField, ListField, QuerySetManager,
+                         BooleanField, NULLIFY, signals)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -311,7 +310,7 @@ class Package(Document):
             options.append('subscribe2 = server=%s:%d,key=%s' % (
                 router.private_ip, router.subscription_port,
                 self.application.system_domain))
-            for domain in self.application.domains:
+            for domain in self.application.custom_domains:
                 options.append('subscribe2 = server=%s:%d,key=%s' % (
                     router.private_ip, router.subscription_port, domain.name))
 
@@ -385,11 +384,15 @@ class Package(Document):
         utils.rmdirs(directory)
 
 
-class ApplicationDomain(EmbeddedDocument):
+class ApplicationDomain(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
-    # FIXME addining unique=True here doesn't work, fix it
-    name = StringField(required=True)
+    application = ReferenceField('Application', dbref=False, required=True)
+    name = StringField(required=True, unique=True)
     validated = BooleanField()
+
+    @property
+    def safe_id(self):
+        return str(self.id)
 
 
 class Application(Document):
@@ -402,7 +405,6 @@ class Application(Document):
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
-    domains = ListField(EmbeddedDocumentField(ApplicationDomain))
 
     _default_manager = QuerySetManager()
 
@@ -463,13 +465,6 @@ class Application(Document):
         elif self.metadata:
             return utils.select_best_version(self.upaas_config,
                                              self.metadata_config)
-
-    @property
-    def system_domain(self):
-        """
-        Returns automatic system domain for this application.
-        """
-        return '%s.%s' % (self.safe_id, self.upaas_config.apps.domains.system)
 
     @property
     def run_plan(self):
@@ -541,6 +536,20 @@ class Application(Document):
         Returns list of running build tasks for this application.
         """
         return self.build_tasks.filter(status=TaskStatus.running)
+
+    @property
+    def system_domain(self):
+        """
+        Returns automatic system domain for this application.
+        """
+        return '%s.%s' % (self.safe_id, self.upaas_config.apps.domains.system)
+
+    @property
+    def custom_domains(self):
+        """
+        List of custom domains assigned for this application.
+        """
+        return ApplicationDomain.objects(application=self)
 
     @property
     def domain_validation_code(self):
