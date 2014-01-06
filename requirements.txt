@@ -1,4 +1,4 @@
-upaas-common==0.2.1
+upaas-common==0.2.1a
 django==1.6.1
 blinker==1.3
 hamlpy==0.82.2
