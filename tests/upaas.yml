@@ -48,7 +48,7 @@ bootstrap:
     LC_ALL: C
     LANG: C
   commands:
-    - debootstrap --components=main,universe,multiverse,restricted `lsb_release -sc` %workdir%
+    - mkdir -p %workdir%
   # maximum number of days to keep bootstraped os image,
   # if image is older we will created new one
   maxage: 7
@@ -91,6 +91,26 @@ apps:
     # port range for app sockets, all ports from this range must be free
     port_min: 2001
     port_max: 7999
+  uwsgi:
+    # list of uWSGI options allowed to be passed in metadata
+    # values python regexp
+    safe_options:
+      - "^check-static"
+      - "^static-"
+      - "^harakiri"
+      - "^enable-threads$"
+      - "^(worker-|)reload-mercy$"
+      - "^max-requests$"
+      - "^(min|max)-worker-lifetime$"
+      - "^upload-progress$"
+      - "^lazy"
+      - "^route"
+      - "^(response|final|error)-route$"
+
+  graphite:
+    carbon:
+      - 127.0.0.1:2003
+    render_url: http://localhost/render/
 
 
 defaults:
@@ -109,7 +129,7 @@ interpreters:
     PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   uwsgi:
     # base template path
-    template: base.ini
+    template: upaas_admin/var/etc/uwsgi/base.ini
 
   actions:
     setup:
@@ -131,7 +151,7 @@ interpreters:
         RAILS_ENV: production
         RACK_ENV: production
       uwsgi:
-        template: templates/ruby.ini
+        template: upaas_admin/var/etc/uwsgi/templates/ruby.ini
       packages:
         - ruby-switch
 
@@ -179,7 +199,7 @@ interpreters:
 
     any:
       uwsgi:
-        template: templates/python.ini
+        template: upaas_admin/var/etc/uwsgi/templates/python.ini
       settings:
         module: app
 
@@ -210,7 +230,7 @@ interpreters:
 
     any:
       uwsgi:
-        template: templates/php.ini
+        template: upaas_admin/var/etc/uwsgi/templates/php.ini
       setup:
         actions:
           interpreter:

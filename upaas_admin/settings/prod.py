@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import os
 import sys
 import logging
@@ -152,8 +154,6 @@ TEMPLATE_LOADERS = (
 #==============================================================================
 
 MIDDLEWARE_CLASSES += (
-    'django.middleware.gzip.GZipMiddleware',
-    'pipeline.middleware.MinifyHTMLMiddleware',
 )
 
 
@@ -161,11 +161,11 @@ MIDDLEWARE_CLASSES += (
 # Auth / security
 #==============================================================================
 
-AUTH_USER_MODEL = 'mongo_auth.MongoUser'
-
 AUTHENTICATION_BACKENDS = (
-    'mongoengine.django.auth.MongoEngineBackend',
+    'upaas_admin.common.hacks.mongoengine_auth.MongoEngineBackend',
 )
+
+AUTH_USER_MODEL = 'mongo_auth.MongoUser'
 
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
@@ -178,6 +178,7 @@ ALLOWED_HOSTS = UPAAS_CONFIG.admin.domains or ['*']
 #==============================================================================
 
 SESSION_ENGINE = 'mongoengine.django.sessions'
+SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 
@@ -295,7 +296,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 loglevel = UPAAS_CONFIG.admin.loglevel.upper()
 if not logging.getLevelName(loglevel):
-    log.error(u"Invalid log level name '%s', ignoring" % loglevel)
+    log.error("Invalid log level name '%s', ignoring" % loglevel)
     loglevel = 'INFO'
 
 LOGGING = {
@@ -361,7 +362,7 @@ TEST_RUNNER = 'upaas_admin.common.tests.MongoEngineTestRunner'
 
 if UPAAS_CONFIG.admin.debug:
 
-    logging.warning(u"Debug mode enabled!")
+    logging.warning("Debug mode enabled!")
 
     DEBUG = UPAAS_CONFIG.admin.debug
     TEMPLATE_DEBUG = DEBUG

@@ -4,6 +4,9 @@
     :contact: l.mierzwa@gmail.com
 """
 
+
+from __future__ import unicode_literals
+
 from upaas_admin.apps.applications.tasks import BuildPackageTask
 from upaas_admin.apps.tasks.daemon import DaemonCommand
 from upaas_admin.apps.tasks.constants import TaskStatus

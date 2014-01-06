@@ -4,6 +4,9 @@
     :contact: l.mierzwa@gmail.com
 """
 
+
+from __future__ import unicode_literals
+
 import os
 import datetime
 import logging
@@ -202,10 +205,10 @@ class Task(Document):
         try:
             for progress in self.job():
                 if progress is not None:
-                    log.debug(u"Task progress: %d%%" % progress)
+                    log.debug("Task progress: %d%%" % progress)
                     self.update(set__progress=progress)
-        except Exception, e:
-            log.error(u"Task %s failed: %s" % (self.id, e))
+        except Exception as e:
+            log.error("Task %s failed: %s" % (self.id, e))
             self.fail_task()
         else:
             self.unlock_task()
@@ -217,7 +220,7 @@ class Task(Document):
         if self.parent:
             self.cleanup_parent()
         else:
-            log.info(u"Stand alone task, calling cleanup")
+            log.info("Stand alone task, calling cleanup")
             self.cleanup()
 
     def cleanup_parent(self):
@@ -226,19 +229,19 @@ class Task(Document):
         # search is done on base class to catch all inherited classes
         if self.parent and not self.__class__.__base__.objects(
                 parent=self.parent, status__in=ACTIVE_TASK_STATUSES):
-            log.info(u"Last task in group, calling cleanup")
+            log.info("Last task in group, calling cleanup")
             self.cleanup()
             statuses = self.__class__.__base__.objects(
                 parent=self.parent).distinct('status')
             if TaskStatus.failed in statuses:
-                log.info(u"Marking parent (%s) as failed, subtasks distinct "
-                         u"statuses: %s" % (self.parent.safe_id, statuses))
+                log.info("Marking parent (%s) as failed, subtasks distinct "
+                         "statuses: %s" % (self.parent.safe_id, statuses))
                 self.parent.__class__.objects(id=self.parent.id).update_one(
                     set__status=TaskStatus.failed)
             else:
-                log.info(u"Marking parent (%s) as successful, subtasks "
-                         u"distinct statuses: %s" % (self.parent.safe_id,
-                                                     statuses))
+                log.info("Marking parent (%s) as successful, subtasks "
+                         "distinct statuses: %s" % (self.parent.safe_id,
+                                                    statuses))
                 self.parent.__class__.objects(id=self.parent.id).update_one(
                     set__status=TaskStatus.successful)
             # remove parent_started mark on all subtask
@@ -250,7 +253,7 @@ class Task(Document):
         Implement task run code here.
         """
         if not self.is_virtual:
-            raise NotImplementedError(_(u"Task has no job defined!"))
+            raise NotImplementedError(_("Task has no job defined!"))
 
     def cleanup(self):
         """
@@ -265,7 +268,7 @@ class Task(Document):
         Task classes can implement this method to generate task title,
         generated title will be used when user did not provided it.
         """
-        return _(u"Unnamed task")
+        return _("Unnamed task")
 
     @property
     def subtasks(self):
@@ -279,13 +282,11 @@ class Task(Document):
         """
         Returns list of created tasks of given class with given filter.
         """
-        ret = []
         klass = find_task_class(task_class)
         if klass:
-            ret = klass.objects(**kwargs)
+            return klass.objects(**kwargs)
         else:
-            log.error(u"Task class not found: %s" % task_class)
-        return ret
+            log.error("Task class not found: %s" % task_class)
 
     @classmethod
     def put(cls, task_class, limit=None, *args, **kwargs):
@@ -298,13 +299,13 @@ class Task(Document):
             if limit:
                 # we don't pass all keywords to filter
                 kw = {}
-                for k, v in kwargs.items():
+                for k, v in list(kwargs.items()):
                     if k not in ['parent']:
                         kw[k] = v
                 tasks = len(klass.objects(status=TaskStatus.pending, **kw))
                 if tasks >= limit:
-                    log.debug(_(u"Already {len} tasks queued with params: "
-                                u"{params}").format(len=tasks, params=kwargs))
+                    log.debug(_("Already {len} tasks queued with params: "
+                                "{params}").format(len=tasks, params=kwargs))
                     return
 
             task = klass(*args, **kwargs)
@@ -354,8 +355,8 @@ class Task(Document):
                                 locked_by_pid__ne=cls.worker_pid,
                                 locked_since__lte=timestamp):
             if not is_pid_running(task.locked_by_pid):
-                log.warning(u"Task '%s' with id %s is locked by non existing "
-                            u"pid %d, marking as failed" % (
+                log.warning("Task '%s' with id %s is locked by non existing "
+                            "pid %d, marking as failed" % (
                                 task.__class__.__name__,
                                 task.safe_id, task.locked_by_pid))
                 task.fail_task()
@@ -371,18 +372,18 @@ class Task(Document):
         # database for at least 600 seconds
         timestamp = datetime.datetime.now() - datetime.timedelta(seconds=600)
         backends = BackendServer.objects(**{
-            u'id__ne': local_backend.id,
-            u'worker_ping__%s__lte' % cls.__name__: timestamp
+            'id__ne': local_backend.id,
+            'worker_ping__%s__lte' % cls.__name__: timestamp
         })
         if backends:
-            log.debug(_(u"{len} non responsive backends: {names}").format(
+            log.debug(_("{len} non responsive backends: {names}").format(
                 len=len(backends), names=[b.name for b in backends]))
             for task in cls.objects(locked_by_backend__in=backends,
                                     locked_since__lte=timestamp):
-                log.warning(_(u"Task {name} with id {tid} is locked on non "
-                              u"backend {backend}, but it didn't send any "
-                              u"pings for 10 minutes, marking as "
-                              u"failed").format(
+                log.warning(_("Task {name} with id {tid} is locked on non "
+                              "backend {backend}, but it didn't send any "
+                              "pings for 10 minutes, marking as "
+                              "failed").format(
                     name=task.__class__.__name__, tid=task.safe_id,
                     backend=task.locked_by_backend))
                 task.fail_task()

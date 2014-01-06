@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from django.utils.translation import ugettext_lazy as _
@@ -33,18 +35,18 @@ def select_best_backend(exclude=None, application=None):
                     # if this run plan is for application we are trying to find
                     # backends than ignore it, prevents jumping apps on update
                     continue
-                scores = dict(scores.items() + {
+                scores = dict(list(scores.items()) + list({
                     backend: run_plan.workers_max * run_plan.memory_per_worker
-                }.items())
-            log.debug(u"Backend %s has %d run plans, with final score %d" % (
+                }.items()))
+            log.debug("Backend %s has %d run plans, with final score %d" % (
                 backend.name, len(backend.run_plans), scores.get(backend, 0)))
         else:
             scores[backend] = 0
-            log.debug(u"Backend %s has no run plans" % backend.name)
+            log.debug("Backend %s has no run plans" % backend.name)
     if sum(scores.values()):
-        log.debug(u"Backend scores: %s" % scores)
+        log.debug("Backend scores: %s" % scores)
         score = sorted(scores.values())[0]
-        for (backend, backend_score) in scores.items():
+        for (backend, backend_score) in list(scores.items()):
             if score == backend_score:
                 return backend
     else:
@@ -56,8 +58,8 @@ def select_best_backend(exclude=None, application=None):
 def split_workers(workers, backends):
     #TODO right now we try to split workers into equal chunks, but we need
     # to do this with each backend resources in mind
-    workers_list = range(workers)
-    return [len(workers_list[i::backends]) for i in xrange(backends)]
+    workers_list = list(range(workers))
+    return [len(workers_list[i::backends]) for i in range(backends)]
 
 
 def select_best_backends(run_plan, **kwargs):
@@ -70,10 +72,10 @@ def select_best_backends(run_plan, **kwargs):
     # use, also we need to check resources
 
     #FIXME translate
-    log.info(u"Selecting backends for %s, workers: %d - %d, memory per "
-             u"worker: %d MB" % (run_plan.application.name,
-                                 run_plan.workers_min, run_plan.workers_max,
-                                 run_plan.memory_per_worker))
+    log.info("Selecting backends for %s, workers: %d - %d, memory per "
+             "worker: %d MB" % (run_plan.application.name,
+                                run_plan.workers_min, run_plan.workers_max,
+                                run_plan.memory_per_worker))
 
     available_backends = len(BackendServer.objects(is_enabled=True))
     if available_backends == 0:
@@ -91,10 +93,10 @@ def select_best_backends(run_plan, **kwargs):
         needs_backends = available_backends
 
     workers_per_backend = split_workers(run_plan.workers_max, needs_backends)
-    log.info(_(u"Worker mapping for {name}: {count} backends, "
-               u"{mapping}").format(name=run_plan.application.name,
-                                    count=needs_backends,
-                                    mapping=workers_per_backend))
+    log.info(_("Worker mapping for {name}: {count} backends, "
+               "{mapping}").format(name=run_plan.application.name,
+                                   count=needs_backends,
+                                   mapping=workers_per_backend))
 
     #FIXME find backends first, set values after that
     workers_min = (run_plan.workers_min / needs_backends) \
@@ -116,22 +118,22 @@ def select_best_backends(run_plan, **kwargs):
                 kwargs['socket'] = ports[0]
                 kwargs['stats'] = ports[1]
                 if not ports:
-                    log.warning(_(u"Didn't found free ports on backend "
-                                  u"{name}").format(name=backend.name))
+                    log.warning(_("Didn't found free ports on backend "
+                                  "{name}").format(name=backend.name))
                     continue
             brps = BackendRunPlanSettings(backend=backend,
                                           workers_min=workers_min,
                                           workers_max=workers_count, **kwargs)
             backends.append(brps)
         else:
-            log.warning(_(u"Can find more available backends, got {got}, "
-                          u"{needed}").format(got=len(backends),
-                                              needed=needs_backends))
+            log.warning(_("Can find more available backends, got {got}, "
+                          "{needed}").format(got=len(backends),
+                                             needed=needs_backends))
             break
 
-    log.info(_(u"Got backends for {name}: {servers}").format(
+    log.info(_("Got backends for {name}: {servers}").format(
         name=run_plan.application.name,
-        servers=u", ".join([u"%s: %d - %d" % (
+        servers=", ".join(["%s: %d - %d" % (
             b.backend.name, b.workers_min, b.workers_max) for b in backends])))
 
     return backends

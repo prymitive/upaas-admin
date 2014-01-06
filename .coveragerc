@@ -1,0 +1,5 @@
+[run]
+omit =
+    upaas_admin/settings/*
+    upaas_admin/common/hacks/*
+source = upaas_admin

@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from datetime import datetime, timedelta
 from time import sleep
 import logging
@@ -94,16 +96,16 @@ class ApplicationBackendTask(BackendTask, ApplicationTask):
                 if s:
                     return True
                 if logged:
-                    log.debug(_(u"Waiting for {name} to start").format(
+                    log.debug(_("Waiting for {name} to start").format(
                         name=name))
                 else:
-                    log.info(_(u"Waiting for {name} to start").format(
+                    log.info(_("Waiting for {name} to start").format(
                         name=name))
                     logged = True
                 sleep(2)
             else:
-                log.error(_(u"Timeout reached but {name} doesn't appear to be "
-                            u"running yet").format(name=name))
+                log.error(_("Timeout reached but {name} doesn't appear to be "
+                            "running yet").format(name=name))
 
         return False
 
@@ -128,16 +130,16 @@ class ApplicationBackendTask(BackendTask, ApplicationTask):
                 if not s:
                     return True
                 if logged:
-                    log.debug(_(u"Waiting for {name} to stop").format(
+                    log.debug(_("Waiting for {name} to stop").format(
                         name=name))
                 else:
-                    log.info(_(u"Waiting for {name} to stop").format(
+                    log.info(_("Waiting for {name} to stop").format(
                         name=name))
                     logged = True
                 sleep(2)
             else:
-                log.error(_(u"Timeout reached but {name} doesn't appear to be "
-                            u"stopped yet").format(name=name))
+                log.error(_("Timeout reached but {name} doesn't appear to be "
+                            "stopped yet").format(name=name))
 
         return False
 

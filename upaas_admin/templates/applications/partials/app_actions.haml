@@ -2,10 +2,6 @@
 
 
 %li
-  %a{'href':'{% url "app_domains" app.safe_id %}'}
-    %i.fa.fa-globe
-    - trans "Manage domains"
-%li
   %a{'href':'{% url "build_package" app.safe_id %}'}
     %i.fa.fa-cog
     - trans "Build new package"

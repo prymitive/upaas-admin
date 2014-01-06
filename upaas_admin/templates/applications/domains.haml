@@ -8,7 +8,7 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb "Manage domains" "app_domains" app.safe_id
+  - breadcrumb "Domains" "app_domains" app.safe_id
 
 
 - block app_content
@@ -26,7 +26,7 @@
         %th
 
     %tbody
-      - for domain in app.domains
+      - for domain in domains
         %tr
           %td
             = domain.date_created
@@ -39,7 +39,7 @@
             - else
               %i.fa.fa-thumbs-o-down
           %td
-            %a.btn.btn-danger.pull-right.btn-sm{'href':'{% url "app_remove_domain" app.safe_id domain.name %}'}
+            %a.btn.btn-danger.pull-right.btn-sm{'href':'{% url "app_remove_domain" domain.safe_id %}'}
               %i.fa.fa-trash-o
       - empty
         %tr

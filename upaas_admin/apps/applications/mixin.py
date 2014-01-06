@@ -5,10 +5,13 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django.views.generic import FormView
 from django.core.urlresolvers import reverse
 
-from upaas_admin.apps.applications.models import Application, Package
+from upaas_admin.apps.applications.models import (Application, Package,
+                                                  ApplicationDomain)
 from upaas_admin.apps.tasks.base import ApplicationTask
 from upaas_admin.common.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                       MongoDetailView)
@@ -39,6 +42,16 @@ class OwnedAppTasksMixin(object):
 
     def get_queryset(self):
         return ApplicationTask.objects(
+            application__in=self.request.user.applications)
+
+
+class OwnedAppDomainsMixin(object):
+    """
+    Limits query to custom domains assigned to applications owned by current
+    user.
+    """
+    def get_queryset(self):
+        return ApplicationDomain.objects(
             application__in=self.request.user.applications)
 
 

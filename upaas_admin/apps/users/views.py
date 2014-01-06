@@ -5,14 +5,17 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from django.views.generic import TemplateView, FormView
 from django.core.urlresolvers import reverse_lazy
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
+from django.http import Http404
 
-from pure_pagination import Paginator, PageNotAnInteger
+from pure_pagination import Paginator, PageNotAnInteger, EmptyPage
 from pure_pagination.mixins import PaginationMixin
 
 from tabination.views import TabView
@@ -44,15 +47,15 @@ class ResetApiKeyView(LoginRequiredMixin, AppTemplatesDirMixin, FormView):
         return form
 
     def form_invalid(self, form):
-        messages.error(self.request, _(u"Invalid form, possible bug"))
+        messages.error(self.request, _("Invalid form, possible bug"))
         return super(ResetApiKeyView, self).form_invalid(form)
 
     def form_valid(self, form):
-        log.info(_(u"Resetting API key for") +
-                 u" %s" % self.request.user.username)
+        log.info(_("Resetting API key for {login}").format(
+            login=self.request.user.username))
         self.request.user.apikey = User.generate_apikey()
         self.request.user.save()
-        messages.success(self.request, _(u"New API key generated"))
+        messages.success(self.request, _("New API key generated"))
         return super(ResetApiKeyView, self).form_valid(form)
 
 
@@ -67,15 +70,16 @@ class UserTasksView(LoginRequiredMixin, AppTemplatesDirMixin, PaginationMixin,
     tab_label = _('Tasks')
 
     def get(self, request, *args, **kwargs):
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
         self.object_list = request.user.tasks.order_by('-date_created',
                                                        'parent')
         paginator = Paginator(self.object_list, self.paginate_by,
                               request=request)
-        tasks = paginator.page(page)
+        try:
+            tasks = paginator.page(request.GET.get('page', 1))
+        except PageNotAnInteger:
+            tasks = paginator.page(1)
+        except EmptyPage:
+            raise Http404
         context = self.get_context_data(tasks=tasks.object_list,
                                         task_statuses=TaskStatus,
                                         page_obj=tasks)

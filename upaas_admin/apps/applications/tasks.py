@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import os
 import logging
 from socket import gethostname
@@ -23,7 +25,6 @@ from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.applications.models import Package
 from upaas_admin.apps.tasks.base import (ApplicationTask,
                                          ApplicationBackendTask)
-from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.tasks.registry import register
 
 
@@ -41,10 +42,10 @@ class BuildPackageTask(ApplicationTask):
 
     def generate_title(self):
         if self.force_fresh:
-            return _(u"Building new fresh package for {name}").format(
+            return _("Building new fresh package for {name}").format(
                 name=self.application.name)
         else:
-            return _(u"Building new package for {name}").format(
+            return _("Building new package for {name}").format(
                 name=self.application.name)
 
     def job(self):
@@ -52,24 +53,24 @@ class BuildPackageTask(ApplicationTask):
         try:
             metadata_obj = MetadataConfig.from_string(self.metadata)
         except ConfigurationError:
-            log.error(u"Invalid app metadata")
+            log.error("Invalid app metadata")
             raise Exception()
 
         upaas_config = load_main_config()
         if not upaas_config:
-            log.error(u"Missing uPaaS configuration")
+            log.error("Missing uPaaS configuration")
             raise Exception()
 
         system_filename = None
         if not self.force_fresh and self.application.current_package:
             system_filename = self.application.current_package.filename
-            log.info(_(u"Using current application package {pkg} as "
-                       u"parent").format(
+            log.info(_("Using current application package {pkg} as "
+                       "parent").format(
                 pkg=self.application.current_package.safe_id))
 
-        log.info(u"Starting build task with parameters app_id=%s, "
-                 u"force_fresh=%s" % (self.application.safe_id,
-                                      self.force_fresh))
+        log.info("Starting build task with parameters app_id=%s, "
+                 "force_fresh=%s" % (self.application.safe_id,
+                                     self.force_fresh))
 
         build_result = None
         try:
@@ -80,10 +81,10 @@ class BuildPackageTask(ApplicationTask):
                 yield result.progress
                 build_result = result
         except exceptions.BuildError:
-            log.error(u"Build failed")
+            log.error("Build failed")
             raise Exception()
 
-        log.info(u"Build completed")
+        log.info("Build completed")
         pkg = Package(metadata=self.metadata,
                       application=self.application,
                       interpreter_name=metadata_obj.interpreter.type,
@@ -97,13 +98,13 @@ class BuildPackageTask(ApplicationTask):
                       distro_version=build_result.distro_version,
                       distro_arch=build_result.distro_arch)
         pkg.save()
-        log.info(u"Package saved with id %s" % pkg.id)
+        log.info("Package saved with id %s" % pkg.id)
 
         self.application.reload()
         self.application.packages.append(pkg)
         self.application.current_package = pkg
         self.application.save()
-        log.info(u"Application '%s' updated" % self.application.name)
+        log.info("Application '%s' updated" % self.application.name)
         self.application.upgrade_application()
         self.application.trim_package_files()
 
@@ -112,16 +113,16 @@ class BuildPackageTask(ApplicationTask):
 class StartApplicationTask(ApplicationBackendTask):
 
     def generate_title(self):
-        return _(u"Starting {name} on {backend}").format(
+        return _("Starting {name} on {backend}").format(
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
 
         if not self.application.run_plan:
-            log.error(u"Missing run plan, cannot start "
-                      u"'%s'" % self.application.name)
-            raise Exception(u"Missing run plan for "
-                            u"'%s'" % self.application.name)
+            log.error("Missing run plan, cannot start "
+                      "'%s'" % self.application.name)
+            raise Exception("Missing run plan for "
+                            "'%s'" % self.application.name)
 
         run_plan = self.application.run_plan
 
@@ -131,18 +132,18 @@ class StartApplicationTask(ApplicationBackendTask):
                 backend_conf = run_plan.replace_backend_settings(
                     backend_conf.backend, backend_conf,
                     package=self.application.current_package.id)
-            log.info(u"Starting application '%s' using package '%s'" % (
+            log.info("Starting application '%s' using package '%s'" % (
                 self.application.name, backend_conf.package.safe_id))
 
             if not os.path.exists(backend_conf.package.package_path):
                 try:
                     backend_conf.package.unpack()
-                except UnpackError, e:
-                    log.error(u"Unpacking failed: %s" % e)
-                    raise Exception(u"Unpacking package failed: %s" % e)
+                except UnpackError as e:
+                    log.error("Unpacking failed: %s" % e)
+                    raise Exception("Unpacking package failed: %s" % e)
             else:
-                log.warning(u"Package already exists: "
-                            u"%s" % backend_conf.package.package_path)
+                log.warning("Package already exists: "
+                            "%s" % backend_conf.package.package_path)
             yield 50
 
             backend_conf.package.save_vassal_config(backend_conf)
@@ -151,9 +152,9 @@ class StartApplicationTask(ApplicationBackendTask):
             self.wait_until_running()
             yield 100
         else:
-            log.error(_(u"Backend {backend} missing in run plan for "
-                        u"{name}").format(backend=self.backend.name,
-                                          name=self.application.name))
+            log.error(_("Backend {backend} missing in run plan for "
+                        "{name}").format(backend=self.backend.name,
+                                         name=self.application.name))
             yield 100
 
 
@@ -161,23 +162,23 @@ class StartApplicationTask(ApplicationBackendTask):
 class StopApplicationTask(ApplicationBackendTask):
 
     def generate_title(self):
-        return _(u"Stopping {name} on {backend}").format(
+        return _("Stopping {name} on {backend}").format(
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
         if os.path.isfile(self.application.vassal_path):
-            log.info(u"Removing vassal config file "
-                     u"'%s'" % self.application.vassal_path)
+            log.info("Removing vassal config file "
+                     "'%s'" % self.application.vassal_path)
             try:
                 os.remove(self.application.vassal_path)
-            except OSError, e:
-                log.error(u"Can't remove vassal config file at '%s': %s" % (
+            except OSError as e:
+                log.error("Can't remove vassal config file at '%s': %s" % (
                     self.application.vassal_path, e))
                 raise
         else:
-            log.warning(u"Vassal config file for application '%s' not found "
-                        u"at '%s" % (self.application.safe_id,
-                                     self.application.vassal_path))
+            log.warning("Vassal config file for application '%s' not found "
+                        "at '%s" % (self.application.safe_id,
+                                    self.application.vassal_path))
         yield 10
 
         self.wait_until_stopped()
@@ -187,17 +188,17 @@ class StopApplicationTask(ApplicationBackendTask):
         if run_plan:
             run_plan.remove_backend_settings(self.backend)
         else:
-            log.warning(_(u"Missing run plan for {name}, already "
-                          u"stopped?").format(name=self.application.name))
+            log.warning(_("Missing run plan for {name}, already "
+                          "stopped?").format(name=self.application.name))
 
         self.application.remove_unpacked_packages()
-        log.info(u"Application '%s' stopped" % self.application.name)
+        log.info("Application '%s' stopped" % self.application.name)
         yield 100
 
     def cleanup(self):
         run_plan = self.application.run_plan
         if run_plan and not run_plan.backends:
-            log.info(u"Removing '%s' run plan" % self.application.name)
+            log.info("Removing '%s' run plan" % self.application.name)
             run_plan.delete()
 
 
@@ -205,14 +206,14 @@ class StopApplicationTask(ApplicationBackendTask):
 class UpgradeApplicationTask(ApplicationBackendTask):
 
     def generate_title(self):
-        return _(u"Upgrading {name} on {backend}").format(
+        return _("Upgrading {name} on {backend}").format(
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
         run_plan = self.application.run_plan
         if not run_plan:
-            msg = unicode(_(u"Missing run plan for {name}, cannot "
-                          u"upgrade").format(name=self.application.name))
+            msg = str(_("Missing run plan for {name}, cannot "
+                        "upgrade").format(name=self.application.name))
             log.warning(msg)
             raise Exception(msg)
 
@@ -225,7 +226,7 @@ class UpgradeApplicationTask(ApplicationBackendTask):
             try:
                 backend_conf.package.unpack()
             except UnpackError:
-                log.error(u"Unpacking failed")
+                log.error("Unpacking failed")
                 raise
             yield 40
 
@@ -239,8 +240,8 @@ class UpgradeApplicationTask(ApplicationBackendTask):
                 exclude=[backend_conf.package.id])
             yield 100
         else:
-            log.warning(_(u"No run plan for {name}, it was probably "
-                          u"stopped").format(name=self.application.name))
+            log.warning(_("No run plan for {name}, it was probably "
+                          "stopped").format(name=self.application.name))
             yield 100
 
 
@@ -248,14 +249,14 @@ class UpgradeApplicationTask(ApplicationBackendTask):
 class UpdateVassalTask(ApplicationBackendTask):
 
     def generate_title(self):
-        return _(u"Updating {name} configuration on {backend}").format(
+        return _("Updating {name} configuration on {backend}").format(
             name=self.application.name, backend=self.backend.name)
 
     def job(self):
         run_plan = self.application.run_plan
         if not run_plan:
-            msg = unicode(_(u"Missing run plan for {name}, application was "
-                            u"already stopped?").format(
+            msg = str(_("Missing run plan for {name}, application was "
+                        "already stopped?").format(
                 name=self.application.name))
             log.warning(msg)
             yield 100
@@ -265,14 +266,14 @@ class UpdateVassalTask(ApplicationBackendTask):
         if backend_conf:
 
             if backend_conf.package.id != self.application.current_package.id:
-                log.info(_(u"Old package on backend, running upgrade"))
+                log.info(_("Old package on backend, running upgrade"))
                 backend_conf = run_plan.replace_backend_settings(
                     backend_conf.backend, backend_conf,
                     package=self.application.current_package.id)
                 try:
                     backend_conf.package.unpack()
                 except UnpackError:
-                    log.error(u"Unpacking failed")
+                    log.error("Unpacking failed")
                     raise
                 yield 40
 
@@ -286,6 +287,6 @@ class UpdateVassalTask(ApplicationBackendTask):
                 exclude=[backend_conf.package.id])
             yield 100
         else:
-            log.warning(_(u"No run plan for {name}, it was probably "
-                          u"stopped").format(name=self.application.name))
+            log.warning(_("No run plan for {name}, it was probably "
+                          "stopped").format(name=self.application.name))
             yield 100

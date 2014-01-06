@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from dns.resolver import query, NXDOMAIN, NoAnswer
@@ -19,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from upaas_admin.common.forms import (CrispyForm, CrispyMongoForm,
                                       InlineCrispyMongoForm)
-from upaas_admin.apps.applications.models import Application
+from upaas_admin.apps.applications.models import Application, ApplicationDomain
 
 
 log = logging.getLogger(__name__)
@@ -33,8 +35,8 @@ class _MetadataForm(object):
             meta = metadata.read()
             MetadataConfig.from_string(meta)
             metadata = meta
-        except Exception, e:
-            raise forms.ValidationError(_(u"%s" % e))
+        except Exception as e:
+            raise forms.ValidationError(_("%s" % e))
         return metadata
 
 
@@ -53,10 +55,10 @@ class RegisterApplicationForm(CrispyMongoForm, _MetadataForm):
     def clean_name(self):
         name = self.cleaned_data['name']
         if ' ' in name:
-            raise forms.ValidationError(_(u"Name cannot contain spaces"))
+            raise forms.ValidationError(_("Name cannot contain spaces"))
         if self.owner.applications.filter(name=name).first():
             raise forms.ValidationError(_(
-                u"Application with name {name} already registered").format(
+                "Application with name {name} already registered").format(
                 name=name))
         return self.cleaned_data['name']
 
@@ -78,7 +80,7 @@ class UpdateApplicationMetadataInlineForm(InlineCrispyMongoForm,
 
     submit_label = 'Update'
     layout = [
-        HTML(u"<b>%s:</b>" % _(u"New metadata")),
+        HTML("<b>%s:</b>" % _("New metadata")),
         'metadata'
     ]
 
@@ -135,52 +137,52 @@ class DeletePackageForm(CrispyForm):
     confirm = forms.BooleanField(required=True)
 
 
-class AssignApplicatiomDomainForm(CrispyForm):
+class AssignApplicatiomDomainForm(CrispyMongoForm):
 
     submit_label = 'Assign'
-    layout = ['domain']
+    layout = ['name']
 
-    domain = forms.CharField(required=True)
+    class Meta:
+        document = ApplicationDomain
+        fields = ('name',)
 
-    def clean_domain(self):
-        domain = self.cleaned_data['domain']
-        try:
-            txt_records = query(domain, 'TXT')
-        except NXDOMAIN:
+    def clean_name(self):
+        domain = self.cleaned_data['name']
+        if ApplicationDomain.objects(name=domain):
             raise forms.ValidationError(_(
-                u"Domain {domain} does not exist").format(domain=domain))
-        except NoAnswer:
-            raise forms.ValidationError(_(
-                u"No TXT record for domain {domain}").format(domain=domain))
-        except Exception, e:
-            log.error(_(u"Exception during '{domain}' verification: "
-                        u"{e}").format(domain=domain, e=e))
-            raise forms.ValidationError(_(
-                u"Unhandled exception during domain verification, please try "
-                u"again later"))
-        else:
-            if Application.objects(domains__name=domain):
-                raise forms.ValidationError(_(u"Domain {domain} was already "
-                                              u"assigned").format(
-                    domain=domain))
-            if self.needs_validation:
+                "Domain {domain} was already assigned").format(domain=domain))
+        if self.needs_validation:
+            try:
+                txt_records = query(domain, 'TXT')
+            except NXDOMAIN:
+                raise forms.ValidationError(_(
+                    "Domain {domain} does not exist").format(domain=domain))
+            except NoAnswer:
+                raise forms.ValidationError(_(
+                    "No TXT record for domain {domain}").format(domain=domain))
+            except Exception as e:
+                log.error(_("Exception during '{domain}' verification: "
+                            "{e}").format(domain=domain, e=e))
+                raise forms.ValidationError(_(
+                    "Unhandled exception during domain verification, please "
+                    "try again later"))
+            else:
                 for record in txt_records:
                     if self.app.domain_validation_code in record.strings:
                         self.domain_validated = True
                         return domain
                 raise forms.ValidationError(_(
-                    u"No verification code in TXT record for {domain}").format(
+                    "No verification code in TXT record for {domain}").format(
                     domain=domain))
-            else:
-                return domain
+        else:
+            return domain
 
 
 class RemoveApplicatiomDomainForm(CrispyForm):
 
-    submit_label = 'Remove'
+    submit_label = 'Delete'
     submit_css_class = 'btn-danger'
     submit_icon_class = 'fa fa-trash-o'
-    layout = ['domain', 'confirm']
+    layout = ['confirm']
 
-    domain = forms.CharField(widget=forms.HiddenInput(), required=True)
     confirm = forms.BooleanField(required=True)

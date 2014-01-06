@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import hmac
 import uuid
 import hashlib
@@ -12,7 +14,6 @@ import logging
 from datetime import datetime, timedelta
 
 from mongoengine.queryset import QuerySetManager
-from mongoengine.django.auth import User as MongoUser
 from mongoengine.fields import StringField
 from mongoengine import signals, Q
 
@@ -20,6 +21,7 @@ from upaas_admin.apps.scheduler.models import UserLimits, ApplicationRunPlan
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.tasks.constants import ACTIVE_TASK_STATUSES
+from upaas_admin.common.hacks.mongoengine_auth import User as MongoUser
 
 
 log = logging.getLogger(__name__)

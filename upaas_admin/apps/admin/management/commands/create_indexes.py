@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import sys
 import imp
 import inspect
@@ -41,17 +43,17 @@ class Command(BaseCommand):
             except ImportError:
                 continue
 
-            log.debug(u"Loading models from: %s.models" % app)
+            log.debug("Loading models from: %s.models" % app)
             module = import_module("%s.models" % app)
 
             for name, obj in inspect.getmembers(sys.modules[module.__name__],
                                                 predicate=inspect.isclass):
                 if issubclass(obj, Document):
-                    log.debug(u"Found model '%s'" % name)
+                    log.debug("Found model '%s'" % name)
                     models[obj.__name__] = obj
 
-        for model in models.values():
-            log.info(u"Checking %s" % model.__name__)
+        for model in list(models.values()):
+            log.info("Checking %s" % model.__name__)
             if model._meta and model._meta.get('indexes') and \
                     not model._meta.get('abstract'):
                 model.ensure_indexes()

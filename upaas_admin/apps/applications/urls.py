@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django.conf.urls import patterns, url
 
 from upaas_admin.apps.applications.views import *
@@ -32,12 +34,12 @@ urlpatterns = patterns(
         name=ApplicationStatsView.tab_id),
     url(r'^(?P<slug>[-_\w]+)/tasks$', ApplicationTasksView.as_view(),
         name=ApplicationTasksView.tab_id),
-
     url(r'^(?P<slug>[-_\w]+)/domains$',
-        ApplicationDomainsView.as_view(), name='app_domains'),
+        ApplicationDomainsView.as_view(), name=ApplicationDomainsView.tab_id),
+
     url(r'^(?P<slug>[-_\w]+)/domains/assign$',
         AssignApplicationDomainView.as_view(), name='app_assign_domain'),
-    url(r'^(?P<slug>[-_\w]+)/domains/remove/(?P<domain>.*)$',
+    url(r'^domains/remove/(?P<slug>[-_\w]+)$',
         RemoveApplicationDomainView.as_view(), name='app_remove_domain'),
 
     url(r'^(?P<slug>[-_\w]+)/start$', StartApplicationView.as_view(),

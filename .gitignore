@@ -26,5 +26,5 @@ docs/_build
 upaas_admin/static/bootstrap/less/*.css
 upaas_admin/static/upaas/*.css
 upaas_admin/static/upaas/less/*/*.css
-upaas_admin/static/zeroclipboard/*.css
-upaas_admin/static/font-awesome/less/*.css
+upaas_admin/static/*/less/*.css
+upaas_admin/static/*/*.css

@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -59,7 +61,7 @@ urlpatterns = patterns(
     url(r'^password/changed$',
         'django.contrib.auth.views.password_change_done',
         {'template_name': 'users/password_changed.html'},
-        name='password_changed'),
+        name='password_change_done'),
 
     url(r'^djs/', include('djangojs.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),

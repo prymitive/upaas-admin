@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -35,16 +37,16 @@ class ApplicationRunPlanForm(CrispyMongoForm):
             apps_limit = self.user.limits['running_apps']
             if apps_limit and apps_running >= apps_limit:
                 raise forms.ValidationError(
-                    _(u"Already running maximum allowed applications "
-                      u"({count}), can't start another one").format(
+                    _("Already running maximum allowed applications "
+                      "({count}), can't start another one").format(
                         count=apps_running))
 
         if workers_min is None or workers_max is None:
             return self.cleaned_data
 
         if workers_min > workers_max:
-            raise forms.ValidationError(_(u"Minimum workers number cannot be"
-                                          u"lower than maximum"))
+            raise forms.ValidationError(_("Minimum workers number cannot be"
+                                          "lower than maximum"))
 
         workers_used = self.user.limits_usage['workers']
         if self.instance.id:
@@ -55,13 +57,13 @@ class ApplicationRunPlanForm(CrispyMongoForm):
             workers_available = max(workers_limit - workers_used, 0)
             if workers_min > workers_available:
                 raise forms.ValidationError(_(
-                    u"Only {available} workers available, cannot set "
-                    u"{workers} as minimum ").format(
+                    "Only {available} workers available, cannot set "
+                    "{workers} as minimum ").format(
                     available=workers_available, workers=workers_min))
             if workers_max > workers_available:
                 raise forms.ValidationError(_(
-                    u"Only {available} workers available, cannot set "
-                    u"{workers} as maximum ").format(
+                    "Only {available} workers available, cannot set "
+                    "{workers} as maximum ").format(
                     available=workers_available, workers=workers_max))
 
         return self.cleaned_data

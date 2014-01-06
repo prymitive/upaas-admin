@@ -9,18 +9,22 @@ install:
   - sudo apt-get update -qq || echo "apt-get update failed"
   - sudo apt-get -yy install nodejs
   - sudo npm install -g less
-  - pip install -U pip
-  - pip install -Ur requirements.txt --use-mirrors --download-cache $HOME/.pip-cache
-  - pip install -Ur requirements-test.txt --use-mirrors --download-cache $HOME/.pip-cache
-  - ./setup.py develop
+  - pip install -Ur requirements.txt --use-mirrors
+  - pip install -Ur requirements-test.txt --use-mirrors
+  - pip install --no-deps mongoengine==0.8.6
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
+  - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
 
 script:
-  - py.test -vs --pep8
-  - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.dev ./upaas_admin/upaas_admin test -v 0 users
+  - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.tests coverage run --rcfile=.coveragerc `which py.test` -v --pep8
+
+after_success:
+  - coverage report
+  - coveralls
 
 services:
   - mongodb
 
-cache:
-  directories:
-    - $HOME/.pip-cache/
+virtualenv:
+  system_site_packages: true

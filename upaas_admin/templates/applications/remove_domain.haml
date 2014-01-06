@@ -8,16 +8,15 @@
 
 - block breadcrumbs
   = block.super
-  - breadcrumb app.name "app_details" app.safe_id
-  - breadcrumb "Manage domains" "app_domains" app.safe_id
+  - breadcrumb "Domains" "app_domains" app.safe_id
   - breadcrumb "Remove domain" "app_remove_domain"
 
 
-- block content
+- block app_content
 
   .well
 
     %p
-      {% trans "Are you sure you want to remove domain" %} {{ form.domain.value }} ?
+      {% trans "Are you sure you want to remove domain" %} {{ domain.name }} ?
 
     - crispy form

@@ -16,5 +16,8 @@
           - if tab.tab_id == 'app_tasks'
             %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks{% if not app.active_tasks %} hidden{% endif %}'}
               = app.active_tasks|length
+          - if tab.tab_id == 'app_domains'
+            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-custom_domains{% if not app.custom_domains %} hidden{% endif %}'}
+              = app.custom_domains|length
 
   .tab-content

@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from tastypie.validation import CleanedDataFormValidation
 
 from mongoforms import MongoForm

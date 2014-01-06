@@ -5,7 +5,10 @@
 """
 
 
+from __future__ import unicode_literals
+
 from upaas.config import base
+from upaas.compat import unicode
 
 
 class UPaaSConfig(base.Config):
@@ -33,7 +36,7 @@ class UPaaSConfig(base.Config):
             "env": base.DictEntry(value_type=unicode),
             "commands": base.ScriptEntry(required=True),
             "maxage": base.IntegerEntry(default=7),
-            "packages": base.ListEntry(value_type=basestring),
+            "packages": base.ListEntry(value_type=unicode),
         },
         "commands": {
             "timelimit": base.IntegerEntry(required=True),
@@ -74,9 +77,10 @@ class UPaaSConfig(base.Config):
         },
         "defaults": {
             "limits": {
-                "running_apps": base.IntegerEntry(required=True),
-                "workers": base.IntegerEntry(required=True),
-                "memory_per_worker": base.IntegerEntry(required=True),
+                "running_apps": base.IntegerEntry(required=True, min_value=0),
+                "workers": base.IntegerEntry(required=True, min_value=0),
+                "memory_per_worker": base.IntegerEntry(required=True,
+                                                       min_value=16),
                 "packages_per_app": base.IntegerEntry(required=True,
                                                       min_value=2),
             }
@@ -85,7 +89,7 @@ class UPaaSConfig(base.Config):
             "secretkey": base.StringEntry(required=True),
             "loglevel": base.StringEntry(default='info'),
             "debug": base.BooleanEntry(default=False),
-            "domains": base.ListEntry(value_type=basestring),
+            "domains": base.ListEntry(value_type=unicode),
         },
         "interpreters": base.WildcardEntry(),
     }

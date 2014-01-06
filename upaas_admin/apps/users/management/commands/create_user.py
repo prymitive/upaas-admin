@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 from getpass import getpass
 
 from django.core.management.base import BaseCommand, CommandError
@@ -26,30 +28,35 @@ class Command(BaseCommand):
         make_option('--email', dest='email', help='New user email address'),
         make_option('--admin', action='store_true', dest='admin',
                     default=False,
-                    help='Give administrator privileges to new user'))
+                    help='Give administrator privileges to new user'),
+        make_option('--password', dest='password', help='New user password'))
 
     def handle(self, *args, **options):
         for name in ['login', 'firstname', 'lastname', 'email']:
             if not options.get(name):
                 raise CommandError("--%s option must be set" % name)
 
-        try:
-            password1 = getpass('Password: ')
-            password2 = getpass('Password (repeat): ')
-            while password1 != password2:
-                self.stdout.write('Password mismatch!\n')
+        password = options.get('password')
+        if not password:
+            try:
                 password1 = getpass('Password: ')
                 password2 = getpass('Password (repeat): ')
-        except KeyboardInterrupt:
-            self.stdout.write('\nCtrl+c pressed, aborting\n')
-            return
+                while password1 != password2:
+                    self.stdout.write('Password mismatch!\n')
+                    password1 = getpass('Password: ')
+                    password2 = getpass('Password (repeat): ')
+            except KeyboardInterrupt:
+                self.stdout.write('\nCtrl+c pressed, aborting\n')
+                return
+            else:
+                password = password1
 
         user = User(username=options['login'],
                     first_name=options['firstname'],
                     last_name=options['lastname'],
                     email=options['email'],
                     is_superuser=options['admin'])
-        user.set_password(password1)
+        user.set_password(password)
         user.save()
         self.stdout.write('%s user account created '
                           'successfully\n' % user.username)

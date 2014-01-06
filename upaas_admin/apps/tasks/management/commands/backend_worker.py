@@ -5,6 +5,8 @@
 """
 
 
+from __future__ import unicode_literals
+
 import logging
 
 from mongoengine import Q

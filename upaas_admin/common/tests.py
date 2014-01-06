@@ -9,16 +9,18 @@
 # test-runner/
 
 
+from __future__ import unicode_literals
+
 import time
 
 from mongoengine import connect
 from mongoengine.connection import disconnect
 
 from django.test import TestCase
-from django.test.simple import DjangoTestSuiteRunner
+from django.test.runner import DiscoverRunner
 
 
-class MongoEngineTestRunner(DjangoTestSuiteRunner):
+class MongoEngineTestRunner(DiscoverRunner):
 
     mongodb_name = "testrun-%d" % time.time()
 
@@ -41,5 +43,9 @@ class MongoEngineTestCase(TestCase):
     def _fixture_setup(self):
         pass
 
-    def _fixture_teardown(self):
+    def _post_teardown(self):
         pass
+
+    def login_as_user(self):
+        self.client.login(username=self.user_data['login'],
+                          password=self.user_data['password'])
