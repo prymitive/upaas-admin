@@ -1,0 +1,18 @@
+os:
+  Debian: &deb
+    packages:
+      - git-core
+  Ubuntu: *deb
+
+interpreter:
+  type: php
+  versions:
+    - "5.5"
+
+repository:
+  clone: git clone --quiet https://github.com/patteri/doge_game %destination%
+  update:
+    - git reset --hard
+    - git pull
+  info: git log -n 1
+  changelog: git log --no-merges %old%..%new%"
