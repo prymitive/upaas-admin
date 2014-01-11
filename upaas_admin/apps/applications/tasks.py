@@ -39,6 +39,7 @@ class BuildPackageTask(ApplicationTask):
     application = ReferenceField('Application', dbref=False, required=True)
     metadata = StringField(required=True)
     force_fresh = BooleanField(default=False)
+    interpreter_version = StringField()
 
     def generate_title(self):
         if self.force_fresh:
@@ -69,14 +70,16 @@ class BuildPackageTask(ApplicationTask):
                 pkg=self.application.current_package.safe_id))
 
         log.info("Starting build task with parameters app_id=%s, "
-                 "force_fresh=%s" % (self.application.safe_id,
-                                     self.force_fresh))
+                 "force_fresh=%s, interpreter_version=%s" % (
+                    self.application.safe_id, self.force_fresh,
+                    self.interpreter_version))
 
         build_result = None
         try:
             builder = Builder(upaas_config, metadata_obj)
             for result in builder.build_package(
-                    system_filename=system_filename):
+                    system_filename=system_filename,
+                    interpreter_version=self.interpreter_version):
                 log.debug("Build progress: %d%%" % result.progress)
                 yield result.progress
                 build_result = result

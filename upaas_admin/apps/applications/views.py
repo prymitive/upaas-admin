@@ -459,10 +459,28 @@ class BuildPackageView(AppActionView):
             return reverse('app_task_details', args=[self.task.safe_id])
         return reverse('app_details', args=[self.object.safe_id])
 
+    def get_form(self, form_class):
+        form = super(BuildPackageView, self).get_form(form_class)
+        build_types = []
+        if self.object.current_package:
+            build_types.append((
+                '',
+                _('Incremental package, using {interpreter} {ver}').format(
+                    interpreter=self.object.interpreter_name,
+                    ver=self.object.interpreter_version)))
+        for ver in self.object.supported_interpreter_versions:
+            build_types.append((
+                ver,
+                _('New fresh package, using {interpreter} {ver}').format(
+                    interpreter=self.object.interpreter_name, ver=ver)))
+        form.fields['build_type'].choices = build_types
+        return form
+
     def action(self, form):
         if self.object and self.object.metadata:
             self.task = self.object.build_package(
-                force_fresh=form.cleaned_data['force_fresh'])
+                force_fresh=form.cleaned_data['build_type'] != '',
+                interpreter_version=form.cleaned_data['build_type'])
 
 
 class RollbackApplicationView(OwnedPackagesMixin, AppActionView):

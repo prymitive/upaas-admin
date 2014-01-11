@@ -113,10 +113,6 @@ class ApplicationTest(MongoEngineTestCase):
         self.login_as_user()
         url = reverse('build_package', args=[self.app.safe_id])
 
-        resp = self.client.post(url, {})
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(len(self.app.pending_build_tasks), 1)
-
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
@@ -124,10 +120,48 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(len(self.app.pending_build_tasks), 1)
 
+        resp = self.client.post(url, {'build_type': ''})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.pending_build_tasks), 1)
+
         url = reverse('users_tasks')
         resp = self.client.get(url)
         self.assertContains(
             resp, "Building new package for %s" % self.app_data['name'])
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_build_package_incremental_post(self):
+        self.login_as_user()
+        url = reverse('build_package', args=[self.app.safe_id])
+
+        resp = self.client.post(url, {'build_type': ''})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.pending_build_tasks), 1)
+
+        url = reverse('users_tasks')
+        resp = self.client.get(url)
+        self.assertContains(
+            resp, "Building new package for %s" % self.app_data['name'])
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_build_package_forced_version_post(self):
+        self.login_as_user()
+        url = reverse('build_package', args=[self.app.safe_id])
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'value="2.0.0"')
+        self.assertContains(resp, 'value="1.9.3"')
+        self.assertContains(resp, 'value="1.8.7"')
+
+        resp = self.client.post(url, {'build_type': '1.9.3'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.pending_build_tasks), 1)
+
+        url = reverse('users_tasks')
+        resp = self.client.get(url)
+        self.assertContains(
+            resp, "Building new fresh package for %s" % self.app_data['name'])
 
     @pytest.mark.usefixtures("create_app")
     def test_app_metadata_get(self):
@@ -360,6 +394,11 @@ class ApplicationTest(MongoEngineTestCase):
     @pytest.mark.usefixtures("create_pkg")
     def test_app_interpreter_version_from_pkg_method(self):
         self.assertEqual(self.app.interpreter_version, '2.0.0')
+
+    @pytest.mark.usefixtures("create_app")
+    def test_app_supported_interpreter_versions_method(self):
+        self.assertEqual(self.app.supported_interpreter_versions,
+                         ['2.0.0', '1.9.3', '1.8.7'])
 
     @pytest.mark.usefixtures("create_pkg")
     def test_app_trim_package_files_one_method(self):

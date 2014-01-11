@@ -95,9 +95,9 @@ class BuildPackageForm(CrispyForm):
 
     submit_label = 'Build'
     submit_icon_class = 'fa fa-cog'
-    layout = ['force_fresh']
+    layout = ['build_type']
 
-    force_fresh = forms.BooleanField(required=False)
+    build_type = forms.ChoiceField(required=False)
 
 
 class StopApplicationForm(CrispyForm):

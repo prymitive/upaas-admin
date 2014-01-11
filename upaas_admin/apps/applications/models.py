@@ -467,6 +467,15 @@ class Application(Document):
                                              self.metadata_config)
 
     @property
+    def supported_interpreter_versions(self):
+        """
+        Return list of interpreter versions that this app can run.
+        """
+        if self.metadata:
+            return sorted(list(utils.supported_versions(
+                self.upaas_config, self.metadata_config).keys()), reverse=True)
+
+    @property
     def run_plan(self):
         """
         Application run plan if it is present, None otherwise.
@@ -565,14 +574,15 @@ class Application(Document):
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])
 
-    def build_package(self, force_fresh=False):
+    def build_package(self, force_fresh=False, interpreter_version=None):
         if self.pending_build_tasks:
             log.info(_("Application {name} is already queued for "
                        "building").format(name=self.name))
         else:
             task = Task.put('BuildPackageTask', application=self,
                             metadata=self.metadata,
-                            force_fresh=force_fresh)
+                            force_fresh=force_fresh,
+                            interpreter_version=interpreter_version)
             return task
 
     def start_application(self):
