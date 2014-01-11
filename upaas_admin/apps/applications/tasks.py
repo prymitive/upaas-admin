@@ -74,6 +74,10 @@ class BuildPackageTask(ApplicationTask):
                      self.application.safe_id, self.force_fresh,
                      self.interpreter_version))
 
+        if not self.interpreter_version and self.application.current_package:
+            self.interpreter_version = \
+                self.application.current_package.interpreter_version
+
         build_result = None
         try:
             builder = Builder(upaas_config, metadata_obj)
