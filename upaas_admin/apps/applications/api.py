@@ -102,9 +102,6 @@ class ApplicationResource(MongoEngineResource):
             url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/build%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('build_package'), name="build"),
-            url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/build_fresh%s$" %
-                (self._meta.resource_name, trailing_slash()),
-                self.wrap_view('build_fresh_package'), name="build_fresh"),
             url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/start%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('start_application'), name="start"),
@@ -118,26 +115,15 @@ class ApplicationResource(MongoEngineResource):
 
     def build_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
+        force_fresh = kwargs.pop('force_fresh', False)
+        interpreter_version = kwargs.pop('interpreter_version')
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.metadata:
-                return self.create_response(request, app.build_package())
-            else:
-                return HttpResponseBadRequest(
-                    _("No metadata registered for app '{name}' with id "
-                      "'{id}'").format(name=app.name, id=app.id))
-        else:
-            return HttpResponseNotFound(_("No such application"))
-
-    def build_fresh_package(self, request, **kwargs):
-        self.method_check(request, allowed=['put'])
-        app = Application.objects(
-            **self.remove_api_resource_names(kwargs)).first()
-        if app:
-            if app.metadata:
-                return self.create_response(
-                    request, app.build_package(force_fresh=True))
+                return self.create_response(request, app.build_package(
+                    force_fresh=force_fresh,
+                    interpreter_version=interpreter_version))
             else:
                 return HttpResponseBadRequest(
                     _("No metadata registered for app '{name}' with id "
