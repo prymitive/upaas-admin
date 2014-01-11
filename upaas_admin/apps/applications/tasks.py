@@ -71,8 +71,8 @@ class BuildPackageTask(ApplicationTask):
 
         log.info("Starting build task with parameters app_id=%s, "
                  "force_fresh=%s, interpreter_version=%s" % (
-                    self.application.safe_id, self.force_fresh,
-                    self.interpreter_version))
+                     self.application.safe_id, self.force_fresh,
+                     self.interpreter_version))
 
         build_result = None
         try:
