@@ -69,14 +69,14 @@ class BuildPackageTask(ApplicationTask):
                        "parent").format(
                 pkg=self.application.current_package.safe_id))
 
+        if self.application.current_package and not self.force_fresh:
+            self.interpreter_version = \
+                self.application.current_package.interpreter_version
+
         log.info("Starting build task with parameters app_id=%s, "
                  "force_fresh=%s, interpreter_version=%s" % (
                      self.application.safe_id, self.force_fresh,
                      self.interpreter_version))
-
-        if not self.interpreter_version and self.application.current_package:
-            self.interpreter_version = \
-                self.application.current_package.interpreter_version
 
         build_result = None
         try:
