@@ -115,8 +115,11 @@ class ApplicationResource(MongoEngineResource):
 
     def build_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
-        force_fresh = kwargs.pop('force_fresh', False)
-        interpreter_version = kwargs.pop('interpreter_version')
+        try:
+            force_fresh = bool(int(request.GET.get('force_fresh', 0)))
+        except:
+            force_fresh = False
+        interpreter_version = request.GET.get('interpreter_version') or None
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
