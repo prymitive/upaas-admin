@@ -137,6 +137,7 @@ def create_pkg(request):
     request.addfinalizer(cleanup)
 
     request.instance.app.current_package = pkg
+    request.instance.app.packages = [pkg]
     request.instance.app.save()
 
     request.instance.pkg = pkg
@@ -166,6 +167,7 @@ def create_pkg_list(request):
     request.addfinalizer(cleanup)
 
     request.instance.app.current_package = pkg_list[0]
+    request.instance.app.packages = pkg_list
     request.instance.app.save()
 
     request.instance.pkg_list = pkg_list
@@ -188,6 +190,27 @@ def create_backend(request):
 
     request.instance.backend = backend
     request.instance.backend_name = name
+
+
+@pytest.fixture(scope="function")
+def create_backend_list(request):
+    backends = []
+    for i in range(0, 10):
+        name = 'backend%d' % i
+        backend = BackendServer.objects(name=name).first()
+        if backend:
+            backend.delete()
+
+        backend = BackendServer(name=name, ip='127.0.0.%d' % i)
+        backend.save()
+        backends.append(backend)
+
+    def cleanup():
+        for backend in backends:
+            backend.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.backend_list = backends
 
 
 @pytest.fixture(scope="function")
