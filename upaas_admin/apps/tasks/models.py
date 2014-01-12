@@ -32,7 +32,7 @@ class MongoLogHandler(logging.StreamHandler):
 
     def __init__(self, task, flush_count=10, flush_time=3, *args,
                  **kwargs):
-        if sys.version_info[:2] > (2,6):
+        if sys.version_info[:2] > (2, 6):
             super(MongoLogHandler, self).__init__(*args, **kwargs)
         else:
             logging.StreamHandler.__init__(self, *args, **kwargs)
