@@ -147,7 +147,7 @@ class PackageTest(MongoEngineTestCase):
         self.assertNotEqual(
             self.pkg.generate_uwsgi_config(self.app.run_plan.backends[0]), [])
 
-    @pytest.mark.usefixtures("create_pkg", "create_backend")
+    @pytest.mark.usefixtures("create_pkg", "create_backend", "create_router")
     def test_save_vassal_config_method(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])
@@ -155,10 +155,14 @@ class PackageTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
         self.pkg.save_vassal_config(self.app.run_plan.backends[0])
-        self.assertEqual(
-            os.path.isfile('/tmp/%s.ini' % self.app.safe_id), True)
-        if os.path.isfile('/tmp/%s.ini' % self.app.safe_id):
-            os.unlink('/tmp/%s.ini' % self.app.safe_id)
+        ini_path = '/tmp/%s.ini' % self.app.safe_id
+        self.assertEqual(os.path.isfile(ini_path), True)
+        mtime1 = os.path.getmtime(ini_path)
+        self.pkg.save_vassal_config(self.app.run_plan.backends[0])
+        mtime2 = os.path.getmtime(ini_path)
+        if os.path.isfile(ini_path):
+            os.unlink(ini_path)
+        self.assertEqual(mtime1, mtime2)
 
     @pytest.mark.usefixtures("create_pkg")
     def test_pkg_unpack_missing_method(self):
