@@ -11,6 +11,7 @@ import os
 from socket import gethostname
 
 import pytest
+from _pytest.monkeypatch import monkeypatch
 
 from django.conf import settings
 from django.test.utils import get_runner
@@ -107,6 +108,10 @@ def create_app(request):
     app.save()
 
     def cleanup():
+        for domain in app.custom_domains:
+            domain.delete()
+        for pkg in app.packages:
+            pkg.delete()
         app.delete()
     request.addfinalizer(cleanup)
 
@@ -200,3 +205,19 @@ def create_router(request):
     request.addfinalizer(cleanup)
 
     request.instance.router = router
+
+
+@pytest.fixture(scope="function")
+def setup_monkeypatch(request):
+    mpatch = monkeypatch()
+    request.instance.monkeypatch = mpatch
+    request.addfinalizer(mpatch.undo)
+
+
+@pytest.fixture(scope="function")
+def mock_dns_record(request):
+    class MockDNSRecord(object):
+        def __init__(self, value):
+            self.strings = value
+
+    request.instance.mock_dns_record_class = MockDNSRecord

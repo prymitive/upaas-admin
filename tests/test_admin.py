@@ -39,16 +39,14 @@ class AdminTest(MongoEngineTestCase):
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 403)
 
-    @pytest.mark.usefixtures("create_user")
-    @pytest.mark.usefixtures("create_router")
+    @pytest.mark.usefixtures("create_user", "create_router")
     def test_superuser_required_router_post(self):
         self.login_as_user()
         url = reverse('admin_router_edit', args=[self.router.name])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 403)
 
-    @pytest.mark.usefixtures("create_user")
-    @pytest.mark.usefixtures("create_backend")
+    @pytest.mark.usefixtures("create_user", "create_backend")
     def test_superuser_required_backend_post(self):
         self.login_as_user()
         url = reverse('admin_backend_edit', args=[self.backend.name])

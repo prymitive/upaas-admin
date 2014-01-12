@@ -137,8 +137,7 @@ class PackageTest(MongoEngineTestCase):
         self.assertEqual(self.pkg.uwsgi_options_from_metadata(),
                          ['route = ^/ basicauth:UPAAS,admin:adm123'])
 
-    @pytest.mark.usefixtures("create_pkg")
-    @pytest.mark.usefixtures("create_backend")
+    @pytest.mark.usefixtures("create_pkg", "create_backend")
     def test_generate_uwsgi_config_method(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])
@@ -148,8 +147,7 @@ class PackageTest(MongoEngineTestCase):
         self.assertNotEqual(
             self.pkg.generate_uwsgi_config(self.app.run_plan.backends[0]), [])
 
-    @pytest.mark.usefixtures("create_pkg")
-    @pytest.mark.usefixtures("create_backend")
+    @pytest.mark.usefixtures("create_pkg", "create_backend")
     def test_save_vassal_config_method(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])

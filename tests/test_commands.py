@@ -20,8 +20,7 @@ class AdminTest(MongoEngineTestCase):
     def test_create_indexes_cmd(self):
         self.assertEqual(call_command('create_indexes'), None)
 
-    @pytest.mark.usefixtures("create_pkg")
-    @pytest.mark.usefixtures("create_backend")
+    @pytest.mark.usefixtures("create_pkg", "create_backend")
     def test_backend_worker_cmd(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])

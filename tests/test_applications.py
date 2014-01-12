@@ -13,6 +13,7 @@ import pytest
 
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
+from django.conf import settings
 
 from upaas_admin.common.tests import MongoEngineTestCase
 
@@ -280,14 +281,114 @@ class ApplicationTest(MongoEngineTestCase):
         url = reverse('app_assign_domain', args=[self.app.safe_id])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.app.domain_validation_code)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_app_assign_domain_404_get(self):
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=['abcdef'])
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
 
     @pytest.mark.usefixtures("create_app")
     def test_app_assign_domain_invalid_post(self):
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.google.com'})
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'No TXT record for domain www.google.com')
+        self.assertContains(resp, 'No TXT record for domain www.u-paas.org')
+        self.assertEqual(len(self.app.custom_domains), 0)
+
+    @pytest.mark.usefixtures("create_app", "setup_monkeypatch")
+    def test_app_assign_domain_missing_post(self):
+        def nx_domain():
+            from dns.resolver import NXDOMAIN
+            raise NXDOMAIN
+
+        self.monkeypatch.setattr('upaas_admin.apps.applications.forms.query',
+                                 lambda x, y: nx_domain())
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Domain www.u-paas.org does not exist')
+        self.assertEqual(len(self.app.custom_domains), 0)
+
+    @pytest.mark.usefixtures("create_app", "setup_monkeypatch")
+    def test_app_assign_domain_unhandled_exception_post(self):
+        def error():
+            raise IOError
+
+        self.monkeypatch.setattr('upaas_admin.apps.applications.forms.query',
+                                 lambda x, y: error())
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        self.assertEqual(resp.status_code, 200)
+        print(resp.content)
+        self.assertContains(resp,
+                            "Unhandled exception during domain verification")
+        self.assertEqual(len(self.app.custom_domains), 0)
+
+    @pytest.mark.usefixtures("create_app", "setup_monkeypatch")
+    def test_app_assign_and_delete_domain_unverified_post(self):
+        self.monkeypatch.setattr(settings.UPAAS_CONFIG.apps.domains,
+                                 'validation', False)
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.custom_domains), 1)
+
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Domain www.u-paas.org was already assigned")
+        self.assertEqual(len(self.app.custom_domains), 1)
+
+        domain = self.app.custom_domains[0]
+        self.assertEqual(domain.name, 'www.u-paas.org')
+        url = reverse('app_remove_domain', args=[domain.safe_id])
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required.")
+        self.assertEqual(len(self.app.custom_domains), 1)
+
+        resp = self.client.post(url, {'confirm': True})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.custom_domains), 0)
+
+    @pytest.mark.usefixtures("create_app", "setup_monkeypatch",
+                             "mock_dns_record")
+    def test_app_assign_domain_verified_post(self):
+        dnsmockrecord = self.mock_dns_record_class(
+            self.app.domain_validation_code)
+        self.monkeypatch.setattr('upaas_admin.apps.applications.forms.query',
+                                 lambda x, y: [dnsmockrecord])
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(len(self.app.custom_domains), 1)
+        for domain in self.app.custom_domains:
+            domain.delete()
+
+    @pytest.mark.usefixtures("create_app", "setup_monkeypatch",
+                             "mock_dns_record")
+    def test_app_assign_domain_verified_no_code_post(self):
+        dnsmockrecord = self.mock_dns_record_class("abcdef")
+        self.monkeypatch.setattr('upaas_admin.apps.applications.forms.query',
+                                 lambda x, y: [dnsmockrecord])
+        self.login_as_user()
+        url = reverse('app_assign_domain', args=[self.app.safe_id])
+        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(
+            resp, "No verification code in TXT record for www.u-paas.org")
+        self.assertEqual(len(self.app.custom_domains), 0)
 
     @pytest.mark.usefixtures("create_app")
     def test_app_start_invalid_get(self):
@@ -295,6 +396,8 @@ class ApplicationTest(MongoEngineTestCase):
         url = reverse('app_start', args=[self.app.safe_id])
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 406)
+        self.app.reload()
+        self.assertEqual(self.app.run_plan, None)
 
     @pytest.mark.usefixtures("create_user")
     def test_app_start_404_get(self):
@@ -309,6 +412,8 @@ class ApplicationTest(MongoEngineTestCase):
         url = reverse('app_start', args=[self.app.safe_id])
         resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 406)
+        self.app.reload()
+        self.assertEqual(self.app.run_plan, None)
 
     @pytest.mark.usefixtures("create_app")
     def test_app_stop_invalid_get(self):
@@ -345,8 +450,7 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 406)
 
-    @pytest.mark.usefixtures("create_pkg")
-    @pytest.mark.usefixtures("create_backend")
+    @pytest.mark.usefixtures("create_pkg", "create_backend")
     def test_app_start_edit_stop(self):
         self.login_as_user()
 
