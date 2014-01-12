@@ -8,6 +8,7 @@
 from __future__ import unicode_literals
 
 import os
+import sys
 import datetime
 import logging
 
@@ -31,7 +32,10 @@ class MongoLogHandler(logging.StreamHandler):
 
     def __init__(self, task, flush_count=10, flush_time=3, *args,
                  **kwargs):
-        super(MongoLogHandler, self).__init__(*args, **kwargs)
+        if sys.version_info[:2] > (2,6):
+            super(MongoLogHandler, self).__init__(*args, **kwargs)
+        else:
+            logging.StreamHandler.__init__(self, *args, **kwargs)
 
         self.task = task
         self.flush_count = flush_count
