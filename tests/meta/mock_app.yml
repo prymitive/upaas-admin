@@ -1,0 +1,37 @@
+os:
+  Debian: &debian
+    packages:
+      - git-core
+      - rake
+      - libpq-dev
+      - libmysqlclient-dev
+      - libsqlite3-dev
+      - imagemagick
+      - libmagickcore-dev
+      - libmagickwand-dev
+  Ubuntu: *debian
+
+
+interpreter:
+  type: ruby
+  versions:
+    - 2.0.0
+    - 1.9.3
+    - 1.8.7
+
+
+repository:
+  clone: echo "cloning repository to %destination%"
+  update: echo "repository update command"
+  info: echo "repository info command"
+  changelog: echo "repository changelog command"
+
+
+actions:
+  setup:
+    main: echo "metadata/actions/setup/main"
+    after: echo "metadata/actions/setup/after"
+
+
+env:
+  REDMINE_LANG: en

@@ -76,9 +76,11 @@ class AdminTest(MongoEngineTestCase):
 
     def test_bootstrap_os_image_root_required_cmd(self):
         with pytest.raises(SystemExit):
-            self.assertEqual(call_command('bootstrap_os_image'), None)
+            self.assertEqual(call_command('bootstrap_os_image', force=True),
+                             None)
 
     def test_bootstrap_os_image_as_user_cmd(self):
         with pytest.raises(OSError):
             self.assertEqual(
-                call_command('bootstrap_os_image', as_user=True), None)
+                call_command('bootstrap_os_image', as_user=True, force=True),
+                None)

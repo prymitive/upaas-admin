@@ -120,6 +120,41 @@ def create_app(request):
 
 
 @pytest.fixture(scope="function")
+def create_buildable_app(request):
+    data = {
+        'name': 'redmine',
+        'metadata_path': os.path.join(os.path.dirname(__file__),
+                                      'tests/meta/mock_app.yml')
+    }
+
+    with open(data['metadata_path'], 'rb') as metadata:
+        data['metadata'] = metadata.read()
+
+    data['metadata_html'] = escape(data['metadata'])
+
+    app = Application.objects(name=data['name']).first()
+    if app:
+        app.delete()
+
+    create_user(request)
+
+    app = Application(name=data['name'], owner=request.instance.user,
+                      metadata=data['metadata'])
+    app.save()
+
+    def cleanup():
+        for domain in app.custom_domains:
+            domain.delete()
+        for pkg in app.packages:
+            pkg.delete()
+        app.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.app = app
+    request.instance.app_data = data
+
+
+@pytest.fixture(scope="function")
 def create_pkg(request):
     create_app(request)
 
@@ -244,3 +279,37 @@ def mock_dns_record(request):
             self.strings = value
 
     request.instance.mock_dns_record_class = MockDNSRecord
+
+
+@pytest.fixture(scope="function")
+def mock_chroot(request):
+    class MockChroot(object):
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __enter__(self):
+            pass
+
+        def __exit__(self, type, value, traceback):
+            pass
+
+    mpatch = monkeypatch()
+    mpatch.setattr('upaas.chroot.Chroot', MockChroot)
+    mpatch.setattr('upaas.builder.builder.Chroot', MockChroot)
+    request.addfinalizer(mpatch.undo)
+
+
+@pytest.fixture(scope="function")
+def mock_build_commands(request):
+    from upaas.commands import execute as real_execute
+
+    def mock_execute(cmd, *args, **kwargs):
+        executable = cmd.split(' ')[0]
+        if executable in ['git', 'chown', 'gem', 'rake', 'bundle']:
+            return 0, []
+        else:
+            return real_execute(cmd, *args, **kwargs)
+
+    mpatch = monkeypatch()
+    mpatch.setattr('upaas.commands.execute', mock_execute)
+    request.addfinalizer(mpatch.undo)
