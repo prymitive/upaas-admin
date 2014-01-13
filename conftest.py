@@ -20,6 +20,8 @@ from django.utils.html import escape
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.servers.models import BackendServer, RouterServer
+from upaas_admin.apps.scheduler.models import (ApplicationRunPlan,
+                                               BackendRunPlanSettings)
 from upaas.distro import distro_name, distro_version, distro_arch
 
 
@@ -263,6 +265,31 @@ def create_router(request):
     request.addfinalizer(cleanup)
 
     request.instance.router = router
+
+
+@pytest.fixture(scope="function")
+def create_run_plan(request):
+    create_app(request)
+    create_pkg(request)
+    create_backend(request)
+    create_router(request)
+
+    backend_settings = BackendRunPlanSettings(backend=request.instance.backend,
+                                              package=request.instance.pkg,
+                                              socket=8080, stats=9090,
+                                              workers_min=1, workers_max=4)
+
+    run_plan = ApplicationRunPlan(application=request.instance.app,
+                                  backends=[backend_settings],
+                                  workers_min=1, workers_max=4,
+                                  memory_per_worker=128)
+    run_plan.save()
+
+    def cleanup():
+        run_plan.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.run_plan = run_plan
 
 
 @pytest.fixture(scope="function")
