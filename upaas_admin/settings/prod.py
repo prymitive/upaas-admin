@@ -322,6 +322,11 @@ LOGGING = {
             'level': loglevel,
             'propagate': False,
         },
+        'upaas.config': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
 

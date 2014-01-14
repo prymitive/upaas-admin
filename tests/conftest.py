@@ -8,6 +8,9 @@
 from __future__ import unicode_literals
 
 import os
+import tarfile
+import shutil
+import tempfile
 from socket import gethostname
 
 import pytest
@@ -17,18 +20,32 @@ from django.conf import settings
 from django.test.utils import get_runner
 from django.utils.html import escape
 
+from upaas.storage.utils import find_storage_handler
+from upaas.distro import distro_name, distro_version, distro_arch
+
+from upaas_admin.config import load_main_config
 from upaas_admin.apps.users.models import User
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.apps.servers.models import BackendServer, RouterServer
 from upaas_admin.apps.scheduler.models import (ApplicationRunPlan,
                                                BackendRunPlanSettings)
-from upaas.distro import distro_name, distro_version, distro_arch
 
 
 def is_configured():
     if settings is None:
         return False
     return settings.configured or os.environ.get('DJANGO_SETTINGS_MODULE')
+
+
+@pytest.fixture(scope="function")
+def empty_dir(request):
+    directory = tempfile.mkdtemp(prefix="upaas_testdir_")
+
+    def cleanup():
+        shutil.rmtree(directory)
+    request.addfinalizer(cleanup)
+
+    return directory
 
 
 @pytest.fixture(autouse=True, scope='session')
@@ -91,7 +108,7 @@ def create_app(request):
     data = {
         'name': 'redmine',
         'metadata_path': os.path.join(os.path.dirname(__file__),
-                                      'tests/meta/redmine.yml')
+                                      'meta/redmine.yml')
     }
 
     with open(data['metadata_path'], 'rb') as metadata:
@@ -126,7 +143,7 @@ def create_buildable_app(request):
     data = {
         'name': 'redmine',
         'metadata_path': os.path.join(os.path.dirname(__file__),
-                                      'tests/meta/mock_app.yml')
+                                      'meta/mock_app.yml')
     }
 
     with open(data['metadata_path'], 'rb') as metadata:
@@ -290,6 +307,53 @@ def create_run_plan(request):
     request.addfinalizer(cleanup)
 
     request.instance.run_plan = run_plan
+
+
+@pytest.fixture(scope="function")
+def create_run_plan_pkg_list(request):
+    create_app(request)
+    create_pkg_list(request)
+    create_backend(request)
+    create_router(request)
+
+    backend_settings = BackendRunPlanSettings(
+        backend=request.instance.backend, package=request.instance.pkg_list[0],
+        socket=8080, stats=9090, workers_min=1, workers_max=4)
+
+    run_plan = ApplicationRunPlan(application=request.instance.app,
+                                  backends=[backend_settings],
+                                  workers_min=1, workers_max=4,
+                                  memory_per_worker=128)
+    run_plan.save()
+
+    def cleanup():
+        run_plan.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.run_plan = run_plan
+
+
+@pytest.fixture(scope="function")
+def create_pkg_file(request):
+    workdir = empty_dir(request)
+
+    remote_path = "pkg.tar.gz"
+    local_path = os.path.join(workdir, remote_path)
+    with tarfile.open(local_path, "w:gz") as tar:
+        d = tarfile.TarInfo('home')
+        d.type = tarfile.DIRTYPE
+        tar.addfile(d)
+
+    upaas_config = load_main_config()
+    storage = find_storage_handler(upaas_config)
+    storage.put(local_path, remote_path)
+
+    def cleanup():
+        storage.delete(remote_path)
+    request.addfinalizer(cleanup)
+
+    request.instance.storage = storage
+    request.instance.pkg_file_path = remote_path
 
 
 @pytest.fixture(scope="function")
