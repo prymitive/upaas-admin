@@ -339,10 +339,11 @@ def create_pkg_file(request):
 
     remote_path = "pkg.tar.gz"
     local_path = os.path.join(workdir, remote_path)
-    with tarfile.open(local_path, "w:gz") as tar:
-        d = tarfile.TarInfo('home')
-        d.type = tarfile.DIRTYPE
-        tar.addfile(d)
+    d = tarfile.TarInfo('home')
+    d.type = tarfile.DIRTYPE
+    tar = tarfile.open(local_path, "w:gz")
+    tar.addfile(d)
+    tar.close()
 
     upaas_config = load_main_config()
     storage = find_storage_handler(upaas_config)
