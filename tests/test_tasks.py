@@ -57,6 +57,33 @@ class TaskTest(MongoEngineTestCase):
         self.assertNotEqual(self.app.current_package, None)
         self.assertNotEqual(self.app.current_package.filename, None)
 
+    @pytest.mark.usefixtures("create_buildable_app_with_pkg", "mock_chroot",
+                             "mock_build_commands")
+    def test_build_incremental_package_task_successful(self):
+        task = BuildPackageTask(application=self.app,
+                                metadata=self.app_data['metadata'],
+                                force_fresh=False)
+        task.title = task.generate_title()
+        task.save()
+        task.execute()
+
+        task.reload()
+        self.assertEqual(task.is_successful, True)
+        self.assertEqual(task.is_active, False)
+        self.assertEqual(task.is_failed, False)
+        self.assertEqual(task.is_finished, True)
+        self.assertEqual(task.is_pending, False)
+        self.assertEqual(task.is_running, False)
+        self.assertEqual(task.is_virtual, False)
+
+        self.app.reload()
+        self.assertEqual(len(self.app.packages), 2)
+        self.assertNotEqual(self.app.current_package, None)
+        self.assertNotEqual(self.app.current_package.filename, None)
+        self.assertEqual(self.app.current_package.parent_package.filename,
+                         self.pkg.filename)
+        self.assertNotEqual(self.app.current_package.parent_package, None)
+
     @pytest.mark.usefixtures("create_run_plan")
     def test_start_app_task_failed(self):
         self.app.start_application()

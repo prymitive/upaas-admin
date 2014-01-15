@@ -33,6 +33,13 @@
       #details.tab-pane.active
         %dl.dl-horizontal
 
+          - if pkg.parent_package
+            %dt
+              {% trans "Parent package" %}:
+            %dd
+              %a{'href':'{% url "package_details" pkg.parent_package.safe_id %}'}
+                = pkg.parent_package.date_created
+
           %dt
             {% trans "Created" %}:
           %dd

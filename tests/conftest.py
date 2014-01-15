@@ -21,6 +21,7 @@ from django.test.utils import get_runner
 from django.utils.html import escape
 
 from upaas.storage.utils import find_storage_handler
+from upaas.storage.exceptions import FileNotFound
 from upaas.distro import distro_name, distro_version, distro_arch
 
 from upaas_admin.config import load_main_config
@@ -35,17 +36,6 @@ def is_configured():
     if settings is None:
         return False
     return settings.configured or os.environ.get('DJANGO_SETTINGS_MODULE')
-
-
-@pytest.fixture(scope="function")
-def empty_dir(request):
-    directory = tempfile.mkdtemp(prefix="upaas_testdir_")
-
-    def cleanup():
-        shutil.rmtree(directory)
-    request.addfinalizer(cleanup)
-
-    return directory
 
 
 @pytest.fixture(autouse=True, scope='session')
@@ -66,6 +56,44 @@ def _django_runner(request):
     request.addfinalizer(db_teardown)
 
     return runner
+
+
+@pytest.fixture(scope="function")
+def empty_dir(request):
+    directory = tempfile.mkdtemp(prefix="upaas_testdir_")
+
+    def cleanup():
+        shutil.rmtree(directory)
+    request.addfinalizer(cleanup)
+
+    return directory
+
+
+@pytest.fixture(scope="function")
+def create_pkg_file(request):
+    workdir = empty_dir(request)
+
+    remote_path = "pkg.tar.gz"
+    local_path = os.path.join(workdir, remote_path)
+    d = tarfile.TarInfo('home')
+    d.type = tarfile.DIRTYPE
+    tar = tarfile.open(local_path, "w:gz")
+    tar.addfile(d)
+    tar.close()
+
+    upaas_config = load_main_config()
+    storage = find_storage_handler(upaas_config)
+    storage.put(local_path, remote_path)
+
+    def cleanup():
+        try:
+            storage.delete(remote_path)
+        except FileNotFound:
+            pass
+    request.addfinalizer(cleanup)
+
+    request.instance.storage = storage
+    request.instance.pkg_file_path = remote_path
 
 
 @pytest.fixture(scope="function")
@@ -171,6 +199,32 @@ def create_buildable_app(request):
 
     request.instance.app = app
     request.instance.app_data = data
+
+
+@pytest.fixture(scope="function")
+def create_buildable_app_with_pkg(request):
+    create_buildable_app(request)
+    create_pkg_file(request)
+
+    pkg = Package(metadata=request.instance.app_data['metadata'],
+                  application=request.instance.app,
+                  interpreter_name=request.instance.app.interpreter_name,
+                  interpreter_version=request.instance.app.interpreter_version,
+                  filename=request.instance.pkg_file_path, bytes=1024,
+                  checksum='abcdefg', builder='fake builder',
+                  distro_name=distro_name(), distro_version=distro_version(),
+                  distro_arch=distro_arch())
+    pkg.save()
+
+    def cleanup():
+        pkg.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.app.current_package = pkg
+    request.instance.app.packages = [pkg]
+    request.instance.app.save()
+
+    request.instance.pkg = pkg
 
 
 @pytest.fixture(scope="function")
@@ -331,30 +385,6 @@ def create_run_plan_pkg_list(request):
     request.addfinalizer(cleanup)
 
     request.instance.run_plan = run_plan
-
-
-@pytest.fixture(scope="function")
-def create_pkg_file(request):
-    workdir = empty_dir(request)
-
-    remote_path = "pkg.tar.gz"
-    local_path = os.path.join(workdir, remote_path)
-    d = tarfile.TarInfo('home')
-    d.type = tarfile.DIRTYPE
-    tar = tarfile.open(local_path, "w:gz")
-    tar.addfile(d)
-    tar.close()
-
-    upaas_config = load_main_config()
-    storage = find_storage_handler(upaas_config)
-    storage.put(local_path, remote_path)
-
-    def cleanup():
-        storage.delete(remote_path)
-    request.addfinalizer(cleanup)
-
-    request.instance.storage = storage
-    request.instance.pkg_file_path = remote_path
 
 
 @pytest.fixture(scope="function")

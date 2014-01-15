@@ -63,15 +63,14 @@ class BuildPackageTask(ApplicationTask):
             raise Exception()
 
         system_filename = None
+        parent_package = None
         if not self.force_fresh and self.application.current_package:
             system_filename = self.application.current_package.filename
-            log.info(_("Using current application package {pkg} as "
-                       "parent").format(
-                pkg=self.application.current_package.safe_id))
-
-        if self.application.current_package and not self.force_fresh:
+            parent_package = self.application.current_package
             self.interpreter_version = \
                 self.application.current_package.interpreter_version
+            log.info(_("Using current application package {pkg} as "
+                       "parent").format(pkg=parent_package.safe_id))
 
         log.info("Starting build task with parameters app_id=%s, "
                  "force_fresh=%s, interpreter_version=%s" % (
@@ -104,6 +103,8 @@ class BuildPackageTask(ApplicationTask):
                       distro_name=build_result.distro_name,
                       distro_version=build_result.distro_version,
                       distro_arch=build_result.distro_arch)
+        if parent_package and build_result.parent == parent_package.filename:
+            pkg.parent_package = parent_package
         pkg.save()
         log.info("Package saved with id %s" % pkg.id)
 
