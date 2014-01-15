@@ -23,7 +23,7 @@ mongodb:
   #uri: mongodb://localhost:27017/mydatabase')
   # or separate options for each setting:
   host: localhost
-  database: upaas
+  database: upaas-test
 
 
 paths:
