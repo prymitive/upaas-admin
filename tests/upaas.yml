@@ -3,7 +3,7 @@
 
 admin:
   # verbosity level for all logged messages (debug, info, warning, error)
-  loglevel: info
+  loglevel: debug
   # set debug to true to enable django debbuging mode, docs:
   # https://docs.djangoproject.com/en/dev/ref/settings/#debug
   debug: false
