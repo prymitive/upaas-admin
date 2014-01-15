@@ -51,6 +51,9 @@ class MongoLogHandler(logging.StreamHandler):
         self.last_flush = datetime.datetime.now()
 
     def emit(self, record):
+        # skip debug messages
+        if record.levelno < logging.INFO:
+            return
         msg = TaskMessage(
             timestamp=datetime.datetime.fromtimestamp(record.created),
             source=record.name, level=record.levelno, message=record.msg)
