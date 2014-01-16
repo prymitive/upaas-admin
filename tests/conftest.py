@@ -26,7 +26,8 @@ from upaas.distro import distro_name, distro_version, distro_arch
 
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.users.models import User
-from upaas_admin.apps.applications.models import Application, Package
+from upaas_admin.apps.applications.models import (Application, Package,
+                                                  ApplicationDomain)
 from upaas_admin.apps.servers.models import BackendServer, RouterServer
 from upaas_admin.apps.scheduler.models import (ApplicationRunPlan,
                                                BackendRunPlanSettings)
@@ -249,6 +250,22 @@ def create_pkg(request):
     request.instance.app.save()
 
     request.instance.pkg = pkg
+
+
+@pytest.fixture(scope="function")
+def create_pkg_with_custom_domain(request):
+    create_pkg(request)
+
+    name = 'www.u-paas.org'
+    domain = ApplicationDomain(application=request.instance.app, name=name,
+                               validated=True)
+    domain.save()
+
+    def cleanup():
+        domain.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.domain = domain
 
 
 @pytest.fixture(scope="function")

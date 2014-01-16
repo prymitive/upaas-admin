@@ -137,15 +137,24 @@ class PackageTest(MongoEngineTestCase):
         self.assertEqual(self.pkg.uwsgi_options_from_metadata(),
                          ['route = ^/ basicauth:UPAAS,admin:adm123'])
 
-    @pytest.mark.usefixtures("create_pkg", "create_backend")
+    @pytest.mark.usefixtures("create_pkg_with_custom_domain", "create_backend",
+                             "create_router")
     def test_generate_uwsgi_config_method(self):
         self.login_as_user()
         url = reverse('app_start', args=[self.app.safe_id])
         resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
-        self.assertNotEqual(
-            self.pkg.generate_uwsgi_config(self.app.run_plan.backends[0]), [])
+        config = self.pkg.generate_uwsgi_config(self.app.run_plan.backends[0])
+        self.assertNotEqual(config, [])
+        self.assertTrue('[uwsgi]' in config)
+        self.assertTrue('var_app_name = redmine' in config)
+        self.assertTrue('var_app_id = %s' % self.app.safe_id in config)
+        self.assertTrue('env = REDMINE_LANG=en' in config)
+        skey = 'subscribe2 = server=%s:%d,key=%s' % (
+            self.router.private_ip, self.router.subscription_port,
+            self.domain.name)
+        self.assertTrue(skey in config)
 
     @pytest.mark.usefixtures("create_pkg", "create_backend", "create_router")
     def test_save_vassal_config_method(self):
@@ -169,3 +178,7 @@ class PackageTest(MongoEngineTestCase):
         from upaas.storage.exceptions import StorageError
         with pytest.raises(StorageError):
             self.pkg.unpack()
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_pkg_delete_package_file_missing_method(self):
+        self.pkg.delete_package_file()

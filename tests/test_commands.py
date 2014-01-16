@@ -15,6 +15,9 @@ from django.core.urlresolvers import reverse
 from upaas_admin.common.tests import MongoEngineTestCase
 
 
+GETPASS_TRY = 0
+
+
 class AdminTest(MongoEngineTestCase):
 
     def test_create_indexes_cmd(self):
@@ -35,6 +38,7 @@ class AdminTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_app")
     def test_builder_worker_cmd(self):
+        # needed so that task class will be registered
         from upaas_admin.apps.applications.tasks import BuildPackageTask
         self.app.build_package()
         self.assertNotEqual(self.app.pending_build_tasks, [])
@@ -56,6 +60,36 @@ class AdminTest(MongoEngineTestCase):
         self.assertEqual(u.is_active, True)
         self.assertEqual(u.is_superuser, False)
         u.delete()
+
+    @pytest.mark.usefixtures("setup_monkeypatch")
+    def test_create_user_cmd_password_input(self):
+        def _getpass(*args, **kwargs):
+            global GETPASS_TRY
+            GETPASS_TRY += 1
+            if GETPASS_TRY == 2:
+                return 'xxx'
+            else:
+                return '12345678'
+
+        self.monkeypatch.setattr('getpass.getpass', _getpass)
+        from upaas_admin.apps.users.models import User
+        self.assertEqual(call_command('create_user', login='mylogin',
+                                      firstname='FirstŁÓŹ',
+                                      lastname='ÓŹĆąLast',
+                                      email='me@domain.com'), None)
+        u = User.objects(username='mylogin').first()
+        self.assertNotEqual(u, None)
+        self.assertEqual(u.first_name, 'FirstŁÓŹ')
+        self.assertEqual(u.last_name, 'ÓŹĆąLast')
+        self.assertEqual(u.email, 'me@domain.com')
+        self.assertEqual(u.is_active, True)
+        self.assertEqual(u.is_superuser, False)
+        u.delete()
+
+    def test_create_user_cmd_missing_options(self):
+        from django.core.management.base import CommandError
+        with pytest.raises(CommandError):
+            self.assertEqual(call_command('create_user'), None)
 
     def test_create_admin_cmd(self):
         from upaas_admin.apps.users.models import User
