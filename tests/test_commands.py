@@ -71,7 +71,8 @@ class AdminTest(MongoEngineTestCase):
             else:
                 return '12345678'
 
-        self.monkeypatch.setattr('getpass.getpass', _getpass)
+        self.monkeypatch.setattr('upaas_admin.apps.users.management.commands.'
+                                 'create_user.getpass', _getpass)
         from upaas_admin.apps.users.models import User
         self.assertEqual(call_command('create_user', login='mylogin',
                                       firstname='FirstŁÓŹ',
