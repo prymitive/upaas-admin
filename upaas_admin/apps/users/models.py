@@ -14,7 +14,7 @@ import logging
 from datetime import datetime, timedelta
 
 from mongoengine.queryset import QuerySetManager
-from mongoengine.fields import StringField
+from mongoengine.fields import StringField, BooleanField
 from mongoengine import signals, Q
 
 from upaas_admin.apps.scheduler.models import UserLimits, ApplicationRunPlan
@@ -111,5 +111,9 @@ class User(MongoUser):
         return self.tasks.filter(
             Q(status__in=ACTIVE_TASK_STATUSES) |
             Q(date_finished__gte=datetime.now() - timedelta(seconds=3600)))
+
+    @staticmethod
+    def has_usable_password():
+        return True
 
 signals.pre_save.connect(User.pre_save, sender=User)

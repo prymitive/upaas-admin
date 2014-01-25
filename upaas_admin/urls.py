@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 
 from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 
@@ -62,6 +62,23 @@ urlpatterns = patterns(
         'django.contrib.auth.views.password_change_done',
         {'template_name': 'users/password_changed.html'},
         name='password_change_done'),
+
+    url(r'^password/reset$', 'django.contrib.auth.views.password_reset',
+        {'template_name': 'users/password_reset.html',
+         'email_template_name': 'users/emails/password_reset.html',
+         'subject_template_name': 'users/emails/password_reset_subject.txt',
+         'post_reset_redirect': 'password_reset_sent'},
+        name='password_reset'),
+    url(r'^password/reset/sent$', TemplateView.as_view(
+        template_name='users/password_reset_sent.html'),
+        name='password_reset_sent'),
+    url(r'^password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$',
+        'django.contrib.auth.views.password_reset_confirm',
+        {'template_name': 'users/password_reset_confirm.html'},
+        name='password_reset_confirm'),
+    url(r'^password/reset/done$', TemplateView.as_view(
+        template_name='users/password_reset_complete.html'),
+        name='password_reset_complete'),
 
     url(r'^djs/', include('djangojs.urls')),
     url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),

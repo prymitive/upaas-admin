@@ -2,7 +2,6 @@
 
 
 - load i18n
-- load compressed
 - load crispy_forms_tags
 
 
@@ -26,4 +25,6 @@
             = form|crispy
             %input{'type':'hidden', 'name':'next', 'value':'={ next }'}/
             .controls
-              %input.btn.btn-primary{'type':'submit', 'value':'{% trans "Login" %}'}/
+              %a.btn.btn-default{'href':'{% url "password_reset" %}'}
+                - trans "Reset password"
+              %input.btn.btn-primary.pull-right{'type':'submit', 'value':'{% trans "Login" %}'}/
