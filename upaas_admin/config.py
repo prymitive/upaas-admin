@@ -91,11 +91,13 @@ class UPaaSConfig(base.Config):
             "debug": base.BooleanEntry(default=False),
             "domains": base.ListEntry(value_type=unicode),
             "smtp": {
-                "host": base.StringEntry(default='localhost'),
-                "port": base.IntegerEntry(default=25),
+                "host": base.StringEntry(default='localhost', required=True),
+                "port": base.IntegerEntry(default=25, required=True),
                 "tls": base.BooleanEntry(default=False),
                 "username": base.StringEntry(),
                 "password": base.StringEntry(),
+                "sender": base.StringEntry(default='no-reply@localhost',
+                                           required=True),
             }
         },
         "interpreters": base.WildcardEntry(),

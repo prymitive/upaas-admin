@@ -336,6 +336,7 @@ LOGGING = {
 
 EMAIL_HOST = UPAAS_CONFIG.admin.smtp.host
 EMAIL_PORT = UPAAS_CONFIG.admin.smtp.port
+DEFAULT_FROM_EMAIL = UPAAS_CONFIG.admin.smtp.sender
 
 # auth is optional
 try:
