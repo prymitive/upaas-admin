@@ -15,6 +15,8 @@ from IPy import IP
 DEBUG = True
 TEMPLATE_DEBUG = True
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 #==============================================================================
 # django-debug-toolbar

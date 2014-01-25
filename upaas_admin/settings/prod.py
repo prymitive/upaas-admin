@@ -292,8 +292,6 @@ PIPELINE_JS = {
 
 ADMINS = (('UPAAS Admin', 'root@localhost'),)
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
 loglevel = UPAAS_CONFIG.admin.loglevel.upper()
 if not logging.getLevelName(loglevel):
     log.error("Invalid log level name '%s', ignoring" % loglevel)
