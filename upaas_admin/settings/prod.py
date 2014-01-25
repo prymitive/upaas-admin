@@ -331,6 +331,22 @@ LOGGING = {
 }
 
 #==============================================================================
+# email
+#==============================================================================
+
+EMAIL_HOST = UPAAS_CONFIG.admin.smtp.host
+EMAIL_PORT = UPAAS_CONFIG.admin.smtp.port
+
+# auth is optional
+try:
+    EMAIL_HOST_USER = UPAAS_CONFIG.admin.smtp.username
+    EMAIL_HOST_PASSWORD = UPAAS_CONFIG.admin.smtp.password
+except AttributeError:
+    pass
+
+EMAIL_SUBJECT_PREFIX = ''
+
+#==============================================================================
 # gravatar
 #==============================================================================
 

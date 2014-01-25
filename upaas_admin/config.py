@@ -90,6 +90,13 @@ class UPaaSConfig(base.Config):
             "loglevel": base.StringEntry(default='info'),
             "debug": base.BooleanEntry(default=False),
             "domains": base.ListEntry(value_type=unicode),
+            "smtp": {
+                "host": base.StringEntry(default='localhost'),
+                "port": base.IntegerEntry(default=25),
+                "tls": base.BooleanEntry(default=False),
+                "username": base.StringEntry(),
+                "password": base.StringEntry(),
+            }
         },
         "interpreters": base.WildcardEntry(),
     }
