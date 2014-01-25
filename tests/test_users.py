@@ -10,6 +10,8 @@ from __future__ import unicode_literals
 import pytest
 
 from django.core.urlresolvers import reverse
+from django.core import mail
+from django.utils.html import escape
 
 from upaas_admin.common.tests import MongoEngineTestCase
 from upaas_admin.apps.users.models import User
@@ -146,3 +148,90 @@ class UserTest(MongoEngineTestCase):
         self.user.last_name = None
         self.user.save()
         self.assertEqual(self.user.full_name_or_login, self.user.username)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_password_reset_invalid_email(self):
+        url = reverse('password_reset')
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {'email': 'invalid@email.xyz'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'],
+                         'http://testserver' + reverse('password_reset_sent'))
+        self.assertEqual(len(mail.outbox), 0)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_password_reset_invalid_token(self):
+        url = reverse('password_reset_confirm', args=['abcdef987', '12345xyz'])
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This reset link is no longer valid")
+
+    @pytest.mark.usefixtures("create_user")
+    def test_password_reset_invalid_uidb(self):
+        url = reverse('password_reset_confirm',
+                      args=['NTJhNDc5xxOWE1YmE3MmUwZmNhZDA5MzEy', '12345xyz'])
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
+    @pytest.mark.usefixtures("create_user")
+    def test_password_reset(self):
+        url = reverse('password_reset')
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {'email': 'email@domain.com'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'],
+                         'http://testserver' + reverse('password_reset_sent'))
+        self.assertEqual(len(mail.outbox), 1)
+
+        link = None
+        for line in mail.outbox[0].body.splitlines():
+            if line.startswith('http://'):
+                link = line.rstrip('\n')
+        self.assertNotEqual(link, None)
+        url = link.replace('http://testserver', '')
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.post(url, {})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required.")
+
+        resp = self.client.post(url, {'new_password1': '12345678'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required.")
+
+        resp = self.client.post(url, {'new_password2': '12345678'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "This field is required.")
+
+        resp = self.client.post(url, {'new_password1': '12345678',
+                                      'new_password2': '87654321'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp,
+                            escape("The two password fields didn't match."))
+
+        resp = self.client.post(url, {'new_password1': '12345678',
+                                      'new_password2': '12345678'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            resp['Location'],
+            'http://testserver' + reverse('password_reset_complete'))
+
+        url = reverse('password_reset_complete')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+        url = reverse('site_login')
+        resp = self.client.post(url, {'username': self.user_data['login'],
+                                      'password': '12345678'})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], 'http://testserver/')

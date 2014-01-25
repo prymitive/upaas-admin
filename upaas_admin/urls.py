@@ -73,7 +73,8 @@ urlpatterns = patterns(
         template_name='users/password_reset_sent.html'),
         name='password_reset_sent'),
     url(r'^password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$',
-        'django.contrib.auth.views.password_reset_confirm',
+        'upaas_admin.common.hacks.django_password_reset.'
+        'safe_password_reset_confirm',
         {'template_name': 'users/password_reset_confirm.html'},
         name='password_reset_confirm'),
     url(r'^password/reset/done$', TemplateView.as_view(
