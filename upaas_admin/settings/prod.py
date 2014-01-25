@@ -162,7 +162,7 @@ MIDDLEWARE_CLASSES += (
 #==============================================================================
 
 AUTHENTICATION_BACKENDS = (
-    'upaas_admin.common.hacks.mongoengine_auth.MongoEngineBackend',
+    'mongoengine.django.auth.MongoEngineBackend',
 )
 
 AUTH_USER_MODEL = 'mongo_auth.MongoUser'
