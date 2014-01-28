@@ -183,6 +183,7 @@ SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 
 from mongoengine import connect
+from pymongo import ReadPreference
 
 mongo_opts = {}
 
@@ -193,7 +194,8 @@ if UPAAS_CONFIG.mongodb.get('uri'):
 else:
     # host & port settings
     mongo_opts = {'host': UPAAS_CONFIG.mongodb.host,
-                  'port': UPAAS_CONFIG.mongodb.port}
+                  'port': UPAAS_CONFIG.mongodb.port,
+                  'read_preference': ReadPreference.PRIMARY_PREFERRED}
     if UPAAS_CONFIG.mongodb.get('username'):
         mongo_opts['username'] = UPAAS_CONFIG.mongodb.username
         if UPAAS_CONFIG.mongodb.get('password'):
