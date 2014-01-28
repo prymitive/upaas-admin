@@ -322,6 +322,11 @@ LOGGING = {
             'level': loglevel,
             'propagate': False,
         },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
         'upaas.config': {
             'handlers': ['console'],
             'level': 'INFO',
