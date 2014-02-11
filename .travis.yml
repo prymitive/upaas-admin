@@ -25,6 +25,3 @@ after_success:
 
 services:
   - mongodb
-
-virtualenv:
-  system_site_packages: true
