@@ -16,6 +16,8 @@ install:
   - sudo ln -s /run/shm /dev/shm
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
   - pip freeze
+  - python -vd -c "import bson"
+  - python -vd -c "import bson.py3compat"
 
 script:
   - UPAAS_CONFIG_DIR=tests DJANGO_SETTINGS_MODULE=upaas_admin.settings.tests coverage run --rcfile=.coveragerc `which py.test` -v --pep8
