@@ -12,7 +12,7 @@ install:
   - pip install -U "pip<1.5"
   - pip install -Ur requirements.txt
   - pip install -Ur requirements-test.txt
-  - pip install --no-deps mongoengine==0.8.6
+  - pip install --no-deps mongoengine==0.8.7
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
