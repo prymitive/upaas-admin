@@ -15,7 +15,6 @@ install:
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
-  - pip uninstall -y bson
   - pip freeze
 
 script:
