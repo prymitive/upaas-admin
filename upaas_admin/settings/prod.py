@@ -79,6 +79,7 @@ INSTALLED_APPS = (
     'tastypie_mongoengine',
     'pure_pagination',
     'django_gravatar',
+    'passwords',
     'upaas_admin.apps.users',
     'upaas_admin.apps.applications',
     'upaas_admin.apps.servers',
@@ -375,6 +376,20 @@ PAGINATION_SETTINGS = {
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
+
+#==============================================================================
+# django-passwords
+#==============================================================================
+
+PASSWORD_MIN_LENGTH = 8
+PASSWORD_COMPLEXITY = {
+    "UPPER": 1,
+    "LOWER": 1,
+    "DIGITS": 1,
+    "PUNCTUATION": 0,
+    "NON ASCII": 0,
+    "WORDS": 1
+}
 
 #==============================================================================
 # tests

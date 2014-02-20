@@ -14,6 +14,8 @@ from django.core.urlresolvers import reverse_lazy
 
 from mongoforms import MongoForm
 
+from passwords.fields import PasswordField
+
 from upaas_admin.apps.users.models import User
 from upaas_admin.common.forms import CrispyForm
 
@@ -44,3 +46,5 @@ class UserPasswordChangeForm(CrispyForm, PasswordChangeForm):
     layout = ['old_password', 'new_password1', 'new_password2']
     label_class = 'col-md-3'
     field_class = 'col-md-5'
+
+    new_password2 = PasswordField(label=_("New password confirmation"))
