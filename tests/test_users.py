@@ -90,6 +90,22 @@ class UserTest(MongoEngineTestCase):
         new_password = 'myNewPassw0rd'
 
         url = reverse('password')
+
+        resp = self.client.post(url, {
+            'old_password': self.user_data['password'],
+            'new_password1': '12345678',
+            'new_password2': '12345678'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp,
+                            escape("Based on a common sequence of characters"))
+
+        resp = self.client.post(url, {
+            'old_password': self.user_data['password'],
+            'new_password1': 'hvax',
+            'new_password2': 'hvax'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, escape("Must be more complex"))
+
         resp = self.client.post(url, {
             'old_password': self.user_data['password'],
             'new_password1': new_password,
@@ -213,14 +229,25 @@ class UserTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required.")
 
-        resp = self.client.post(url, {'new_password1': '12345678',
-                                      'new_password2': '87654321'})
+        resp = self.client.post(url, {'new_password1': 'fGarEQ733jSGt2YmB4UH',
+                                      'new_password2': 'fGarEQ733jSGt2YmB4Ux'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp,
                             escape("The two password fields didn't match."))
 
         resp = self.client.post(url, {'new_password1': '12345678',
                                       'new_password2': '12345678'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp,
+                            escape("Based on a common sequence of characters"))
+
+        resp = self.client.post(url, {'new_password1': 'hvax',
+                                      'new_password2': 'hvax'})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, escape("Must be more complex"))
+
+        resp = self.client.post(url, {'new_password1': 'fGarEQ733jSGt2YmB4UH',
+                                      'new_password2': 'fGarEQ733jSGt2YmB4UH'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
             resp['Location'],
@@ -232,6 +259,6 @@ class UserTest(MongoEngineTestCase):
 
         url = reverse('site_login')
         resp = self.client.post(url, {'username': self.user_data['login'],
-                                      'password': '12345678'})
+                                      'password': 'fGarEQ733jSGt2YmB4UH'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp['Location'], 'http://testserver/')
