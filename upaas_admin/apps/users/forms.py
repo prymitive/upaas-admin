@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.core.urlresolvers import reverse_lazy
 
 from mongoforms import MongoForm
@@ -46,5 +46,10 @@ class UserPasswordChangeForm(CrispyForm, PasswordChangeForm):
     layout = ['old_password', 'new_password1', 'new_password2']
     label_class = 'col-md-3'
     field_class = 'col-md-5'
+
+    new_password2 = PasswordField(label=_("New password confirmation"))
+
+
+class UserPasswordSetForm(SetPasswordForm):
 
     new_password2 = PasswordField(label=_("New password confirmation"))

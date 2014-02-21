@@ -24,7 +24,8 @@ from upaas_admin.apps.scheduler.api import RunPlanResource
 from upaas_admin.apps.applications.views import IndexView
 from upaas_admin.apps.tasks.registry import tasks_autodiscover
 
-from upaas_admin.apps.users.forms import UserPasswordChangeForm
+from upaas_admin.apps.users.forms import (UserPasswordChangeForm,
+                                          UserPasswordSetForm)
 
 
 v1_api = Api(api_name='v1')
@@ -75,7 +76,8 @@ urlpatterns = patterns(
     url(r'^password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>.+)/$',
         'upaas_admin.common.hacks.django_password_reset.'
         'safe_password_reset_confirm',
-        {'template_name': 'users/password_reset_confirm.html'},
+        {'template_name': 'users/password_reset_confirm.html',
+         'set_password_form': UserPasswordSetForm},
         name='password_reset_confirm'),
     url(r'^password/reset/done$', TemplateView.as_view(
         template_name='users/password_reset_complete.html'),
