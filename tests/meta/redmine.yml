@@ -1,7 +1,7 @@
 os:
   Debian: &debian
     packages:
-      - git-core
+      - subversion
       - rake
       - libpq-dev
       - libmysqlclient-dev
@@ -23,13 +23,13 @@ interpreter:
 
 
 repository:
-  clone: git clone --depth=10 --quiet --branch 2.4-stable git://github.com/redmine/redmine.git %destination%
+  clone: svn co -q --non-interactive --trust-server-cert https://svn.redmine.org/redmine/branches/2.5-stable/ %destination%
   update:
     - rm -f Gemfile.lock
-    - git reset --hard
-    - git pull
-  info: git log -n 1
-  changelog: git log --no-merges %old%..%new%"
+    - svn revert -R .
+    - svn up --non-interactive --trust-server-cert
+  info: svn log -r COMMITTED --non-interactive --trust-server-cert
+  changelog: svn log -r%old%:%new% --non-interactive --trust-server-cert
 
 
 actions:
