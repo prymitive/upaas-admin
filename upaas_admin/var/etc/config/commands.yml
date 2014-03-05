@@ -7,7 +7,7 @@ install:
     DEBIAN_FRONTEND: noninteractive
     LC_ALL: C.UTF-8
     LANG: C.UTF-8
-  cmd: apt-get install --no-install-recommends -y %package%
+  cmd: apt-get install -qq --no-install-recommends -y %package%
 
 # how to uninstall package
 uninstall:
