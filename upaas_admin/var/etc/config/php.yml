@@ -11,7 +11,7 @@ any:
 
 "5.5":
   uwsgi:
-    plugin: php
+    plugin: php5
   packages:
     - php5-dev
     - php5-cgi

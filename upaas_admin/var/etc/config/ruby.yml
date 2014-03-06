@@ -15,7 +15,7 @@ any:
 
 "1.8.7":
   uwsgi:
-    plugin: rack_ruby18
+    plugin: rack18
   packages:
     - ruby1.8
     - ruby1.8-dev
@@ -28,7 +28,7 @@ any:
 
 "1.9.3":
   uwsgi:
-    plugin: rack_ruby191
+    plugin: rack19
   packages:
     - ruby1.9.1
     - ruby1.9.1-dev
@@ -40,7 +40,7 @@ any:
 
 "2.0.0":
   uwsgi:
-    plugin: rack_ruby20
+    plugin: rack20
   packages:
     - ruby2.0
     - ruby2.0-dev
@@ -48,4 +48,17 @@ any:
     setup:
       interpreter:
         - ruby-switch --set ruby2.0
+        - ruby -v
+
+
+"2.1.0":
+  uwsgi:
+    plugin: rack21
+  packages:
+    - ruby2.1
+    - ruby2.1-dev
+  actions:
+    setup:
+      interpreter:
+        - ruby-switch --set ruby2.1
         - ruby -v
