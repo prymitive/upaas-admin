@@ -13,10 +13,10 @@ case "$1" in
 
   configure)
     if [ -e  /etc/uwsgi-emperor/vassals/upaas_admin.ini ]; then
-      date > /var/run/upaas_admin.reload
+      date > /run/upaas_admin.reload
     fi
     if [ -e  /etc/uwsgi-emperor/vassals/upaas_tasks.ini ]; then
-      date > /var/run/upaas_tasks.reload
+      date > /run/upaas_tasks.reload
     fi
     exit 0
   ;;
