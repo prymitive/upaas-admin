@@ -102,7 +102,15 @@ class BuildPackageTask(ApplicationTask):
                       builder=gethostname(),
                       distro_name=build_result.distro_name,
                       distro_version=build_result.distro_version,
-                      distro_arch=build_result.distro_arch)
+                      distro_arch=build_result.distro_arch,
+                      revision_id=build_result.vcs_revision.get('id'),
+                      revision_author=build_result.vcs_revision.get('author'),
+                      revision_date=build_result.vcs_revision.get('date'),
+                      revision_description=build_result.vcs_revision.get(
+                          'description'),
+                      revision_changelog=build_result.vcs_revision.get(
+                          'changelog'),
+                      )
         if parent_package and build_result.parent == parent_package.filename:
             pkg.parent_package = parent_package
         pkg.save()

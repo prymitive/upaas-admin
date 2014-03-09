@@ -64,6 +64,12 @@ class Package(Document):
     distro_version = StringField(required=True)
     distro_arch = StringField(required=True)
 
+    revision_id = StringField()
+    revision_author = StringField()
+    revision_date = DateTimeField()
+    revision_description = StringField()
+    revision_changelog = StringField()
+
     meta = {
         'indexes': ['filename'],
         'ordering': ['-date_created'],
