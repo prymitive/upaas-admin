@@ -106,17 +106,21 @@ class BuildPackageTask(ApplicationTask):
                       builder=gethostname(),
                       distro_name=build_result.distro_name,
                       distro_version=build_result.distro_version,
-                      distro_arch=build_result.distro_arch,
-                      revision_id=build_result.vcs_revision.get('id'),
-                      revision_author=build_result.vcs_revision.get('author'),
-                      revision_date=build_result.vcs_revision.get('date'),
-                      revision_description=build_result.vcs_revision.get(
-                          'description'),
-                      revision_changelog=build_result.vcs_revision.get(
-                          'changelog'),
-                      )
+                      distro_arch=build_result.distro_arch)
         if parent_package and build_result.parent == parent_package.filename:
             pkg.parent_package = parent_package
+        if build_result.vcs_revision.get('id'):
+            pkg.revision_id = build_result.vcs_revision.get('id')
+        if build_result.vcs_revision.get('author'):
+            pkg.revision_author = build_result.vcs_revision.get('author')
+        if build_result.vcs_revision.get('date'):
+            pkg.revision_date = build_result.vcs_revision.get('date')
+        if build_result.vcs_revision.get('description'):
+            pkg.revision_description = build_result.vcs_revision.get(
+                'description')
+        if build_result.vcs_revision.get('changelog'):
+            pkg.revision_changelog = build_result.vcs_revision.get(
+                'changelog')
         pkg.save()
         log.info("Package saved with id %s" % pkg.id)
 
