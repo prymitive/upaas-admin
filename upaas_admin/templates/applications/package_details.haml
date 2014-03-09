@@ -20,6 +20,10 @@
       %li.active
         %a{'href':'#details', 'data-toggle':'tab'}
           - trans "Details"
+      - if pkg.revision_id
+        %li
+          %a{'href':'#revision', 'data-toggle':'tab'}
+            - trans "Revision"
       %li
         %a{'href':'#metadata', 'data-toggle':'tab'}
           - trans "Metadata"
@@ -46,6 +50,18 @@
             = pkg.date_created
 
           %dt
+            {% trans "Size" %}:
+          %dd
+            = pkg.bytes|filesizeformat
+
+          %dt
+            {% trans "Builder" %}:
+          %dd
+            = pkg.builder
+
+          %br/
+
+          %dt
             {% trans "Interpreter name" %}:
           %dd
             = pkg.interpreter_name
@@ -55,15 +71,7 @@
           %dd
             = pkg.interpreter_version
 
-          %dt
-            {% trans "Size" %}:
-          %dd
-            = pkg.bytes|filesizeformat
-
-          %dt
-            {% trans "Builder" %}:
-          %dd
-            = pkg.builder
+          %br/
 
           %dt
             {% trans "Distribution name" %}:
@@ -79,6 +87,46 @@
             {% trans "Architecture" %}:
           %dd
             = pkg.distro_arch
+
+      - if pkg.revision_id
+        #revision.tab-pane
+          %dl.dl-horizontal
+
+            %dt
+              {% trans "Id" %}:
+            %dd
+              = pkg.revision_id
+
+            %dt
+              {% trans "Author" %}:
+            %dd
+              - if pkg.revision_author
+                = pkg.revision_author
+              - else
+                - trans "N/A"
+
+            %dt
+              {% trans "Date" %}:
+            %dd
+              - if pkg.revision_date
+                = pkg.revision_date
+              - else
+                - trans "N/A"
+
+            %dt
+              {% trans "Description" %}:
+            %dd
+              - if pkg.revision_description
+                = pkg.revision_description
+              - else
+                - trans "N/A"
+
+            - if pkg.revision_changelog
+              %dt
+                {% trans "Changelog" %}:
+              %dd
+                %pre.upaas-metadata-textarea<
+                  = pkg.revision_changelog
 
       #metadata.tab-pane
         %p
