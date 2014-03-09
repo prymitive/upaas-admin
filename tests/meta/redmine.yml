@@ -28,8 +28,6 @@ repository:
     - rm -f Gemfile.lock
     - svn revert -R .
     - svn up --non-interactive --trust-server-cert
-  info: svn log -r COMMITTED --non-interactive --trust-server-cert
-  changelog: svn log -r%old%:%new% --non-interactive --trust-server-cert
 
 
 actions:

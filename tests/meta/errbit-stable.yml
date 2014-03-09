@@ -23,8 +23,6 @@ repository:
     - rm -f Gemfile.lock
     - git reset --hard
     - git pull
-  info: git log -n 1
-  changelog: git log --no-merges %old%..%new%"
 
 
 actions:

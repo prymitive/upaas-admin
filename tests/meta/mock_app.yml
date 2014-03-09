@@ -23,8 +23,6 @@ interpreter:
 repository:
   clone: echo "cloning repository to %destination%"
   update: echo "repository update command"
-  info: echo "repository info command"
-  changelog: echo "repository changelog command"
 
 
 actions:
