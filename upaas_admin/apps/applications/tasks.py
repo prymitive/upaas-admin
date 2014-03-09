@@ -64,25 +64,29 @@ class BuildPackageTask(ApplicationTask):
 
         system_filename = None
         parent_package = None
+        current_revision = None
         if not self.force_fresh and self.application.current_package:
             system_filename = self.application.current_package.filename
             parent_package = self.application.current_package
+            current_revision = self.application.current_package.revision_id
             self.interpreter_version = \
                 self.application.current_package.interpreter_version
             log.info(_("Using current application package {pkg} as "
                        "parent").format(pkg=parent_package.safe_id))
 
         log.info("Starting build task with parameters app_id=%s, "
-                 "force_fresh=%s, interpreter_version=%s" % (
+                 "force_fresh=%s, interpreter_version=%s, "
+                 "current_revision=%s" % (
                      self.application.safe_id, self.force_fresh,
-                     self.interpreter_version))
+                     self.interpreter_version, current_revision))
 
         build_result = None
         try:
             builder = Builder(upaas_config, metadata_obj)
             for result in builder.build_package(
                     system_filename=system_filename,
-                    interpreter_version=self.interpreter_version):
+                    interpreter_version=self.interpreter_version,
+                    current_revision=current_revision):
                 log.debug("Build progress: %d%%" % result.progress)
                 yield result.progress
                 build_result = result
