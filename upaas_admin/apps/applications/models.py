@@ -112,7 +112,8 @@ class Package(Document):
                         "delete").format(pkg=self.safe_id))
             return
 
-        storage = find_storage_handler(self.upaas_config)
+        storage = find_storage_handler(self.upaas_config.storage.handler,
+                                       self.upaas_config.storage.settings)
         if not storage:
             log.error(_("Storage handler '{handler}' not found, cannot "
                         "package file").format(
@@ -342,16 +343,15 @@ class Package(Document):
         log.info("Vassal saved")
 
     def unpack(self):
-        upaas_config = self.upaas_config
-
         # directory is encoded into string to prevent unicode errors
-        directory = tempfile.mkdtemp(dir=upaas_config.paths.workdir,
+        directory = tempfile.mkdtemp(dir=self.upaas_config.paths.workdir,
                                      prefix="upaas_package_").encode("utf-8")
 
-        storage = find_storage_handler(upaas_config)
+        storage = find_storage_handler(self.upaas_config.storage.handler,
+                                       self.upaas_config.storage.settings)
         if not storage:
             log.error("Storage handler '%s' not "
-                      "found" % upaas_config.storage.handler)
+                      "found" % self.upaas_config.storage.handler)
 
         workdir = os.path.join(directory, "system")
         pkg_path = os.path.join(directory, self.filename)
@@ -740,7 +740,8 @@ class Application(Document):
         app that are kept in database for rollback feature are set in user
         limits as 'packages_per_app'.
         """
-        storage = find_storage_handler(self.upaas_config)
+        storage = find_storage_handler(self.upaas_config.storage.handler,
+                                       self.upaas_config.storage.settings)
         if not storage:
             log.error("Storage handler '%s' not found, cannot trim "
                       "packages" % self.upaas_config.storage.handler)

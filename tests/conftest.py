@@ -83,7 +83,8 @@ def create_pkg_file(request):
     tar.close()
 
     upaas_config = load_main_config()
-    storage = find_storage_handler(upaas_config)
+    storage = find_storage_handler(upaas_config.storage.handler,
+                                   upaas_config.storage.settings)
     storage.put(local_path, remote_path)
 
     def cleanup():
