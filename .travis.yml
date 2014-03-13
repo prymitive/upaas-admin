@@ -7,11 +7,10 @@ python:
 
 install:
   - sudo apt-add-repository -y ppa:chris-lea/node.js
-  - sudo apt-get update -qq || echo "apt-get update failed"
+  - sudo apt-get update -qq
   - sudo apt-get -yy install nodejs
   - sudo npm install -g less
-  - easy_install pymongo
-  - pip install -Ur requirements.txt --allow-all-external --allow-unverified netifaces
+  - pip install -Ur requirements.txt --allow-all-external
   - pip install -Ur requirements-test.txt --allow-all-external
   - pip install --no-deps mongoengine==0.8.7
   - sudo rm -rf /dev/shm
