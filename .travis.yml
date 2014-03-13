@@ -10,6 +10,7 @@ install:
   - sudo apt-get update -qq
   - sudo apt-get -yy install nodejs
   - sudo npm install -g less
+  - pip install -e git+https://github.com/kelleyk/py3k-netifaces.git#egg=netifaces
   - pip install -Ur requirements.txt --allow-all-external
   - pip install -Ur requirements-test.txt --allow-all-external
   - pip install --no-deps mongoengine==0.8.7
