@@ -48,8 +48,8 @@ class User(MongoUser):
         apikey = None
         while apikey is None and User.objects(apikey=apikey) not in [None, []]:
             log.debug("Trying to generate unique API key")
-            apikey = hmac.new(
-                str(uuid.uuid4()), digestmod=hashlib.sha1).hexdigest()
+            apikey = hmac.new(uuid.uuid4().bytes,
+                              digestmod=hashlib.sha1).hexdigest()
         return apikey
 
     @classmethod
