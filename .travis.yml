@@ -18,7 +18,6 @@ install:
   - pip install -Ur requirements.txt --allow-all-external
   - pip install -Ur requirements-test.txt --allow-all-external
   - pip install --no-deps mongoengine==0.8.7
-  - pip install dnspython3==1.11.1 || echo "dnspython3 failed"
   - sudo rm -rf /dev/shm
   - sudo ln -s /run/shm /dev/shm
   - ./setup.py develop --ignore-conflicts-at-my-risk || echo "setup.py failed"
