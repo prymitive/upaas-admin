@@ -151,7 +151,7 @@ class ApplicationTest(MongoEngineTestCase):
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'value="2.0.0"')
+        self.assertContains(resp, 'value="2.0"')
         self.assertContains(resp, 'value="1.9.3"')
         self.assertContains(resp, 'value="1.8.7"')
 
@@ -493,16 +493,16 @@ class ApplicationTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_app")
     def test_app_interpreter_version_from_app_method(self):
-        self.assertEqual(self.app.interpreter_version, '2.0.0')
+        self.assertEqual(self.app.interpreter_version, '2.0')
 
     @pytest.mark.usefixtures("create_pkg")
     def test_app_interpreter_version_from_pkg_method(self):
-        self.assertEqual(self.app.interpreter_version, '2.0.0')
+        self.assertEqual(self.app.interpreter_version, '2.0')
 
     @pytest.mark.usefixtures("create_app")
     def test_app_supported_interpreter_versions_method(self):
         self.assertEqual(self.app.supported_interpreter_versions,
-                         ['2.0.0', '1.9.3', '1.8.7'])
+                         ['2.0', '1.9.3', '1.8.7'])
 
     @pytest.mark.usefixtures("create_pkg")
     def test_app_trim_package_files_one_method(self):

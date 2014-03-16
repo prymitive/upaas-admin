@@ -38,7 +38,7 @@ any:
         - ruby-switch --set ruby1.9.1
         - ruby -v
 
-"2.0.0":
+"2.0":
   uwsgi:
     plugin: rack20
   packages:
@@ -51,7 +51,7 @@ any:
         - ruby -v
 
 
-"2.1.0":
+"2.1":
   uwsgi:
     plugin: rack21
   packages:

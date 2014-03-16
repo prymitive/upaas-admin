@@ -169,7 +169,7 @@ interpreters:
         setup:
           interpreter:
             - echo "interpreteres/ruby/1.9.3/actions/setup/interpreter"
-    "2.0.0":
+    "2.0":
       uwsgi:
         plugin: rack_ruby20
       packages:
