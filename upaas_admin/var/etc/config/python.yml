@@ -35,7 +35,7 @@ any:
         - update-alternatives --install /usr/bin/python python /usr/bin/python3.1 99
         - update-alternatives --set python /usr/bin/python3.1
         - python -V
-        - python -m easy_install pip
+        - python -m easy_install pip==1.5.4
         - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.1 99
         - update-alternatives --set pip /usr/local/bin/pip3.1
         - sed -i 1s_'^#!/usr/bin/python$'_'#!/usr/bin/python2'_ /bin/* /sbin/* /usr/bin/* /usr/sbin/*
@@ -54,7 +54,7 @@ any:
         - update-alternatives --install /usr/bin/python python /usr/bin/python3.2 99
         - update-alternatives --set python /usr/bin/python3.2
         - python -V
-        - python -m easy_install pip
+        - python -m easy_install pip==1.5.4
         - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.2 99
         - update-alternatives --set pip /usr/local/bin/pip3.2
         - sed -i 1s_'^#!/usr/bin/python$'_'#!/usr/bin/python2'_ /bin/* /sbin/* /usr/bin/* /usr/sbin/*
@@ -75,7 +75,7 @@ any:
         - python -V
         - curl -s -o /tmp/distribute_setup.py http://python-distribute.org/distribute_setup.py
         - python /tmp/distribute_setup.py
-        - python -m easy_install pip
+        - python -m easy_install pip==1.5.4
         - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.3 99
         - update-alternatives --set pip /usr/local/bin/pip3.3
         - sed -i 1s_'^#!/usr/bin/python$'_'#!/usr/bin/python2'_ /bin/* /sbin/* /usr/bin/* /usr/sbin/*
