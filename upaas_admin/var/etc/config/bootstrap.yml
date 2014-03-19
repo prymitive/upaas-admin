@@ -2,7 +2,7 @@
 # variables:
 # %workdir% - chroot directory that should be created
 
-timelimit: 600
+timelimit: 900
 # envs are optional
 
 env:
