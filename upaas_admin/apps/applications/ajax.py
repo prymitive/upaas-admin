@@ -106,6 +106,7 @@ def instances(request, app_id):
             backend_data = {
                 'name': backend_conf.backend.name,
                 'ip': str(backend_conf.backend.ip),
+                'socket': str(backend_conf.backend.socket),
                 'limits': {
                     'workers_min': backend_conf.workers_min,
                     'workers_max': backend_conf.workers_max,
