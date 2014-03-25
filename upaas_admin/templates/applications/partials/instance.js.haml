@@ -13,7 +13,7 @@
   - _(instance.stats.sockets).each(function(socket) {
     - if (socket['name'] == instance.backend.ip + ':' + instance.backend.socket) {
       - listen_queue_max = socket['max_queue'];
-      - break;
+      - return false;
 
   .panel.panel-default
     .panel-heading
