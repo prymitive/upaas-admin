@@ -477,10 +477,10 @@ class BuildPackageView(AppActionView):
         return form
 
     def action(self, form):
-        if self.object and self.object.metadata:
-            self.task = self.object.build_package(
+        if self.object:
+            self.object.build_package(
                 force_fresh=form.cleaned_data['build_type'] != '',
-                interpreter_version=form.cleaned_data['build_type'])
+                interpreter_version=form.cleaned_data['build_type'] or None)
 
 
 class RollbackApplicationView(OwnedPackagesMixin, AppActionView):

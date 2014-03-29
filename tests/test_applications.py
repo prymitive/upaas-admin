@@ -16,6 +16,7 @@ from django.utils.html import escape
 from django.conf import settings
 
 from upaas_admin.common.tests import MongoEngineTestCase
+from upaas_admin.apps.applications.constants import ApplicationFlags
 
 
 class ApplicationTest(MongoEngineTestCase):
@@ -109,40 +110,20 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Missing required configuration entry:")
 
-    @pytest.mark.usefixtures("create_app")
-    def test_build_package_post(self):
+    @pytest.mark.usefixtures("create_pkg")
+    def test_build_package_incremental_post(self):
         self.login_as_user()
         url = reverse('build_package', args=[self.app.safe_id])
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
-        resp = self.client.post(url, {})
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(len(self.app.pending_build_tasks), 1)
-
         resp = self.client.post(url, {'build_type': ''})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(len(self.app.pending_build_tasks), 1)
-
-        url = reverse('users_tasks')
-        resp = self.client.get(url)
-        self.assertContains(
-            resp, "Building new package for %s" % self.app_data['name'])
-
-    @pytest.mark.usefixtures("create_pkg")
-    def test_build_package_incremental_post(self):
-        self.login_as_user()
-        url = reverse('build_package', args=[self.app.safe_id])
-
-        resp = self.client.post(url, {'build_type': ''})
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(len(self.app.pending_build_tasks), 1)
-
-        url = reverse('users_tasks')
-        resp = self.client.get(url)
-        self.assertContains(
-            resp, "Building new package for %s" % self.app_data['name'])
+        self.app.reload()
+        self.assertEqual(self.app.flags.get(ApplicationFlags.fresh_package),
+                         None)
+        self.assertEqual(self.app.flags[ApplicationFlags.needs_building], None)
 
     @pytest.mark.usefixtures("create_pkg")
     def test_build_package_forced_version_post(self):
@@ -157,12 +138,10 @@ class ApplicationTest(MongoEngineTestCase):
 
         resp = self.client.post(url, {'build_type': '1.9.3'})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(len(self.app.pending_build_tasks), 1)
-
-        url = reverse('users_tasks')
-        resp = self.client.get(url)
-        self.assertContains(
-            resp, "Building new fresh package for %s" % self.app_data['name'])
+        self.app.reload()
+        self.assertTrue(self.app.flags[ApplicationFlags.fresh_package])
+        self.assertEqual(self.app.flags[ApplicationFlags.needs_building],
+                         '1.9.3')
 
     @pytest.mark.usefixtures("create_app")
     def test_app_metadata_get(self):
