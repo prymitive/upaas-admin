@@ -10,10 +10,11 @@
   - var total_tx = 0;
 
   - var listen_queue_max = 100;
-  - _(instance.stats.sockets).each(function(socket) {
-    - if (socket['name'] == instance.backend.ip + ':' + instance.backend.socket) {
-      - listen_queue_max = socket['max_queue'];
-      - return false;
+  - if (instance.stats != null) {
+    - _(instance.stats.sockets).each(function(socket) {
+      - if (socket['name'] == instance.backend.ip + ':' + instance.backend.socket) {
+        - listen_queue_max = socket['max_queue'];
+        - return false;
 
   .panel.panel-default
     .panel-heading
