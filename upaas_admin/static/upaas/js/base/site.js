@@ -1,7 +1,10 @@
 /*
-:copyright: Copyright 2013 by Łukasz Mierzwa
+:copyright: Copyright 2013-2014 by Łukasz Mierzwa
 :contact: l.mierzwa@gmail.com
 */
+
+
+Backbone.Tastypie.csrfToken = Django.csrf_token();
 
 
 $(document).ready(function(){

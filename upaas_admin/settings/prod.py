@@ -257,6 +257,8 @@ PIPELINE_JS = {
             'underscore/underscore.string.min.js',
             'haml/haml.min.js',
             'tabdrop/bootstrap-tabdrop.js',
+            'backbone/backbone-min.js',
+            'backbone/backbone-tastypie.js',
             'upaas/js/base/*.js',
         ),
         'output_filename': 'js/base.js',

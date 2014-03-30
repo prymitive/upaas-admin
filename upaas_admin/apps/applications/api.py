@@ -33,6 +33,7 @@ log = logging.getLogger(__name__)
 class ApplicationResource(MongoEngineResource):
 
     class Meta:
+        always_return_data = True
         queryset = Application.objects.all()
         resource_name = 'application'
         excludes = ['current_package', 'packages']
@@ -183,6 +184,7 @@ class ApplicationResource(MongoEngineResource):
 class PackageResource(MongoEngineResource):
 
     class Meta:
+        always_return_data = True
         queryset = Package.objects.all()
         resource_name = 'package'
         filtering = {

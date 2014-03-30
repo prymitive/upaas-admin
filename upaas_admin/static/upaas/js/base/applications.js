@@ -1,5 +1,5 @@
 /*
-:copyright: Copyright 2013 by Łukasz Mierzwa
+:copyright: Copyright 2013-2014 by Łukasz Mierzwa
 :contact: l.mierzwa@gmail.com
 */
 
@@ -78,3 +78,19 @@ window.UPAAS.apps_updates_callback = function (data) {
         3000
     );
 }
+
+
+window.UPAAS.ApplicationModel = Backbone.Model.extend({});
+window.UPAAS.ApplicationCollection = Backbone.Collection.extend({
+   model: window.UPAAS.ApplicationModel,
+   url : "/api/v1/application/?format=json"
+});
+window.UPAAS.Applications = new window.UPAAS.ApplicationCollection();
+
+
+window.UPAAS.PackageModel = Backbone.Model.extend({});
+window.UPAAS.PackageCollection = Backbone.Collection.extend({
+   model: window.UPAAS.PackageModel,
+   url : "/api/v1/package/?format=json"
+});
+window.UPAAS.Packages = new window.UPAAS.PackageCollection();
