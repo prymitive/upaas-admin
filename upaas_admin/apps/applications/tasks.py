@@ -31,7 +31,7 @@ from upaas_admin.apps.tasks.registry import register
 log = logging.getLogger(__name__)
 
 
-#TODO translations
+# TODO translations
 
 @register
 class BuildPackageTask(ApplicationTask):

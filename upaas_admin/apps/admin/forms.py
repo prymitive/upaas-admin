@@ -19,7 +19,7 @@ from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import UserLimits
 
 
-#FIXME patch crispy form-horizontal to support checkboxes and move to crispy
+# FIXME patch crispy form-horizontal to support checkboxes and move to crispy
 class AdminCreateUserForm(MongoForm):
 
     class Meta:
