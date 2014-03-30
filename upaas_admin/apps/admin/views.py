@@ -83,7 +83,7 @@ class AdminEditUserLimitsView(LoginRequiredMixin, SuperUserRequiredMixin,
     slug_field = 'id'
     success_url = reverse_lazy('admin_users_list')
     form_class = AdminUserLimitsForm
-    #FIXME handle case when user is using more than we set here
+    # FIXME handle case when user is using more than we set here
 
 
 class AdminDeleteUserLimitsView(LoginRequiredMixin, SuperUserRequiredMixin,
@@ -92,7 +92,7 @@ class AdminDeleteUserLimitsView(LoginRequiredMixin, SuperUserRequiredMixin,
     model = UserLimits
     slug_field = 'id'
     success_url = reverse_lazy('admin_users_list')
-    #FIXME handle case when user is using more than defaults
+    # FIXME handle case when user is using more than defaults
 
 
 class AdminUserListView(LoginRequiredMixin, SuperUserRequiredMixin,

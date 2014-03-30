@@ -116,8 +116,8 @@ class BackendServer(Document):
                       "ports" % self.maximum_ports)
             return
         while True:
-            #TODO random can take very long to find free port if port usage is
-            #TODO high, maybe linear search would be better?
+            # TODO random can take very long to find free port if port usage is
+            # TODO high, maybe linear search would be better?
             port = randrange(self.port_min, self.port_max+1)
             if port not in self.allocated_ports and port not in ports:
                 ports.append(port)

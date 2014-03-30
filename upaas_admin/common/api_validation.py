@@ -25,7 +25,7 @@ class MongoCleanedDataFormValidation(CleanedDataFormValidation):
 
     def is_valid(self, bundle, request=None):
         form = self.form_class(**self.form_args(bundle))
-        #FIXME bit hackish
+        # FIXME bit hackish
         form.user = bundle.request.user
         if form.is_valid():
             return {}

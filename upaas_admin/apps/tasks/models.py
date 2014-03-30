@@ -86,7 +86,7 @@ class Task(Document):
 
     messages = ListField(EmbeddedDocumentField(TaskMessage))
 
-    #TODO tasks should expire, we don;t want start task for backend hanging
+    # TODO tasks should expire, we don;t want start task for backend hanging
     # forever
 
     # virtual tasks are used to aggregate progress of group of tasks
@@ -101,7 +101,7 @@ class Task(Document):
 
     worker_pid = os.getpid()
 
-    #TODO add retry support
+    # TODO add retry support
     retries = IntField()
 
     can_retry = False

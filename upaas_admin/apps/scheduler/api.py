@@ -50,7 +50,7 @@ class RunPlanResource(MongoEngineResource):
         self.fields['application'].readonly = True
 
     def obj_create(self, bundle, request=None, **kwargs):
-        #FIXME handle reference field properly using mongoengine-tastypie
+        # FIXME handle reference field properly using mongoengine-tastypie
         log.debug(_("Going to create new run plan for user "
                     "'{name}'").format(name=bundle.request.user.username))
         app = Application.objects(id=bundle.data['application'],

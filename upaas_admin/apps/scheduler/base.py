@@ -25,7 +25,7 @@ def select_best_backend(exclude=None, application=None):
     """
     if exclude is None:
         exclude = []
-    #FIXME make it aware of each backend resources
+    # FIXME make it aware of each backend resources
     scores = {}
     for backend in BackendServer.objects(is_enabled=True,
                                          id__nin=[b.id for b in exclude]):
@@ -56,7 +56,7 @@ def select_best_backend(exclude=None, application=None):
 
 
 def split_workers(workers, backends):
-    #TODO right now we try to split workers into equal chunks, but we need
+    # TODO right now we try to split workers into equal chunks, but we need
     # to do this with each backend resources in mind
     workers_list = list(range(workers))
     return [len(workers_list[i::backends]) for i in range(backends)]
@@ -68,10 +68,10 @@ def select_best_backends(run_plan, **kwargs):
     backends where application should be running. If there are no backends to
     run empty list will be returned.
     """
-    #TODO needs better scheduling of the number of backends application should
+    # TODO needs better scheduling of the number of backends application should
     # use, also we need to check resources
 
-    #FIXME translate
+    # FIXME translate
     log.info("Selecting backends for %s, workers: %d - %d, memory per "
              "worker: %d MB" % (run_plan.application.name,
                                 run_plan.workers_min, run_plan.workers_max,
@@ -98,7 +98,7 @@ def select_best_backends(run_plan, **kwargs):
                                    count=needs_backends,
                                    mapping=workers_per_backend))
 
-    #FIXME find backends first, set values after that
+    # FIXME find backends first, set values after that
     workers_min = (run_plan.workers_min / needs_backends) \
         or run_plan.workers_min
 

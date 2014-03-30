@@ -68,8 +68,8 @@ def tasks_updates(user):
         Q(application__in=user.applications) & (
             Q(status__in=ACTIVE_TASK_STATUSES) |
             Q(date_finished__gte=datetime.now() - timedelta(seconds=300)))):
-        #TODO make that 300 seconds configurable (?)
-        #TODO optimize query, fetch all subtasks at once (?)
+        # TODO make that 300 seconds configurable (?)
+        # TODO optimize query, fetch all subtasks at once (?)
 
         if task.parent and task.parent.id in skip_vtasks:
             continue

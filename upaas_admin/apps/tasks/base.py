@@ -87,7 +87,7 @@ class ApplicationBackendTask(BackendTask, ApplicationTask):
         if backend_conf:
             ip = str(self.backend.ip)
             name = self.application.name
-            #FIXME track pid change instead of initial sleep (?)
+            # FIXME track pid change instead of initial sleep (?)
             sleep(3)
             timeout = datetime.now() + timedelta(seconds=timelimit)
             logged = False
@@ -121,7 +121,7 @@ class ApplicationBackendTask(BackendTask, ApplicationTask):
         if backend_conf:
             ip = str(self.backend.ip)
             name = self.application.name
-            #FIXME track pid change instead of initial sleep (?)
+            # FIXME track pid change instead of initial sleep (?)
             sleep(3)
             timeout = datetime.now() + timedelta(seconds=timelimit)
             logged = False
