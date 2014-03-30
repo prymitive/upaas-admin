@@ -70,7 +70,6 @@ DEBUG_TOOLBAR_PANELS = (
     'debug_toolbar.panels.redirects.RedirectsPanel',
     'template_timings_panel.panels.TemplateTimings.TemplateTimings',
     'debug_toolbar_mongo.panel.MongoDebugPanel',
-    #'debug_toolbar.panels.logging.LoggingPanel',
 )
 
 DEBUG_TOOLBAR_CONFIG = {
