@@ -11,6 +11,7 @@
     %thead
       %tr
         %th
+        %th
           - trans "Created"
         %th
           - trans "Interpreter name"
@@ -22,9 +23,14 @@
       - for package in packages
         %tr
           %td
+            - if package.filename
+              %i.fa.fa-check-square-o.upaas-help-tooltip{'title':'{% trans "Package file available" %}'}
+            - else
+              %i.fa.fa-square-o.upaas-help-tooltip{'title':'{% trans "Package file expunged" %}'}
+          %td
             %a{'href':'{% url "package_details" package.safe_id %}'}
               = package.date_created
-            -if app.current_package.id == package.id
+            - if app.current_package.id == package.id
               %span.label.label-primary
                 - trans "Current"
           %td
