@@ -6,5 +6,7 @@
 
 
 class ApplicationFlags(object):
+    # building flags
     needs_building = 'NEEDS_BUILDING'
-    fresh_package = 'BUILD_FRESH_PACKAGE'
+    is_building = 'IS_BUILDING'
+    build_fresh_package = 'BUILD_FRESH_PACKAGE'

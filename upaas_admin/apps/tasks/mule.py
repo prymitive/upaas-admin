@@ -5,9 +5,20 @@
 """
 
 
-def mule_loop():
-    pass
+from upaas_admin.apps.applications.models import Application
+from upaas_admin.apps.applications.constants import ApplicationFlags
+from upaas_admin.apps.applications.tasks import BuildPackageTask
+
+
+def builder_mule():
+    while True:
+        app = Application.objects(
+            flags=ApplicationFlags.needs_building).first()
+        if app:
+            fresh = app.flags.get(ApplicationFlags.build_fresh_package)
+            interpreter_version = app.flags.get(ApplicationFlags.needs_building)
+
 
 
 if __name__ == '__main__':
-    mule_loop()
+    builder_mule()
