@@ -117,6 +117,7 @@ def instances(request, app_id):
                     backend_conf.workers_max,
                     'backend_memory_bytes': run_plan.memory_per_worker *
                     backend_conf.workers_max * 1024 * 1024,
+                    'max_log_size': run_plan.max_log_size * 1024 * 1024,
                 }}
             s = fetch_json_stats(str(backend_conf.backend.ip),
                                  backend_conf.stats)

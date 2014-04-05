@@ -83,6 +83,7 @@ class UPaaSConfig(base.Config):
                                                        min_value=16),
                 "packages_per_app": base.IntegerEntry(required=True,
                                                       min_value=2),
+                "max_log_size": base.IntegerEntry(required=True, min_value=1),
             }
         },
         "admin": {

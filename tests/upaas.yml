@@ -119,6 +119,7 @@ defaults:
     workers: 16
     memory_per_worker: 128
     packages_per_app: 2
+    max_log_size: 3
 
 
 interpreters:

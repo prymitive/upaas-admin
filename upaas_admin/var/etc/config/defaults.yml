@@ -11,3 +11,6 @@ limits:
 
   # how many last package files will be stored for user by default
   packages_per_app: 5
+
+  # maximum size of application log file before it gets rotated (in MB)
+  max_log_size: 100

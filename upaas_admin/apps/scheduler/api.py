@@ -35,7 +35,7 @@ class RunPlanResource(MongoEngineResource):
     class Meta:
         queryset = ApplicationRunPlan.objects.all()
         resource_name = 'run_plan'
-        excludes = ['backends', 'memory_per_worker']
+        excludes = ['backends', 'memory_per_worker', 'max_log_size']
         filtering = {
             'id': ALL,
             'application': ALL,
@@ -64,6 +64,7 @@ class RunPlanResource(MongoEngineResource):
         kwargs['application'] = app
         kwargs['memory_per_worker'] = bundle.request.user.limits[
             'memory_per_worker']
+        kwargs['max_log_size'] = bundle.request.user.limits['max_log_size']
         try:
             return super(MongoEngineResource, self).obj_create(bundle,
                                                                request=request,
@@ -80,6 +81,7 @@ class RunPlanResource(MongoEngineResource):
     def obj_update(self, bundle, **kwargs):
         bundle.obj.memory_per_worker = bundle.request.user.limits[
             'memory_per_worker']
+        bundle.obj.max_log_size = bundle.request.user.limits['max_log_size']
         return super(RunPlanResource, self).obj_update(bundle, **kwargs)
 
     def authorized_read_list(self, object_list, bundle):

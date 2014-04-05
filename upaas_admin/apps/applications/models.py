@@ -207,6 +207,7 @@ class Package(Document):
             'max_workers': backend_conf.workers_max,
             'max_memory': max_memory,
             'memory_per_worker': run_plan.memory_per_worker,
+            'max_log_size': run_plan.max_log_size * 1024 * 1024,
         }
 
         if config.apps.graphite.carbon:

@@ -139,6 +139,8 @@ class DajaxiceTest(MongoEngineTestCase):
             'memory_per_worker'], 128)
         self.assertEqual(backend_stats['backend']['limits']['workers_min'], 1)
         self.assertEqual(backend_stats['backend']['limits']['workers_max'], 4)
+        self.assertEqual(backend_stats['backend']['limits']['max_log_size'],
+                         3145728)
 
     @pytest.mark.usefixtures("create_pkg", "create_backend_list")
     def test_app_instances_started_multiple_ajax(self):

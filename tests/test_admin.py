@@ -125,7 +125,8 @@ class AdminTest(MongoEngineTestCase):
         resp = self.client.post(url, {'running_apps': -4,
                                       'memory_per_worker': 0,
                                       'workers': 0,
-                                      'packages_per_app': -4})
+                                      'packages_per_app': -4,
+                                      'max_log_size': 0})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Ensure this value is greater than or equal")
 
@@ -137,7 +138,8 @@ class AdminTest(MongoEngineTestCase):
         resp = self.client.post(url, {'running_apps': 0,
                                       'memory_per_worker': 16,
                                       'workers': 8,
-                                      'packages_per_app': 4})
+                                      'packages_per_app': 4,
+                                      'max_log_size': 3})
         self.assertEqual(resp.status_code, 302)
         l = UserLimits.objects(user=self.user).first()
         self.assertNotEqual(l, None)
@@ -145,12 +147,14 @@ class AdminTest(MongoEngineTestCase):
         self.assertEqual(l.memory_per_worker, 16)
         self.assertEqual(l.workers, 8)
         self.assertEqual(l.packages_per_app, 4)
+        self.assertEqual(l.max_log_size, 3)
 
         self.assertEqual(self.user.limits_settings, l)
         self.assertEqual(self.user.limits['running_apps'], 0)
         self.assertEqual(self.user.limits['memory_per_worker'], 16)
         self.assertEqual(self.user.limits['workers'], 8)
         self.assertEqual(self.user.limits['packages_per_app'], 4)
+        self.assertEqual(self.user.limits['max_log_size'], 3)
 
         url = reverse('admin_user_limits_edit', args=[l.safe_id])
         resp = self.client.get(url)
@@ -159,13 +163,15 @@ class AdminTest(MongoEngineTestCase):
         resp = self.client.post(url, {'running_apps': 2,
                                       'memory_per_worker': 32,
                                       'workers': 4,
-                                      'packages_per_app': 2})
+                                      'packages_per_app': 2,
+                                      'max_log_size': 8})
         self.assertEqual(resp.status_code, 302)
         l.reload()
         self.assertEqual(l.running_apps, 2)
         self.assertEqual(l.memory_per_worker, 32)
         self.assertEqual(l.workers, 4)
         self.assertEqual(l.packages_per_app, 2)
+        self.assertEqual(l.max_log_size, 8)
 
         url = reverse('admin_user_limits_delete', args=[l.safe_id])
         resp = self.client.get(url)

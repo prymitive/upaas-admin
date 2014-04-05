@@ -29,6 +29,7 @@ class UserLimits(Document):
                        min_value=0)
     memory_per_worker = IntField(verbose_name=_('memory per worker limit'),
                                  min_value=16)
+    max_log_size = IntField(verbose_name=_('log file size limit'), min_value=1)
 
     meta = {
         'indexes': ['user'],
@@ -37,7 +38,7 @@ class UserLimits(Document):
     _default_manager = QuerySetManager()
 
     limit_fields = ['running_apps', 'packages_per_app', 'workers',
-                    'memory_per_worker']
+                    'memory_per_worker', 'max_log_size']
 
     @classmethod
     def get_default_limits(cls):
@@ -73,6 +74,8 @@ class ApplicationRunPlan(Document):
                            verbose_name=_('maximum number of workers'))
     memory_per_worker = IntField(required=True, min_value=16,
                                  verbose_name=_('memory per worker limit'))
+    max_log_size = IntField(required=True, min_value=1, default=100,
+                            verbose_name=_('log file size limit'))
 
     _default_manager = QuerySetManager()
 

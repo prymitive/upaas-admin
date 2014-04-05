@@ -371,7 +371,7 @@ def create_run_plan(request):
     run_plan = ApplicationRunPlan(application=request.instance.app,
                                   backends=[backend_settings],
                                   workers_min=1, workers_max=4,
-                                  memory_per_worker=128)
+                                  memory_per_worker=128, max_log_size=1)
     run_plan.save()
 
     def cleanup():
@@ -395,7 +395,7 @@ def create_run_plan_pkg_list(request):
     run_plan = ApplicationRunPlan(application=request.instance.app,
                                   backends=[backend_settings],
                                   workers_min=1, workers_max=4,
-                                  memory_per_worker=128)
+                                  memory_per_worker=128, max_log_size=1)
     run_plan.save()
 
     def cleanup():

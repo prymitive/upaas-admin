@@ -298,6 +298,7 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
         form.instance.application = self.app
         form.instance.memory_per_worker = self.request.user.limits[
             'memory_per_worker']
+        form.instance.max_log_size = self.request.user.limits['max_log_size']
         ret = super(StartApplicationView, self).form_valid(form)
         self.app.start_application()
         return ret
@@ -359,6 +360,7 @@ class EditApplicationRunPlanView(LoginRequiredMixin, OwnedAppsMixin,
     def form_valid(self, form):
         form.instance.memory_per_worker = self.request.user.limits[
             'memory_per_worker']
+        form.instance.max_log_size = self.request.user.limits['max_log_size']
         ret = super(EditApplicationRunPlanView, self).form_valid(form)
         self.app.update_application()
         return ret
