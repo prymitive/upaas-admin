@@ -14,6 +14,7 @@ actions:
       - echo "#!/bin/sh\n" > /usr/sbin/policy-rc.d
       - echo "exit 101\n" >> /usr/sbin/policy-rc.d
       - chmod 755 /usr/sbin/policy-rc.d
+      - ln -sf /usr/share/zoneinfo/UTC /etc/localtime
       - apt-add-repository -y ppa:brightbox/ruby-ng
       - apt-add-repository -y ppa:ondrej/php5
       - apt-add-repository -y ppa:fkrull/deadsnakes
