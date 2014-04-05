@@ -19,7 +19,7 @@
           - if user.limits.running_apps
             = user.limits.running_apps
           - else
-            - trans "No limit"
+            &infin;
       .panel-footer.text-center
         - trans "Running application limit"
         %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of running applications" %}'}
@@ -56,3 +56,11 @@
         - trans "Package limit"
         %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of package files stored in database for each application" %}'}
 
+  .col-lg-3
+    .panel.panel-default
+      .panel-body
+        %h1.text-center
+          = user.limits.max_log_size|mb_to_bytes|filesizeformat
+      .panel-footer.text-center
+        - trans "Application log size limit"
+        %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum size of application log file on each backend" %}'}
