@@ -10,7 +10,7 @@ interpreter:
     - "5.5"
 
 repository:
-  clone: git clone --quiet https://github.com/prymitive/dogeweather %destination%
+  clone: git clone --quiet https://github.com/katiaeirin/dogeweather.git %destination%
   update:
     - git reset --hard
     - git pull
