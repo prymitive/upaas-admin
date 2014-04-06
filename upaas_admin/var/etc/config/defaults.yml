@@ -13,4 +13,4 @@ limits:
   packages_per_app: 5
 
   # maximum size of application log file before it gets rotated (in MB)
-  max_log_size: 100
+  max_log_size: 50
