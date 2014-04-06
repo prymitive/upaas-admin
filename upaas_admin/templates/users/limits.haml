@@ -33,7 +33,7 @@
           - if user.limits.workers
             = user.limits.workers
           - else
-            - trans "No limit"
+            &infin;
       .panel-footer.text-center
         - trans "Worker limit"
         %i.pull-right.upaas-help-tooltip.fa.fa-question-circle{'title':'{% trans "Maximum number of workers for all running applications" %}'}
