@@ -12,20 +12,34 @@
 
 - block content
 
-  .col-md-9
-
-    - if tabs
-      - include "applications/partials/app_tabs.html"
-
-    - block app_content
-
-  .col-md-3
-    .panel.panel-default
-      .panel-heading
-        - trans "Actions"
-      .panel-body
-        %ul.nav.nav-pills.nav-stacked
+  .row.visible-xs
+    .col-md-12
+      .btn-group.pull-right
+        %button.btn.btn-default.btn-md.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
+          %i.fa.fa-gear
+          - trans "Actions"
+          &nbsp;
+          %span.caret
+        %ul.dropdown-menu.pull-right{'role': 'menu'}
           - include "applications/partials/app_actions.html"
+
+  %p.visible-xs
+
+  .row
+    .col-md-9
+
+      - if tabs
+        - include "applications/partials/app_tabs.html"
+
+      - block app_content
+
+    .col-md-3.hidden-xs
+      .panel.panel-default
+        .panel-heading
+          - trans "Actions"
+        .panel-body
+          %ul.nav.nav-pills.nav-stacked
+            - include "applications/partials/app_actions.html"
 
 - block js_bottom
   = block.super

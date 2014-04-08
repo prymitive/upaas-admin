@@ -12,10 +12,9 @@
 
   .well
     .row
-      .col-md-8
+      .col-md-9
         - crispy metadata_form
-      .col-md-4
-        .pull-right
-          %a.btn.btn-default{'href':'{% url "app_metadata_yml" app.safe_id %}'}
-            %i.fa.fa-download
-            - trans "Download metadata"
+      .col-md-3
+        %a.btn.btn-default{'href':'{% url "app_metadata_yml" app.safe_id %}'}
+          %i.fa.fa-download
+          - trans "Download metadata"
