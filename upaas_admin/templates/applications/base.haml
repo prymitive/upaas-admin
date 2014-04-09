@@ -12,7 +12,7 @@
 
 - block content
 
-  .row.visible-xs
+  .row.visible-sm
     .col-md-12
       .btn-group.pull-right
         %button.btn.btn-default.btn-md.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
@@ -20,10 +20,10 @@
           - trans "Actions"
           &nbsp;
           %span.caret
-        %ul.dropdown-menu.pull-right{'role': 'menu'}
+        %ul.dropdown-menu{'role': 'menu'}
           - include "applications/partials/app_actions.html"
 
-  %p.visible-xs
+  %p.visible-sm
 
   .row
     .col-md-9
@@ -33,13 +33,14 @@
 
       - block app_content
 
-    .col-md-3.hidden-xs
+    .col-md-3.hidden-sm
       .panel.panel-default
         .panel-heading
           - trans "Actions"
         .panel-body
           %ul.nav.nav-pills.nav-stacked
             - include "applications/partials/app_actions.html"
+
 
 - block js_bottom
   = block.super
