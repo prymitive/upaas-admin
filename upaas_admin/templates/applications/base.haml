@@ -12,7 +12,7 @@
 
 - block content
 
-  .row.visible-sm
+  .row.visible-xs.visible-sm
     .col-md-12
       .btn-group.pull-right
         %button.btn.btn-default.btn-md.dropdown-toggle{'type':'button', 'data-toggle': 'dropdown'}
@@ -23,7 +23,7 @@
         %ul.dropdown-menu{'role': 'menu'}
           - include "applications/partials/app_actions.html"
 
-  %p.visible-sm
+  %p.visible-xs.visible-sm
 
   .row
     .col-md-9
@@ -33,7 +33,7 @@
 
       - block app_content
 
-    .col-md-3.hidden-sm
+    .col-md-3.hidden-xs.hidden-sm
       .panel.panel-default
         .panel-heading
           - trans "Actions"
