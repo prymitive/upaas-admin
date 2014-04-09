@@ -289,6 +289,11 @@ class Package(Document):
         options.append('\n# starting ENV variables list')
         for key, value in list(envs.items()):
             options.append('env = %s=%s' % (key, value))
+        options.append(
+            'env = UPAAS_SYSTEM_DOMAIN=%s' % self.application.system_domain)
+        if self.application.custom_domains:
+            options.append('env = UPAAS_CUSTOM_DOMAINS=%s' % ','.join(
+                [d.name for d in self.application.custom_domains]))
 
         options.append('\n# starting options from app metadata')
         for opt in self.uwsgi_options_from_metadata():
