@@ -34,6 +34,7 @@
     %thead
       %tr
         %th
+        %th
           - trans "Login"
         %th
           - trans "First name"
@@ -50,7 +51,8 @@
     %tbody
       - for user_object in object_list
         %tr
-          %td{'style':'background: url("{% gravatar_url user_object.email 32 %}") left no-repeat; padding-left:40px;'}
+          %td{'style':'background: url("{% gravatar_url user_object.email 32 %}") left no-repeat;'}
+          %td
             = user_object.username
           %td
             = user_object.first_name
