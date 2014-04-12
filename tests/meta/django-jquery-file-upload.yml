@@ -2,6 +2,10 @@ os:
   Debian: &debian
     packages:
       - git-core
+      - libjpeg-dev
+      - libpng12-dev
+      - libtiff4-dev
+      - libwebp-dev
   Ubuntu: *debian
 
 
