@@ -75,6 +75,6 @@ window.UPAAS.apps_updates_callback = function (data) {
         function() {
             Dajaxice.upaas_admin.apps.applications.apps_updates(window.UPAAS.apps_updates_callback);
         },
-        3000
+        5000
     );
 }
