@@ -16,7 +16,6 @@ from django.utils.html import escape
 from django.conf import settings
 
 from upaas_admin.common.tests import MongoEngineTestCase
-from upaas_admin.apps.applications.constants import ApplicationFlags
 
 
 class ApplicationTest(MongoEngineTestCase):

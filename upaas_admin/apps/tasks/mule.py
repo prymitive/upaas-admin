@@ -5,20 +5,8 @@
 """
 
 
-from upaas_admin.apps.applications.models import Application
-from upaas_admin.apps.applications.constants import ApplicationFlags
-from upaas_admin.apps.applications.tasks import BuildPackageTask
-
-
-def builder_mule():
-    while True:
-        app = Application.objects(
-            flags=ApplicationFlags.needs_building).first()
-        if app:
-            fresh = app.flags.get(ApplicationFlags.build_fresh_package)
-            interpreter_version = app.flags.get(ApplicationFlags.needs_building)
-
+from django.core.management import call_command
 
 
 if __name__ == '__main__':
-    builder_mule()
+    call_command('mule_builder')

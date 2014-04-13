@@ -18,7 +18,7 @@ from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
                          ReferenceField, ListField, DictField, QuerySetManager,
-                         BooleanField, NULLIFY, signals)
+                         BooleanField, IntField, NULLIFY, signals)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -33,10 +33,9 @@ from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import StorageError
 from upaas import processes
 
-from upaas_admin.apps.servers.models import RouterServer
+from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
-from upaas_admin.apps.applications.constants import ApplicationFlags
 from upaas_admin.apps.scheduler.base import select_best_backends
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.tasks.base import VirtualTask
@@ -403,6 +402,25 @@ class ApplicationDomain(Document):
         return str(self.id)
 
 
+class ApplicationFlag(Document):
+    application = ReferenceField('Application', dbref=False, required=True)
+    name = StringField(required=True, unique_with='application')
+    options = DictField()
+    pending = BooleanField(default=True)
+    locked_since = DateTimeField()
+    locked_by_backend = ReferenceField(BackendServer)
+    locked_by_pid = IntField()
+
+    class FlagName(object):
+        needs_building = 'NEEDS_BUILDING'
+        is_building = 'IS_BUILDING'
+        build_fresh_package = 'BUILD_FRESH_PACKAGE'
+
+        # instance management flags
+        needs_stopping = 'NEEDS_STOPPING'
+        needs_restart = 'NEEDS_RESTART'
+
+
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, min_length=2, max_length=60,
@@ -414,7 +432,6 @@ class Application(Document):
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
-    flags = DictField()
 
     _default_manager = QuerySetManager()
 
@@ -422,7 +439,6 @@ class Application(Document):
         'indexes': [
             {'fields': ['name', 'owner'], 'unique': True},
             {'fields': ['packages']},
-            {'fields': ['flags']},
         ],
         'ordering': ['name'],
     }
@@ -558,6 +574,13 @@ class Application(Document):
         return self.build_tasks.filter(status=TaskStatus.running)
 
     @property
+    def flags(self):
+        """
+        Return list of application flags.
+        """
+        return ApplicationFlag.objects(application=self)
+
+    @property
     def system_domain(self):
         """
         Returns automatic system domain for this application.
@@ -585,21 +608,14 @@ class Application(Document):
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])
 
-    def update_flags(self, flags):
-        kwargs = {}
-        for op, key, value in flags:
-            if op:
-                opt = 'set'
-            else:
-                opt = 'unset'
-            kwargs['%s__flags__%s' % (opt, key)] = value
-        if kwargs:
-            self.update(**kwargs)
-
     def build_package(self, force_fresh=False, interpreter_version=None):
-        flags = [(True, ApplicationFlags.needs_building, interpreter_version),
-                 (force_fresh, ApplicationFlags.fresh_package, True)]
-        self.update_flags(flags)
+        q = {'set__options__%s' %
+             ApplicationFlag.FlagName.build_fresh_package: force_fresh,
+             'unset__pending': True,
+             'upsert': True}
+        ApplicationFlag.objects(
+            application=self,
+            name=ApplicationFlag.FlagName.needs_building).update_one(**q)
 
     def start_application(self):
         # FIXME check if application can start (running apps limit)
