@@ -51,7 +51,7 @@ class UserLimits(Document):
 
 class BackendRunPlanSettings(EmbeddedDocument):
     """
-    Application instance settings for given backend.
+    Application backend instance settings.
     """
     backend = ReferenceField('BackendServer', dbref=False)
     package = ReferenceField('Package', dbref=False, required=True)
@@ -61,6 +61,16 @@ class BackendRunPlanSettings(EmbeddedDocument):
     workers_max = IntField(required=True)
 
 
+class CronRunPlanSettings(EmbeddedDocument):
+    """
+    Application cron instance settings.
+    """
+    backend = ReferenceField('BackendServer', dbref=False)
+    package = ReferenceField('Package', dbref=False, required=True)
+    stats = IntField(required=True)
+    #commands = ListField(??)
+
+
 class ApplicationRunPlan(Document):
     """
     Where should application run and how much resources can given app consume.
@@ -68,6 +78,7 @@ class ApplicationRunPlan(Document):
     application = ReferenceField('Application', dbref=False, required=True,
                                  unique=True)
     backends = ListField(EmbeddedDocumentField(BackendRunPlanSettings))
+    crons = ListField(EmbeddedDocumentField(CronRunPlanSettings))
     workers_min = IntField(required=True, min_value=1, default=1,
                            verbose_name=_('minimum number of workers'))
     workers_max = IntField(required=True, min_value=1, default=1,
