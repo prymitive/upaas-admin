@@ -4,7 +4,6 @@
     :contact: l.mierzwa@gmail.com
 """
 
-
 from __future__ import unicode_literals
 
 import os
@@ -40,6 +39,7 @@ from upaas_admin.apps.scheduler.base import select_best_backends
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.tasks.base import VirtualTask
 from upaas_admin.apps.tasks.constants import TaskStatus, ACTIVE_TASK_STATUSES
+from upaas_admin.apps.applications.constants import Flags
 
 
 log = logging.getLogger(__name__)
@@ -232,7 +232,7 @@ class Package(Document):
         # interpretere default settings for any version
         try:
             for key, value in list(config.interpreters[self.interpreter_name][
-                    'any']['settings'].items()):
+                'any']['settings'].items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = value
         except (AttributeError, KeyError):
@@ -240,7 +240,7 @@ class Package(Document):
         # interpretere default settings for current version
         try:
             for key, value in list(config.interpreters[self.interpreter_name][
-                    self.interpreter_version]['settings'].items()):
+                self.interpreter_version]['settings'].items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = value
         except (AttributeError, KeyError):
@@ -406,19 +406,10 @@ class ApplicationFlag(Document):
     application = ReferenceField('Application', dbref=False, required=True)
     name = StringField(required=True, unique_with='application')
     options = DictField()
-    pending = BooleanField(default=True)
+    pending = BooleanField(default=True, required=True)
     locked_since = DateTimeField()
     locked_by_backend = ReferenceField(BackendServer)
     locked_by_pid = IntField()
-
-    class FlagName(object):
-        needs_building = 'NEEDS_BUILDING'
-        is_building = 'IS_BUILDING'
-        build_fresh_package = 'BUILD_FRESH_PACKAGE'
-
-        # instance management flags
-        needs_stopping = 'NEEDS_STOPPING'
-        needs_restart = 'NEEDS_RESTART'
 
 
 class Application(Document):
@@ -609,13 +600,15 @@ class Application(Document):
         return reverse('app_details', args=[self.safe_id])
 
     def build_package(self, force_fresh=False, interpreter_version=None):
-        q = {'set__options__%s' %
-             ApplicationFlag.FlagName.build_fresh_package: force_fresh,
-             'unset__pending': True,
-             'upsert': True}
-        ApplicationFlag.objects(
-            application=self,
-            name=ApplicationFlag.FlagName.needs_building).update_one(**q)
+        q = {
+            'set__options__%s' % Flags.build_fresh_package: force_fresh,
+            'set__options__%s' % Flags.build_interpreter_version:
+                interpreter_version,
+            'unset__pending': True,
+            'upsert': True
+        }
+        ApplicationFlag.objects(application=self,
+                                name=Flags.needs_building).update_one(**q)
 
     def start_application(self):
         # FIXME check if application can start (running apps limit)
@@ -774,7 +767,7 @@ class Application(Document):
 
         removed = 0
         for pkg in Package.objects(application=self, filename__exists=True)[
-                self.owner.limits['packages_per_app']:]:
+                   self.owner.limits['packages_per_app']:]:
             if pkg.id == self.current_package.id:
                 continue
             removed += 1

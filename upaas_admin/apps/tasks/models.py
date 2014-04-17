@@ -14,7 +14,7 @@ import logging
 
 from mongoengine import (StringField, DateTimeField, IntField, ListField,
                          BooleanField, ReferenceField, Document,
-                         EmbeddedDocument, EmbeddedDocumentField)
+                         EmbeddedDocument, EmbeddedDocumentField, NULLIFY)
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -73,6 +73,22 @@ class TaskMessage(EmbeddedDocument):
     source = StringField(required=True)
     level = IntField(required=True)
     message = StringField(required=True)
+
+
+class TaskProgress(Document):
+
+    date_created = DateTimeField(required=True, default=datetime.datetime.now)
+    date_finished = DateTimeField()
+    title = StringField(required=True)
+    status = StringField(required=True, choices=STATUS_CHOICES,
+                         default=TaskStatus.running)
+    messages = ListField(EmbeddedDocumentField(TaskMessage))
+    backend = ReferenceField(BackendServer, reverse_delete_rule=NULLIFY)
+    pid = IntField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(TaskProgress, self).__init__(*args, **kwargs)
+        self.log_handler = None
 
 
 class Task(Document):
