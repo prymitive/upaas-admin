@@ -28,6 +28,8 @@ from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.constants import Flags
 from upaas_admin.apps.applications.models import ApplicationFlag, Package
 from upaas_admin.apps.servers.models import BackendServer
+from upaas_admin.apps.tasks.models import MongoLogHandler, TaskDetails
+from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 log = logging.getLogger(__name__)
@@ -41,8 +43,18 @@ class Command(NoArgsCommand):
         self.cleanup()
         self.pid = getpid()
         self.register_backend()
+        self.log_handler = None
         # FIXME capture all logs and prefix with self.logger
-        # TODO add task object with messages and progress
+
+    def add_logger(self, task):
+        self.log_handler = MongoLogHandler(task)
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.log_handler)
+
+    def remove_logger(self):
+        self.log_handler.flush()
+        root_logger = logging.getLogger()
+        root_logger.removeHandler(self.log_handler)
 
     def logger(self, msg, level=logging.INFO):
         log.log(level, _("[Building: {name}] [PID: {pid}] {msg}").format(
@@ -52,10 +64,12 @@ class Command(NoArgsCommand):
         self.logger(_("Exiting, waiting for current task to finish"))
         self.is_exiting = True
 
-    def fail(self, flag):
+    def fail(self, flag, task):
         self.logger(_("Build failed"), level=logging.ERROR)
         flag.delete()
+        self.remove_logger()
         self.cleanup()
+        task.update(set__status=TaskStatus.failed)
 
     def cleanup(self):
         self.app_name = _('N/A')
@@ -95,19 +109,24 @@ class Command(NoArgsCommand):
                     current_revision = current_package.revision_id
                     interpreter_version = current_package.interpreter_version
 
+                task = TaskDetails(backend=self.backend, pid=self.pid,
+                                   flag=flag.name, application=app)
+                task.save()
+                self.add_logger(task)
+
                 metadata = flag.application.metadata
                 metadata_obj = flag.application.metadata_config
                 if not metadata or not metadata_obj:
                     self.logger(_("Missing or invalid application metadata"),
                                 level=logging.ERROR)
-                    self.fail(flag)
+                    self.fail(flag, task)
                     continue
 
                 upaas_config = load_main_config()
                 if not upaas_config:
                     self.logger(_("Missing or invalid uPaaS configuration"),
                                 level=logging.ERROR)
-                    self.fail(flag)
+                    self.fail(flag, task)
                     continue
 
                 self.logger(_("Building package for application {name} "
@@ -132,9 +151,9 @@ class Command(NoArgsCommand):
                         self.logger(_("Build progress: {proc}%%").format(
                             proc=result.progress))
                         build_result = result
+                        task.update(set__progress=result.progress)
                 except BuildError:
-                    self.logger(_("Build failed"))
-                    self.cleanup(flag)
+                    self.fail(flag, task)
                 else:
                     self.create_package(app, metadata_obj, metadata,
                                         build_result, current_package)
@@ -142,6 +161,8 @@ class Command(NoArgsCommand):
                 flag.reload()
                 if not flag.pending:
                     flag.delete()
+                task.update(set__status=TaskStatus.successful)
+                self.remove_logger()
                 self.cleanup()
             else:
                 sleep(2)

@@ -23,116 +23,14 @@ from upaas.config.base import ConfigurationError
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.applications.models import Package
-from upaas_admin.apps.tasks.base import (ApplicationTask,
-                                         ApplicationBackendTask)
 from upaas_admin.apps.tasks.registry import register
 
 
 log = logging.getLogger(__name__)
 
 
-# TODO translations
 
-@register
-class BuildPackageTask(ApplicationTask):
-
-    application = ReferenceField('Application', dbref=False, required=True)
-    metadata = StringField(required=True)
-    force_fresh = BooleanField(default=False)
-    interpreter_version = StringField()
-
-    def generate_title(self):
-        if self.force_fresh:
-            return _("Building new fresh package for {name}").format(
-                name=self.application.name)
-        else:
-            return _("Building new package for {name}").format(
-                name=self.application.name)
-
-    def job(self):
-
-        try:
-            metadata_obj = MetadataConfig.from_string(self.metadata)
-        except ConfigurationError:
-            log.error("Invalid app metadata")
-            raise Exception()
-
-        upaas_config = load_main_config()
-        if not upaas_config:
-            log.error("Missing uPaaS configuration")
-            raise Exception()
-
-        system_filename = None
-        parent_package = None
-        current_revision = None
-        if not self.force_fresh and self.application.current_package:
-            system_filename = self.application.current_package.filename
-            parent_package = self.application.current_package
-            current_revision = self.application.current_package.revision_id
-            self.interpreter_version = \
-                self.application.current_package.interpreter_version
-            log.info(_("Using current application package {pkg} as "
-                       "parent").format(pkg=parent_package.safe_id))
-
-        log.info("Starting build task with parameters app_id=%s, "
-                 "force_fresh=%s, interpreter_version=%s, "
-                 "current_revision=%s" % (
-                     self.application.safe_id, self.force_fresh,
-                     self.interpreter_version, current_revision))
-
-        build_result = None
-        try:
-            builder = Builder(upaas_config, metadata_obj)
-            for result in builder.build_package(
-                    system_filename=system_filename,
-                    interpreter_version=self.interpreter_version,
-                    current_revision=current_revision):
-                log.debug("Build progress: %d%%" % result.progress)
-                yield result.progress
-                build_result = result
-        except exceptions.BuildError:
-            log.error("Build failed")
-            raise Exception()
-
-        log.info("Build completed")
-        pkg = Package(metadata=self.metadata,
-                      application=self.application,
-                      interpreter_name=metadata_obj.interpreter.type,
-                      interpreter_version=build_result.interpreter_version,
-                      bytes=build_result.bytes,
-                      filename=build_result.filename,
-                      checksum=build_result.checksum,
-                      parent=build_result.parent,
-                      builder=gethostname(),
-                      distro_name=build_result.distro_name,
-                      distro_version=build_result.distro_version,
-                      distro_arch=build_result.distro_arch)
-        if parent_package and build_result.parent == parent_package.filename:
-            pkg.parent_package = parent_package
-        if build_result.vcs_revision.get('id'):
-            pkg.revision_id = build_result.vcs_revision.get('id')
-        if build_result.vcs_revision.get('author'):
-            pkg.revision_author = build_result.vcs_revision.get('author')
-        if build_result.vcs_revision.get('date'):
-            pkg.revision_date = build_result.vcs_revision.get('date')
-        if build_result.vcs_revision.get('description'):
-            pkg.revision_description = build_result.vcs_revision.get(
-                'description')
-        if build_result.vcs_revision.get('changelog'):
-            pkg.revision_changelog = build_result.vcs_revision.get(
-                'changelog')
-        pkg.save()
-        log.info("Package saved with id %s" % pkg.id)
-
-        self.application.reload()
-        self.application.packages.append(pkg)
-        self.application.current_package = pkg
-        self.application.save()
-        log.info("Application '%s' updated" % self.application.name)
-        self.application.upgrade_application()
-        self.application.trim_package_files()
-
-
+'''
 @register
 class StartApplicationTask(ApplicationBackendTask):
 
@@ -314,3 +212,4 @@ class UpdateVassalTask(ApplicationBackendTask):
             log.warning(_("No run plan for {name}, it was probably "
                           "stopped").format(name=self.application.name))
             yield 100
+'''

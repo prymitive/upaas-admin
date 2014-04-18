@@ -7,21 +7,15 @@
 
 from __future__ import unicode_literals
 
-import os
 import sys
 import datetime
 import logging
 
 from mongoengine import (StringField, DateTimeField, IntField, ListField,
-                         BooleanField, ReferenceField, Document,
-                         EmbeddedDocument, EmbeddedDocumentField, NULLIFY)
-
-from django.utils.translation import ugettext_lazy as _
-
-from upaas.processes import is_pid_running
+                         ReferenceField, Document, EmbeddedDocument,
+                         EmbeddedDocumentField, NULLIFY)
 
 from upaas_admin.apps.tasks.constants import *
-from upaas_admin.apps.tasks.registry import find_task_class
 from upaas_admin.apps.servers.models import BackendServer
 
 
@@ -75,22 +69,41 @@ class TaskMessage(EmbeddedDocument):
     message = StringField(required=True)
 
 
-class TaskProgress(Document):
+class TaskDetails(Document):
 
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     date_finished = DateTimeField()
-    title = StringField(required=True)
+    application = ReferenceField('Application')
+    flag = StringField()
     status = StringField(required=True, choices=STATUS_CHOICES,
                          default=TaskStatus.running)
+    progress = IntField(min_value=0, max_value=100, default=0)
     messages = ListField(EmbeddedDocumentField(TaskMessage))
     backend = ReferenceField(BackendServer, reverse_delete_rule=NULLIFY)
     pid = IntField(required=True)
 
     def __init__(self, *args, **kwargs):
-        super(TaskProgress, self).__init__(*args, **kwargs)
+        super(TaskDetails, self).__init__(*args, **kwargs)
         self.log_handler = None
 
+    @property
+    def is_running(self):
+        return self.status == TaskStatus.running
 
+    @property
+    def is_failed(self):
+        return self.status == TaskStatus.failed
+
+    @property
+    def is_successful(self):
+        return self.status == TaskStatus.successful
+
+    @property
+    def is_finished(self):
+        return self.status in FINISHED_TASKS_STATUSES
+
+
+'''
 class Task(Document):
 
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -411,3 +424,4 @@ class Task(Document):
                     backend=task.locked_by_backend))
                 task.fail_task()
                 task.full_cleanup()
+'''

@@ -18,14 +18,14 @@ from django.views.decorators.cache import cache_page
 
 from dajaxice.decorators import dajaxice_register
 
-from upaas_admin.apps.tasks.base import ApplicationTask
+from upaas_admin.apps.tasks.models import TaskDetails
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.tasks.constants import *
 from upaas_admin.common.uwsgi import fetch_json_stats
 
 
 def task_to_json(task, application, already_running):
-    if task.is_active:
+    if task.is_running:
         already_running += 1
 
     date_finished = None
@@ -43,8 +43,6 @@ def task_to_json(task, application, already_running):
         'date_finished': date_finished,
         'locked_since': locked_since,
         'status': task.status,
-        'is_pending': task.is_pending,
-        'is_active': task.is_active,
         'is_successful': task.is_successful,
         'is_failed': task.is_failed,
         'is_running': task.is_running,
@@ -64,9 +62,9 @@ def tasks_updates(user):
     running = 0
 
     # look for running or pending tasks and recently finished tasks
-    for task in ApplicationTask.objects(
+    for task in TaskDetails.objects(
         Q(application__in=user.applications) & (
-            Q(status__in=ACTIVE_TASK_STATUSES) |
+            Q(status=TaskStatus.running) |
             Q(date_finished__gte=datetime.now() - timedelta(seconds=300)))):
         # TODO make that 300 seconds configurable (?)
         # TODO optimize query, fetch all subtasks at once (?)
@@ -156,7 +154,7 @@ def task_messages(request, task_id, offset):
     ret = {'is_pending': None, 'is_running': None, 'is_finished': None,
            'is_failed': None, 'is_successful': None, 'messages': [],
            'progress': 0}
-    task = ApplicationTask.objects(
+    task = TaskDetails.objects(
         id=task_id, application__in=request.user.applications).first()
     if task:
         ret['progress'] = task.progress

@@ -19,8 +19,7 @@ from mongoengine.fields import StringField
 from mongoengine import signals, Q
 
 from upaas_admin.apps.scheduler.models import UserLimits, ApplicationRunPlan
-from upaas_admin.apps.applications.models import Application
-from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.applications.models import Application, TaskDetails
 from upaas_admin.apps.tasks.constants import ACTIVE_TASK_STATUSES
 
 
@@ -104,7 +103,7 @@ class User(MongoUser):
         """
         List of all tasks for this application.
         """
-        return Task.find('ApplicationTask', application__in=self.applications)
+        return TaskDetails.objects(application__in=self.applications)
 
     @property
     def recent_tasks(self):

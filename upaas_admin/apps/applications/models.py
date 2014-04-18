@@ -36,9 +36,8 @@ from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.scheduler.base import select_best_backends
-from upaas_admin.apps.tasks.models import Task
-from upaas_admin.apps.tasks.base import VirtualTask
 from upaas_admin.apps.tasks.constants import TaskStatus, ACTIVE_TASK_STATUSES
+from upaas_admin.apps.tasks.models import TaskDetails
 from upaas_admin.apps.applications.constants import Flags
 
 
@@ -512,7 +511,7 @@ class Application(Document):
         """
         List of all tasks for this application.
         """
-        return Task.find('ApplicationTask', application=self)
+        return TaskDetails.objects(application=self)
 
     @property
     def active_tasks(self):
@@ -540,7 +539,7 @@ class Application(Document):
         """
         List of all build tasks for this application.
         """
-        return Task.find('BuildPackageTask', application=self)
+        return self.tasks.filter(flag=Flags.needs_building)
 
     @property
     def active_build_tasks(self):
@@ -625,29 +624,7 @@ class Application(Document):
                             "available").format(name=self.name))
                 run_plan.delete()
                 return
-
-            kwargs = {}
-            vtask = None
-            if len(backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Starting application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
-            run_plan.backends = backends
-            run_plan.save()
-
-            tasks = []
-            for backend_conf in backends:
-                log.info(_("Set backend '{backend}' in '{name}' run "
-                           "plan").format(backend=backend_conf.backend.name,
-                                          name=self.name))
-                tasks.append(Task.put('StartApplicationTask',
-                                      backend=backend_conf.backend,
-                                      application=self, limit=1, **kwargs))
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+            # FIXME set start flag ?
 
     def stop_application(self):
         if self.current_package:
@@ -657,45 +634,13 @@ class Application(Document):
                 # no backends in run plan, just delete it
                 self.run_plan.delete()
                 return
-
-            kwargs = {}
-            vtask = None
-            if len(self.run_plan.backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Stopping application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
-            tasks = []
-            for backend_conf in self.run_plan.backends:
-                tasks.append(Task.put('StopApplicationTask',
-                                      backend=backend_conf.backend,
-                                      application=self, limit=1, **kwargs))
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+            # FIXME set stop flag
 
     def upgrade_application(self):
         if self.current_package:
             if not self.run_plan:
                 return
-
-            kwargs = {}
-            vtask = None
-            if len(self.run_plan.backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Upgrading application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
-            tasks = []
-            for backend_conf in self.run_plan.backends:
-                tasks.append(Task.put('UpgradeApplicationTask',
-                                      backend=backend_conf.backend,
-                                      application=self, limit=1, **kwargs))
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+            # FIXME set upgrade flag
 
     def update_application(self):
         if self.run_plan:
@@ -709,15 +654,6 @@ class Application(Document):
                             "available").format(name=self.name))
                 return
 
-            kwargs = {}
-            vtask = None
-            if len(current_backends) > 1 or len(new_backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Updating application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
             tasks = []
             for backend_conf in new_backends:
                 if backend_conf.backend in current_backends:
@@ -725,10 +661,6 @@ class Application(Document):
                     run_plan.update(
                         pull__backends__backend=backend_conf.backend)
                     run_plan.update(push__backends=backend_conf)
-                    tasks.append(Task.put('UpdateVassalTask',
-                                          backend=backend_conf.backend,
-                                          application=self,
-                                          limit=1, **kwargs))
                 else:
                     # add backend to run plan if not already there
                     ApplicationRunPlan.objects(
@@ -736,21 +668,14 @@ class Application(Document):
                         backends__backend__nin=[
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
-                    tasks.append(Task.put('StartApplicationTask',
-                                          backend=backend_conf.backend,
-                                          application=self, limit=1, **kwargs))
 
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
-                    tasks.append(Task.put('StopApplicationTask',
-                                          backend=backend, application=self,
-                                          **kwargs))
-
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+                    # FIXME set stop flag?
+            # FIXME set update flag?
 
     def trim_package_files(self):
         """

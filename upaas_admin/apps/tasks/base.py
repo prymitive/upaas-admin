@@ -15,53 +15,13 @@ from mongoengine import ReferenceField
 
 from django.utils.translation import ugettext_lazy as _
 
-from upaas_admin.apps.tasks.models import Task
 from upaas_admin.common.uwsgi import fetch_json_stats
 
 
 log = logging.getLogger(__name__)
 
 
-class VirtualTask(Task):
-    """
-    Task group, doesn't do anything, only tracks progress of subtasks.
-    All tasks in the group must have the same class.
-    """
-
-    meta = {
-        'collection': 'tasks',
-    }
-
-
-class BackendTask(Task):
-    """
-    Generic task that will run on specific backend server.
-    """
-
-    backend = ReferenceField('BackendServer', dbref=False, required=True)
-
-    meta = {
-        'allow_inheritance': True,
-        'indexes': ['backend'],
-        'collection': 'tasks',
-    }
-
-
-class ApplicationTask(Task):
-    """
-    Task that will run on any backend server for specific application.
-    """
-
-    application = ReferenceField('Application', dbref=False, required=True)
-
-    meta = {
-        'allow_inheritance': True,
-        'indexes': ['application'],
-        'collection': 'tasks',
-    }
-
-
-class ApplicationBackendTask(BackendTask, ApplicationTask):
+class ApplicationBackendTask():
     """
     Task that will run on specific backend server for specific application.
     """

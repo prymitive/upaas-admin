@@ -5,7 +5,7 @@
 """
 
 
-class Flags(object):
+class Flags:
 
     needs_building = 'NEEDS_BUILDING'
     is_building = 'IS_BUILDING'
