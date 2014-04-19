@@ -87,6 +87,10 @@ class TaskDetails(Document):
         self.log_handler = None
 
     @property
+    def safe_id(self):
+        return str(self.id)
+
+    @property
     def is_running(self):
         return self.status == TaskStatus.running
 

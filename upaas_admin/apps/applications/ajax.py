@@ -33,22 +33,22 @@ def task_to_json(task, application, already_running):
         date_finished = task.date_finished.isoformat()
 
     locked_since = None
-    if task.locked_since:
-        locked_since = task.locked_since.isoformat()
+#    if task.locked_since:
+#        locked_since = task.locked_since.isoformat()
 
     task_data = {
         'task_id': task.safe_id,
-        'title': task.title,
+        'title': task.safe_id,
         'date_created': task.date_created.isoformat(),
         'date_finished': date_finished,
-        'locked_since': locked_since,
+        'locked_since': task.date_created.isoformat(),
         'status': task.status,
         'is_successful': task.is_successful,
         'is_failed': task.is_failed,
         'is_running': task.is_running,
         'is_finished': task.is_finished,
         'progress': task.progress,
-        'icon': task.icon_class,
+        'icon': 'task.icon_class',
         'application': {'name': application.name, 'id': application.safe_id},
         'subtasks': [],
     }
@@ -69,24 +69,25 @@ def tasks_updates(user):
         # TODO make that 300 seconds configurable (?)
         # TODO optimize query, fetch all subtasks at once (?)
 
-        if task.parent and task.parent.id in skip_vtasks:
-            continue
-        elif task.parent:
-            running, data = task_to_json(task.parent, task.application,
-                                         running)
-            subtasks = task.parent.subtasks
-            subtasks_count = len(subtasks)
-            subtasks_data = []
-            for subtask in subtasks:
-                _, subdata = task_to_json(subtask, task.application, 0)
-                subdata['progress'] = int(subdata['progress'] / subtasks_count)
-                subtasks_data.append(subdata)
-            data['subtasks'] = subtasks_data
-            skip_vtasks.append(task.parent.id)
-            tasks.append(data)
-        else:
-            running, data = task_to_json(task, task.application, running)
-            tasks.append(data)
+        # if task.parent and task.parent.id in skip_vtasks:
+        #     continue
+        # elif task.parent:
+        #     running, data = task_to_json(task.parent, task.application,
+        #                                  running)
+        #     subtasks = task.parent.subtasks
+        #     subtasks_count = len(subtasks)
+        #     subtasks_data = []
+        #     for subtask in subtasks:
+        #         _, subdata = task_to_json(subtask, task.application, 0)
+        #         subdata['progress'] = int(subdata['progress'] / subtasks_count)
+        #         subtasks_data.append(subdata)
+        #     data['subtasks'] = subtasks_data
+        #     skip_vtasks.append(task.parent.id)
+        #     tasks.append(data)
+        # else:
+
+        running, data = task_to_json(task, task.application, running)
+        tasks.append(data)
 
     return {'list': tasks, 'running': running,
             'recent': len(user.recent_tasks)}
@@ -158,7 +159,7 @@ def task_messages(request, task_id, offset):
         id=task_id, application__in=request.user.applications).first()
     if task:
         ret['progress'] = task.progress
-        ret['is_pending'] = task.is_pending
+        #ret['is_pending'] = task.is_pending
         ret['is_running'] = task.is_running
         ret['is_finished'] = task.is_finished
         ret['is_failed'] = task.is_failed

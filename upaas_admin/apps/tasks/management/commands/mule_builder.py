@@ -17,7 +17,7 @@ from socket import gethostname
 from IPy import IP
 
 from django.core.management.base import NoArgsCommand
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from upaas.builder.builder import Builder
 from upaas.builder.exceptions import BuildError
@@ -44,32 +44,37 @@ class Command(NoArgsCommand):
         self.pid = getpid()
         self.register_backend()
         self.log_handler = None
+        self.log_handlers_level = {}
         # FIXME capture all logs and prefix with self.logger
 
     def add_logger(self, task):
         self.log_handler = MongoLogHandler(task)
         root_logger = logging.getLogger()
+        for handler in root_logger.handlers:
+            self.log_handlers_level[handler] = handler.level
+            handler.level = logging.ERROR
         root_logger.addHandler(self.log_handler)
 
     def remove_logger(self):
         self.log_handler.flush()
         root_logger = logging.getLogger()
+        for handler in root_logger.handlers:
+            level = self.log_handlers_level.get(handler)
+            if level is not None:
+                handler.level = level
         root_logger.removeHandler(self.log_handler)
 
-    def logger(self, msg, level=logging.INFO):
-        log.log(level, _("[Building: {name}] [PID: {pid}] {msg}").format(
-            name=self.app_name, pid=self.pid, msg=msg))
-
     def mark_exiting(self, *args):
-        self.logger(_("Exiting, waiting for current task to finish"))
+        log.info(_("Exiting, waiting for current task to finish"))
         self.is_exiting = True
 
     def fail(self, flag, task):
-        self.logger(_("Build failed"), level=logging.ERROR)
         flag.delete()
         self.remove_logger()
         self.cleanup()
         task.update(set__status=TaskStatus.failed)
+        log.error(_("Building completed for {name} [{id}]").format(
+            name=task.application.name, id=task.application.safe_id))
 
     def cleanup(self):
         self.app_name = _('N/A')
@@ -87,10 +92,9 @@ class Command(NoArgsCommand):
                 if flag.locked_since:
                     if flag.locked_by_pid != self.pid:
                         if not is_pid_running(flag.locked_by_pid):
-                            self.logger(_("Found flag locked by non-existing "
-                                          "PID ({pid})").format(
-                                              pid=flag.locked_by_pid),
-                                        level=logging.WARNING)
+                            log.warning(_("Found flag locked by non-existing "
+                                          "PID {pid}").format(
+                                pid=flag.locked_by_pid))
                             self.unlock_flag(flag)
                             continue
 
@@ -109,6 +113,9 @@ class Command(NoArgsCommand):
                     current_revision = current_package.revision_id
                     interpreter_version = current_package.interpreter_version
 
+                log.info(_("Building new package for {name} [{id}]").format(
+                    name=app.name, id=app.safe_id))
+
                 task = TaskDetails(backend=self.backend, pid=self.pid,
                                    flag=flag.name, application=app)
                 task.save()
@@ -117,28 +124,24 @@ class Command(NoArgsCommand):
                 metadata = flag.application.metadata
                 metadata_obj = flag.application.metadata_config
                 if not metadata or not metadata_obj:
-                    self.logger(_("Missing or invalid application metadata"),
-                                level=logging.ERROR)
+                    log.error(_("Missing or invalid application metadata"))
                     self.fail(flag, task)
                     continue
 
                 upaas_config = load_main_config()
                 if not upaas_config:
-                    self.logger(_("Missing or invalid uPaaS configuration"),
-                                level=logging.ERROR)
+                    log.error(_("Missing or invalid uPaaS configuration"))
                     self.fail(flag, task)
                     continue
 
-                self.logger(_("Building package for application {name} "
-                              "[{id}]").format(name=flag.application.name,
-                                               id=flag.application.safe_id))
-                self.logger(_("Fresh package: {fresh}").format(
-                    fresh=force_fresh))
-                self.logger(_("Base image: {name}").format(
-                    name=system_filename))
-                self.logger(_("Interpreter version: {ver}").format(
+                log.info(_("Building package for application {name} "
+                           "[{id}]").format(name=flag.application.name,
+                                            id=flag.application.safe_id))
+                log.info(_("Fresh package: {fresh}").format(fresh=force_fresh))
+                log.info(_("Base image: {name}").format(name=system_filename))
+                log.info(_("Interpreter version: {ver}").format(
                     ver=interpreter_version))
-                self.logger(_("Current revision: {rev}").format(
+                log.info(_("Current revision: {rev}").format(
                     rev=current_revision))
 
                 build_result = None
@@ -148,12 +151,13 @@ class Command(NoArgsCommand):
                             system_filename=system_filename,
                             interpreter_version=interpreter_version,
                             current_revision=current_revision):
-                        self.logger(_("Build progress: {proc}%%").format(
+                        log.debug(_("Build progress: {proc}%").format(
                             proc=result.progress))
                         build_result = result
                         task.update(set__progress=result.progress)
                 except BuildError:
                     self.fail(flag, task)
+                    continue
                 else:
                     self.create_package(app, metadata_obj, metadata,
                                         build_result, current_package)
@@ -164,12 +168,15 @@ class Command(NoArgsCommand):
                 task.update(set__status=TaskStatus.successful)
                 self.remove_logger()
                 self.cleanup()
+
+                log.info(_("Building completed for {name} [{id}]").format(
+                    name=app.name, id=app.safe_id))
             else:
                 sleep(2)
 
     def create_package(self, app, metadata_obj, metadata, build_result,
                        parent_package):
-        self.logger("Building completed")
+        log.info("Building completed")
         pkg = Package(metadata=metadata,
                       application=app,
                       interpreter_name=metadata_obj.interpreter.type,
@@ -197,13 +204,13 @@ class Command(NoArgsCommand):
             pkg.revision_changelog = build_result.vcs_revision.get(
                 'changelog')
         pkg.save()
-        self.logger(_("Package created with id {id}").format(id=pkg.safe_id))
+        log.info(_("Package created with id {id}").format(id=pkg.safe_id))
 
         app.reload()
         app.packages.append(pkg)
         app.current_package = pkg
         app.save()
-        self.logger(_("Application updated"))
+        log.info(_("Application updated"))
         app.upgrade_application()
         app.trim_package_files()
 
@@ -240,8 +247,7 @@ class Command(NoArgsCommand):
                     break
 
         if not backend and not local_ip:
-            self.logger("No IP address found for local backend!",
-                        level=logging.ERROR)
+            log.error("No IP address found for local backend!")
             return
 
         if backend:
@@ -253,8 +259,8 @@ class Command(NoArgsCommand):
                 backend.ip = IP(local_ip)
                 backend.save()
         else:
-            self.logger(_("Local backend not found, registering as '{name}' "
-                          "with IP {ip}").format(name=name, ip=local_ip))
+            log.info(_("Local backend not found, registering as '{name}' "
+                       "with IP {ip}").format(name=name, ip=local_ip))
             backend = BackendServer(name=name, ip=local_ip, is_enabled=False)
             backend.save()
 
