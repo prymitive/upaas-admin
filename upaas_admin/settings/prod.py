@@ -305,7 +305,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': "[pid: %(process)s] %(levelname)s %(message)s",
+            'format': "[pid:%(process)s] %(levelname)s: %(message)s",
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
     },

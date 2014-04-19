@@ -83,6 +83,7 @@ class Command(NoArgsCommand):
         signal(SIGINT, self.mark_exiting)
         signal(SIGTERM, self.mark_exiting)
 
+        log.info(_("Builder mule ready, waiting for tasks"))
         while True:
             if self.is_exiting:
                 return

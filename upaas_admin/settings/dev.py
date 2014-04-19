@@ -15,7 +15,7 @@ from IPy import IP
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-LOGGING['formatters']['standard']['format'] = "[pid: %(process)s] " \
+LOGGING['formatters']['standard']['format'] = "[pid:%(process)s] " \
                                               "%(levelname)s [%(name)s:" \
                                               "%(lineno)s] %(message)s"
 
