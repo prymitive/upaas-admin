@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 class BackendResource(MongoEngineResource):
 
     class Meta:
+        always_return_data = True
         queryset = BackendServer.objects.all()
         resource_name = 'backend'
         filtering = {
@@ -39,6 +40,7 @@ class BackendResource(MongoEngineResource):
 class RouterResource(MongoEngineResource):
 
     class Meta:
+        always_return_data = True
         queryset = RouterServer.objects.all()
         resource_name = 'router'
         filtering = {

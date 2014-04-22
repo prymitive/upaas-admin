@@ -33,6 +33,7 @@ log = logging.getLogger(__name__)
 class RunPlanResource(MongoEngineResource):
 
     class Meta:
+        always_return_data = True
         queryset = ApplicationRunPlan.objects.all()
         resource_name = 'run_plan'
         excludes = ['backends', 'memory_per_worker']

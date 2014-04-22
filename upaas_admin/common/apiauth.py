@@ -7,14 +7,17 @@
 
 from __future__ import unicode_literals
 
-from upaas_admin.apps.users.models import User
 from tastypie.authentication import Authentication
+
+from upaas_admin.apps.users.models import User
 
 
 class UpaasApiKeyAuthentication(Authentication):
 
     @staticmethod
     def get_user(request):
+        if request.user.is_authenticated():
+            return request.user
         apikey = request.META.get('HTTP_X_UPAAS_APIKEY')
         login = request.META.get('HTTP_X_UPAAS_LOGIN')
         return User.objects.filter(username=login, apikey=apikey,
