@@ -65,7 +65,7 @@ class Command(NoArgsCommand):
         root_logger.removeHandler(self.log_handler)
 
     def mark_exiting(self, *args):
-        log.info(_("Exiting, waiting for current task to finish"))
+        log.info(_("Shutting down, waiting for current task to finish"))
         self.is_exiting = True
 
     def fail(self, flag, task):
