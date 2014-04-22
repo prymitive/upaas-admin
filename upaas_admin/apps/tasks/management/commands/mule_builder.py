@@ -8,8 +8,8 @@
 from __future__ import unicode_literals
 
 import logging
+import signal
 from os import getpid
-from signal import signal, SIGINT, SIGTERM
 from datetime import datetime
 from time import sleep
 from socket import gethostname
@@ -80,8 +80,9 @@ class Command(NoArgsCommand):
         self.app_name = _('N/A')
 
     def handle_noargs(self, **options):
-        signal(SIGINT, self.mark_exiting)
-        signal(SIGTERM, self.mark_exiting)
+        for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP,
+                    signal.SIGQUIT]:
+            signal.signal(sig, self.mark_exiting)
 
         log.info(_("Builder mule ready, waiting for tasks"))
         while True:
