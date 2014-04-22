@@ -259,6 +259,7 @@ PIPELINE_JS = {
             'tabdrop/bootstrap-tabdrop.js',
             'backbone/backbone-min.js',
             'backbone/backbone-tastypie.js',
+            'backbone/backbone.poller.min.js',
             'upaas/js/base/*.js',
         ),
         'output_filename': 'js/base.js',

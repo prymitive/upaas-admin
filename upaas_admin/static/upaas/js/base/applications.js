@@ -5,15 +5,7 @@
 
 
 window.UPAAS = window.UPAAS || {};
-
-
-window.UPAAS.update_badge = function(id, value) {
-    if (value) {
-        $(id).text(value).removeClass('hidden');
-    } else {
-        $(id).text('').addClass('hidden');
-    }
-}
+window.UPAAS.applications = window.UPAAS.applications || {};
 
 
 window.UPAAS.apps_updates_callback = function (data) {
@@ -80,17 +72,41 @@ window.UPAAS.apps_updates_callback = function (data) {
 }
 
 
-window.UPAAS.ApplicationModel = Backbone.Model.extend({});
-window.UPAAS.ApplicationCollection = Backbone.Collection.extend({
-   model: window.UPAAS.ApplicationModel,
+//= Applications ===============================================================
+
+
+window.UPAAS.applications.ApplicationModel = Backbone.Model.extend({});
+window.UPAAS.applications.ApplicationCollection = Backbone.Collection.extend({
+   model: window.UPAAS.applications.ApplicationModel,
    url : "/api/v1/application/?format=json"
 });
-window.UPAAS.Applications = new window.UPAAS.ApplicationCollection();
+window.UPAAS.applications.Applications = new window.UPAAS.applications.ApplicationCollection();
+
+window.UPAAS.applications.parse_updates = function(data) {
+    window.UPAAS.utils.update_badge('.upaas-user-badge-apps', data.collection.length);
+}
+
+window.UPAAS.applications.Applications.bind('add', window.UPAAS.applications.parse_updates);
+window.UPAAS.applications.Applications.bind('remove', window.UPAAS.applications.parse_updates);
+window.UPAAS.applications.Applications.bind('reset', window.UPAAS.applications.parse_updates);
+window.UPAAS.applications.Applications.bind('change', window.UPAAS.applications.parse_updates);
+window.UPAAS.applications.Applications.bind('destroy', window.UPAAS.applications.parse_updates);
 
 
-window.UPAAS.PackageModel = Backbone.Model.extend({});
-window.UPAAS.PackageCollection = Backbone.Collection.extend({
-   model: window.UPAAS.PackageModel,
+//= Packages ===================================================================
+
+
+window.UPAAS.applications.PackageModel = Backbone.Model.extend({});
+window.UPAAS.applications.PackageCollection = Backbone.Collection.extend({
+   model: window.UPAAS.applications.PackageModel,
    url : "/api/v1/package/?format=json"
 });
-window.UPAAS.Packages = new window.UPAAS.PackageCollection();
+window.UPAAS.applications.Packages = new window.UPAAS.applications.PackageCollection();
+
+
+//= INIT =======================================================================
+
+window.UPAAS.applications.init = function() {
+    window.UPAAS.applications.app_poller = Backbone.Poller.get(window.UPAAS.applications.Applications);
+    window.UPAAS.applications.app_poller.set({delay: 5000}).start();
+}

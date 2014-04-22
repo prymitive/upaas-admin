@@ -68,7 +68,7 @@
                     %td
                       = worker.status
                     %td
-                      = window.UPAAS.bytes_to_human(worker.rss);
+                      = window.UPAAS.utils.bytes_to_human(worker.rss);
                     %td
                       = worker.respawn_count
                     %td
@@ -79,7 +79,7 @@
                       = Math.round(worker.avg_rt / 1000);
                       ms
                     %td
-                      = window.UPAAS.bytes_to_human(worker.tx);
+                      = window.UPAAS.utils.bytes_to_human(worker.tx);
               - if (total_workers == 0) {
                 %tr
                   %td.text-center{colspan: 8}
@@ -93,10 +93,10 @@
                       /
                     = instance.stats.workers.length
                   %td{'colspan':'2'}
-                    = window.UPAAS.bytes_to_human(total_rss);
+                    = window.UPAAS.utils.bytes_to_human(total_rss);
                     :plain
                       /
-                    = window.UPAAS.bytes_to_human(instance.backend.limits.backend_memory_bytes);
+                    = window.UPAAS.utils.bytes_to_human(instance.backend.limits.backend_memory_bytes);
                   %td
                     = total_harakiri
                   %td
@@ -104,7 +104,7 @@
                   %td
                     = total_avg_rt_summary
                   %td
-                    = window.UPAAS.bytes_to_human(total_tx);
+                    = window.UPAAS.utils.bytes_to_human(total_tx);
             - else {
               %tr.danger
                 %td.text-center{colspan: 8}

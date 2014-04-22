@@ -22,6 +22,6 @@ $(document).ready(function(){
     });
 
     if (Django.user.is_authenticated) {
-        // FIXME replace with backbone loop
+        window.UPAAS.applications.init();
     }
 });
