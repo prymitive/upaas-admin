@@ -19,8 +19,6 @@ $(document).ready(function(){
     });
 
     if (Django.user.is_authenticated) {
-        Dajaxice.upaas_admin.apps.applications.apps_updates(
-            window.UPAAS.apps_updates_callback
-        );
+        // FIXME replace with backbone loop
     }
 });
