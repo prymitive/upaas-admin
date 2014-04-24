@@ -71,7 +71,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'mongoengine.django.mongo_auth',
     'djangojs',
-    'dajaxice',
     'pipeline',
     'crispy_forms',
     'django_bootstrap_breadcrumbs',
@@ -117,15 +116,6 @@ MEDIA_ROOT = os.path.join(VAR_ROOT, 'uploads')
 
 STATICFILES_DIRS = (
     os.path.join(PROJECT_DIR, 'static'),
-)
-
-
-# =============================================================================
-# Static files
-# =============================================================================
-
-STATICFILES_FINDERS += (
-    'dajaxice.finders.DajaxiceFinder',
 )
 
 
