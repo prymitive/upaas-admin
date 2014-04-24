@@ -21,6 +21,10 @@ TEMPLATE_LOADERS = (
 
 LOGGING['handlers']['console']['level'] = 'DEBUG'
 
+LOGGING['formatters']['standard']['format'] = "[pid:%(process)s] " \
+                                              "%(levelname)s [%(name)s:" \
+                                              "%(lineno)s] %(message)s"
+
 
 # =============================================================================
 # django-pipeline

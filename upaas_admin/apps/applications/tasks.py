@@ -29,7 +29,6 @@ from upaas_admin.apps.tasks.registry import register
 log = logging.getLogger(__name__)
 
 
-
 '''
 @register
 class StartApplicationTask(ApplicationBackendTask):

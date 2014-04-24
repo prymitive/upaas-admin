@@ -231,7 +231,7 @@ class Package(Document):
         # interpretere default settings for any version
         try:
             for key, value in list(config.interpreters[self.interpreter_name][
-                'any']['settings'].items()):
+                    'any']['settings'].items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = value
         except (AttributeError, KeyError):
@@ -239,7 +239,7 @@ class Package(Document):
         # interpretere default settings for current version
         try:
             for key, value in list(config.interpreters[self.interpreter_name][
-                self.interpreter_version]['settings'].items()):
+                    self.interpreter_version]['settings'].items()):
                 var_name = "meta_%s_%s" % (self.interpreter_name, key)
                 variables[var_name] = value
         except (AttributeError, KeyError):
@@ -521,13 +521,6 @@ class Application(Document):
         return self.tasks.filter(status__in=ACTIVE_TASK_STATUSES)
 
     @property
-    def pending_tasks(self):
-        """
-        List of all pending tasks for this application.
-        """
-        return self.tasks.filter(status=TaskStatus.pending)
-
-    @property
     def running_tasks(self):
         """
         List of all running tasks for this application.
@@ -624,6 +617,10 @@ class Application(Document):
                             "available").format(name=self.name))
                 run_plan.delete()
                 return
+
+            run_plan.backends = backends
+            run_plan.save()
+
             # FIXME set start flag ?
 
     def stop_application(self):
@@ -692,7 +689,7 @@ class Application(Document):
 
         removed = 0
         for pkg in Package.objects(application=self, filename__exists=True)[
-                   self.owner.limits['packages_per_app']:]:
+                self.owner.limits['packages_per_app']:]:
             if pkg.id == self.current_package.id:
                 continue
             removed += 1
