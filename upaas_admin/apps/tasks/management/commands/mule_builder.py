@@ -220,7 +220,6 @@ class Command(NoArgsCommand):
         app.packages.append(pkg)
         app.current_package = pkg
         app.save()
-        log.info(_("Application updated"))
         app.upgrade_application()
         app.trim_package_files()
 
