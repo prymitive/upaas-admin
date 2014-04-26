@@ -72,7 +72,7 @@ window.UPAAS.tasks.render_task_menu_item = function(task) {
 }
 
 
-window.UPAAS.tasks.parse_running_task = function(task) {
+window.UPAAS.tasks.update_task_menu_badge = function(task) {
     $('#upaas-tasks-badge').text(task.collection.length);
     if (task.collection.length > 0) {
         $('#upaas-tasks-badge').addClass('active');
@@ -81,13 +81,17 @@ window.UPAAS.tasks.parse_running_task = function(task) {
         $('#upaas-tasks-badge').removeClass('active');
         $('#upaas-tasks-menu-li-dummy').show();
     }
+}
 
+window.UPAAS.tasks.parse_running_task = function(task) {
+    window.UPAAS.tasks.update_task_menu_badge(task);
     window.UPAAS.tasks.render_task_menu_item(task);
 }
 window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.tasks.parse_running_task, ['remove']);
 
 
 window.UPAAS.tasks.parse_removed_running_task = function(data) {
+    window.UPAAS.tasks.update_task_menu_badge(data);
     var task = window.UPAAS.tasks.Tasks.where({id: data.attributes.id})[0];
     window.UPAAS.tasks.render_task_menu_item(task);
     setTimeout(function(){
