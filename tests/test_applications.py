@@ -16,6 +16,7 @@ from django.utils.html import escape
 from django.conf import settings
 
 from upaas_admin.common.tests import MongoEngineTestCase
+from upaas_admin.apps.applications.constants import NeedsBuildingFlag
 
 
 class ApplicationTest(MongoEngineTestCase):
@@ -120,11 +121,13 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.post(url, {'build_type': ''})
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
-        # FIXME
-        # self.assertEqual(self.app.flags.get(ApplicationFlags.fresh_package),
-        #                 None)
-        # self.assertEqual(self.app.flags[ApplicationFlags.needs_building],
-        #                  None)
+        flag = self.app.flags.filter(name=NeedsBuildingFlag.name).first()
+        self.assertNotEqual(flag, None)
+        self.assertEqual(flag.options.get(
+            NeedsBuildingFlag.Options.build_fresh_package), False)
+        self.assertEqual(flag.options.get(
+            NeedsBuildingFlag.Options.build_interpreter_version), None)
+
 
     @pytest.mark.usefixtures("create_pkg")
     def test_build_package_forced_version_post(self):
@@ -140,10 +143,12 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.post(url, {'build_type': '1.9.3'})
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
-        # FIXME
-        # self.assertTrue(self.app.flags[ApplicationFlags.fresh_package])
-        # self.assertEqual(self.app.flags[ApplicationFlags.needs_building],
-        #                 '1.9.3')
+        flag = self.app.flags.filter(name=NeedsBuildingFlag.name).first()
+        self.assertNotEqual(flag, None)
+        self.assertTrue(flag.options.get(
+            NeedsBuildingFlag.Options.build_fresh_package))
+        self.assertEqual(flag.options.get(
+            NeedsBuildingFlag.Options.build_interpreter_version), '1.9.3')
 
     @pytest.mark.usefixtures("create_app")
     def test_app_metadata_get(self):
