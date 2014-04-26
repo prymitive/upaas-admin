@@ -186,7 +186,7 @@ class Command(NoArgsCommand):
 
     def create_package(self, app, metadata_obj, metadata, build_result,
                        parent_package):
-        log.info("Building completed, creating package")
+        log.info("Building completed, saving package")
         pkg = Package(metadata=metadata,
                       application=app,
                       interpreter_name=metadata_obj.interpreter.type,
@@ -214,7 +214,7 @@ class Command(NoArgsCommand):
             pkg.revision_changelog = build_result.vcs_revision.get(
                 'changelog')
         pkg.save()
-        log.info(_("Package created with id {id}").format(id=pkg.safe_id))
+        log.info(_("Package saved with id {id}").format(id=pkg.safe_id))
 
         app.reload()
         app.packages.append(pkg)
