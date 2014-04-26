@@ -25,10 +25,10 @@ from upaas.inet import local_ipv4_addresses
 from upaas.processes import is_pid_running
 
 from upaas_admin.config import load_main_config
-from upaas_admin.apps.applications.constants import Flags
+from upaas_admin.apps.applications.constants import NeedsBuildingFlag
 from upaas_admin.apps.applications.models import ApplicationFlag, Package
 from upaas_admin.apps.servers.models import BackendServer
-from upaas_admin.apps.tasks.models import MongoLogHandler, TaskDetails
+from upaas_admin.apps.tasks.models import MongoLogHandler, Task
 from upaas_admin.apps.tasks.constants import TaskStatus
 
 
@@ -103,10 +103,10 @@ class Command(NoArgsCommand):
                 app = flag.application
                 self.app_name = app.name
                 current_package = app.current_package
-                force_fresh = flag.options.get(Flags.build_fresh_package,
-                                               False)
+                force_fresh = flag.options.get(
+                    NeedsBuildingFlag.Options.build_fresh_package, False)
                 interpreter_version = flag.options.get(
-                    Flags.build_interpreter_version)
+                    NeedsBuildingFlag.Options.build_interpreter_version)
 
                 system_filename = None
                 current_revision = None
@@ -118,8 +118,8 @@ class Command(NoArgsCommand):
                 log.info(_("Building new package for {name} [{id}]").format(
                     name=app.name, id=app.safe_id))
 
-                task = TaskDetails(backend=self.backend, pid=self.pid,
-                                   flag=flag.name, application=app)
+                task = Task(backend=self.backend, pid=self.pid, flag=flag.name,
+                            title=flag.title, application=app)
                 task.save()
                 self.add_logger(task)
 
@@ -222,12 +222,12 @@ class Command(NoArgsCommand):
         """
         ApplicationFlag.objects(
             pending__ne=False,
-            name=Flags.needs_building).update_one(
+            name=NeedsBuildingFlag.name).update_one(
                 set__pending=False,
                 set__locked_since=datetime.now(),
                 set__locked_by_backend=self.backend,
                 set__locked_by_pid=self.pid)
-        return ApplicationFlag.objects(name=Flags.needs_building,
+        return ApplicationFlag.objects(name=NeedsBuildingFlag.name,
                                        locked_by_backend=self.backend,
                                        pending=False).first()
 

@@ -36,9 +36,10 @@ from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.scheduler.base import select_best_backends
-from upaas_admin.apps.tasks.constants import TaskStatus, ACTIVE_TASK_STATUSES
-from upaas_admin.apps.tasks.models import TaskDetails
-from upaas_admin.apps.applications.constants import Flags
+from upaas_admin.apps.tasks.constants import TaskStatus
+from upaas_admin.apps.tasks.models import Task
+from upaas_admin.apps.applications.constants import (NeedsBuildingFlag,
+                                                     FLAGS_BY_NAME)
 
 
 log = logging.getLogger(__name__)
@@ -410,6 +411,10 @@ class ApplicationFlag(Document):
     locked_by_backend = ReferenceField(BackendServer)
     locked_by_pid = IntField()
 
+    @property
+    def title(self):
+        return FLAGS_BY_NAME.get(self.name).title
+
 
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
@@ -511,14 +516,7 @@ class Application(Document):
         """
         List of all tasks for this application.
         """
-        return TaskDetails.objects(application=self)
-
-    @property
-    def active_tasks(self):
-        """
-        List of all active (pending or running) application tasks.
-        """
-        return self.tasks.filter(status__in=ACTIVE_TASK_STATUSES)
+        return Task.objects(application=self)
 
     @property
     def running_tasks(self):
@@ -532,22 +530,7 @@ class Application(Document):
         """
         List of all build tasks for this application.
         """
-        return self.tasks.filter(flag=Flags.needs_building)
-
-    @property
-    def active_build_tasks(self):
-        """
-        List of all active (pending or running) build tasks for this
-        application.
-        """
-        return self.build_tasks.filter(status__in=ACTIVE_TASK_STATUSES)
-
-    @property
-    def pending_build_tasks(self):
-        """
-        List of pending build tasks for this application.
-        """
-        return self.build_tasks.filter(status=TaskStatus.pending)
+        return self.tasks.filter(flag=NeedsBuildingFlag.name)
 
     @property
     def running_build_tasks(self):
@@ -593,14 +576,16 @@ class Application(Document):
 
     def build_package(self, force_fresh=False, interpreter_version=None):
         q = {
-            'set__options__%s' % Flags.build_fresh_package: force_fresh,
-            'set__options__%s' % Flags.build_interpreter_version:
-                interpreter_version,
+            'set__options__{0:s}'.format(
+                NeedsBuildingFlag.Options.build_fresh_package): force_fresh,
+            'set__options__{0:s}'.format(
+                NeedsBuildingFlag.Options.build_interpreter_version):
+                    interpreter_version,
             'unset__pending': True,
             'upsert': True
         }
         ApplicationFlag.objects(application=self,
-                                name=Flags.needs_building).update_one(**q)
+                                name=NeedsBuildingFlag.name).update_one(**q)
 
     def start_application(self):
         # FIXME check if application can start (running apps limit)

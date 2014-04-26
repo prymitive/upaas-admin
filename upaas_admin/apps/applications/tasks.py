@@ -7,23 +7,7 @@
 
 from __future__ import unicode_literals
 
-import os
 import logging
-from socket import gethostname
-
-from mongoengine import StringField, ReferenceField, BooleanField
-
-from django.utils.translation import ugettext_lazy as _
-
-from upaas.config.metadata import MetadataConfig
-from upaas.builder.builder import Builder
-from upaas.builder import exceptions
-from upaas.config.base import ConfigurationError
-
-from upaas_admin.config import load_main_config
-from upaas_admin.apps.applications.exceptions import UnpackError
-from upaas_admin.apps.applications.models import Package
-from upaas_admin.apps.tasks.registry import register
 
 
 log = logging.getLogger(__name__)
@@ -211,4 +195,73 @@ class UpdateVassalTask(ApplicationBackendTask):
             log.warning(_("No run plan for {name}, it was probably "
                           "stopped").format(name=self.application.name))
             yield 100
+
+
+    def wait_until_running(self, timelimit=None):
+        if timelimit is None:
+            timelimit = self.graceful_timeout
+
+        run_plan = self.backend.application_settings(self.application)
+        if not run_plan:
+            return False
+
+        backend_conf = run_plan.backend_settings(self.backend)
+        if backend_conf:
+            ip = str(self.backend.ip)
+            name = self.application.name
+            # FIXME track pid change instead of initial sleep (?)
+            sleep(3)
+            timeout = datetime.now() + timedelta(seconds=timelimit)
+            logged = False
+            while datetime.now() <= timeout:
+                s = fetch_json_stats(ip, backend_conf.stats)
+                if s:
+                    return True
+                if logged:
+                    log.debug(_("Waiting for {name} to start").format(
+                        name=name))
+                else:
+                    log.info(_("Waiting for {name} to start").format(
+                        name=name))
+                    logged = True
+                sleep(2)
+            else:
+                log.error(_("Timeout reached but {name} doesn't appear to be "
+                            "running yet").format(name=name))
+
+        return False
+
+    def wait_until_stopped(self, timelimit=None):
+        if timelimit is None:
+            timelimit = self.graceful_timeout
+
+        run_plan = self.backend.application_settings(self.application)
+        if not run_plan:
+            return False
+
+        backend_conf = run_plan.backend_settings(self.backend)
+        if backend_conf:
+            ip = str(self.backend.ip)
+            name = self.application.name
+            # FIXME track pid change instead of initial sleep (?)
+            sleep(3)
+            timeout = datetime.now() + timedelta(seconds=timelimit)
+            logged = False
+            while datetime.now() <= timeout:
+                s = fetch_json_stats(ip, backend_conf.stats)
+                if not s:
+                    return True
+                if logged:
+                    log.debug(_("Waiting for {name} to stop").format(
+                        name=name))
+                else:
+                    log.info(_("Waiting for {name} to stop").format(
+                        name=name))
+                    logged = True
+                sleep(2)
+            else:
+                log.error(_("Timeout reached but {name} doesn't appear to be "
+                            "stopped yet").format(name=name))
+
+        return False
 '''

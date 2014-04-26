@@ -20,7 +20,6 @@ from upaas_admin.apps.servers.api import (BackendResource, RouterResource)
 from upaas_admin.apps.scheduler.api import RunPlanResource
 
 from upaas_admin.apps.applications.views import IndexView
-from upaas_admin.apps.tasks.registry import tasks_autodiscover
 
 from upaas_admin.apps.users.forms import (UserPasswordChangeForm,
                                           UserPasswordSetForm)
@@ -32,9 +31,6 @@ v1_api.register(PackageResource())
 v1_api.register(BackendResource())
 v1_api.register(RouterResource())
 v1_api.register(RunPlanResource())
-
-
-tasks_autodiscover()
 
 
 handler400 = 'upaas_admin.common.handlers.bad_request'

@@ -5,13 +5,32 @@
 """
 
 
-class Flags:
+from __future__ import unicode_literals
 
-    needs_building = 'NEEDS_BUILDING'
-    is_building = 'IS_BUILDING'
-    build_fresh_package = 'BUILD_FRESH_PACKAGE'
-    build_interpreter_version = 'BUILD_INTERPRETER_VERSION'
+from django.utils.translation import ugettext_lazy as _
 
-    # instance management flags
-    needs_stopping = 'NEEDS_STOPPING'
-    needs_restart = 'NEEDS_RESTART'
+
+class NeedsBuildingFlag:
+    name = 'NEEDS_BUILDING'
+    title = _('Building package')
+
+    class Options:
+        build_fresh_package = 'BUILD_FRESH_PACKAGE'
+        build_interpreter_version = 'BUILD_INTERPRETER_VERSION'
+
+
+class NeedsStoppingFlag:
+    name = 'NEEDS_STOPPING'
+    title = _('Stopping application')
+
+
+class NeedsRestartFlag:
+    name = 'NEEDS_RESTART'
+    title = _('Restarting application')
+
+
+FLAGS_BY_NAME = {
+    NeedsBuildingFlag.name: NeedsBuildingFlag,
+    NeedsStoppingFlag.name: NeedsStoppingFlag,
+    NeedsRestartFlag.name: NeedsRestartFlag,
+}

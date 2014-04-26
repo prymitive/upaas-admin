@@ -32,16 +32,12 @@
       $('#stats-container').html(instances.join('\n'));
     }
 
-    function update_instances() {
-      Dajaxice.upaas_admin.apps.applications.instances(instances_callback, {
-        "app_id":"{{ app.safe_id }}"
-      });
-    }
+    // FIXME migrate to backbone
 
-    $(document).ready(function(){
-      window.setTimeout(update_instances, 300);
-      window.setInterval(update_instances, 3000);
-    });
+    //$(document).ready(function(){
+    //  window.setTimeout(update_instances, 300);
+    //  window.setInterval(update_instances, 3000);
+    //});
 
 
 - block haml_templates

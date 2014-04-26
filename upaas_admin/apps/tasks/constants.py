@@ -23,7 +23,3 @@ class TaskStatus:
 
 
 STATUS_CHOICES = (TaskStatus.running, TaskStatus.successful, TaskStatus.failed)
-
-
-ACTIVE_TASK_STATUSES = (TaskStatus.running,)
-FINISHED_TASKS_STATUSES = (TaskStatus.failed, TaskStatus.successful)

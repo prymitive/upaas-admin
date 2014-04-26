@@ -84,17 +84,17 @@
       }
     }
 
-    function update_messages() {
-      Dajaxice.upaas_admin.apps.applications.task_messages(messages_callback, {
-        "task_id":"{{ task.safe_id }}",
-        "offset": offset
-      });
-    }
+    //function update_messages() {
+    //  Dajaxice.upaas_admin.apps.applications.task_messages(messages_callback, {
+    //    "task_id":"{{ task.safe_id }}",
+    //    "offset": offset
+    //  });
+    //}
 
-    $(document).ready(function(){
-      window.setTimeout(update_messages, 1000);
-      timer = window.setInterval(update_messages, 3000);
-    });
+    //$(document).ready(function(){
+    //  window.setTimeout(update_messages, 1000);
+    //  timer = window.setInterval(update_messages, 3000);
+    //});
 
 
 - block haml_templates
