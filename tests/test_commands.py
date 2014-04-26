@@ -30,6 +30,16 @@ class CommandTest(MongoEngineTestCase):
         self.assertEqual(
             call_command('mule_builder', task_limit=1), None)
 
+    @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
+                             "create_buildable_app")
+    def test_mule_builder_cmd_missing_metadata(self):
+        self.app.metadata = ''
+        self.app.save()
+        self.app.build_package()
+        self.assertNotEqual(self.app.flags, [])
+        self.assertEqual(
+            call_command('mule_builder', task_limit=1), None)
+
     def test_create_user_cmd(self):
         from upaas_admin.apps.users.models import User
         self.assertEqual(call_command('create_user', login='mylogin',
