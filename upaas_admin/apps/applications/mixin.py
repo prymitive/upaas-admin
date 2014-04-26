@@ -12,7 +12,7 @@ from django.core.urlresolvers import reverse
 
 from upaas_admin.apps.applications.models import (Application, Package,
                                                   ApplicationDomain)
-from upaas_admin.apps.tasks.base import ApplicationTask
+from upaas_admin.apps.tasks.models import Task
 from upaas_admin.common.mixin import (LoginRequiredMixin, AppTemplatesDirMixin,
                                       MongoDetailView)
 
@@ -41,7 +41,7 @@ class OwnedAppTasksMixin(object):
     """
 
     def get_queryset(self):
-        return ApplicationTask.objects(
+        return Task.objects(
             application__in=self.request.user.applications)
 
 

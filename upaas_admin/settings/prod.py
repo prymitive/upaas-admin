@@ -71,7 +71,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'mongoengine.django.mongo_auth',
     'djangojs',
-    'dajaxice',
     'pipeline',
     'crispy_forms',
     'django_bootstrap_breadcrumbs',
@@ -117,15 +116,6 @@ MEDIA_ROOT = os.path.join(VAR_ROOT, 'uploads')
 
 STATICFILES_DIRS = (
     os.path.join(PROJECT_DIR, 'static'),
-)
-
-
-# =============================================================================
-# Static files
-# =============================================================================
-
-STATICFILES_FINDERS += (
-    'dajaxice.finders.DajaxiceFinder',
 )
 
 
@@ -257,6 +247,9 @@ PIPELINE_JS = {
             'underscore/underscore.string.min.js',
             'haml/haml.min.js',
             'tabdrop/bootstrap-tabdrop.js',
+            'backbone/backbone-min.js',
+            'backbone/backbone-tastypie.js',
+            'backbone/backbone.poller.min.js',
             'upaas/js/base/*.js',
         ),
         'output_filename': 'js/base.js',
@@ -305,8 +298,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': "[pid: %(process)s] %(levelname)s "
-                      "[%(name)s:%(lineno)s] %(message)s",
+            'format': "[pid:%(process)s] %(levelname)s: %(message)s",
             'datefmt': "%d/%b/%Y %H:%M:%S"
         },
     },

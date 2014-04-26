@@ -13,17 +13,10 @@
 
 - block app_content
 
-  - if app.pending_build_tasks
-    %h3.text-center
-      - trans "Build task is already queued"
-      - include "partials/button_go_back.html"
+  .well
 
-  - else
+    %p
+      - trans "Forcing fresh package will result in package created from scratch, using empty system image."
+      - trans "All required system packages will be reinstalled."
 
-    .well
-
-      %p
-        - trans "Forcing fresh package will result in package created from scratch, using empty system image."
-        - trans "All required system packages will be reinstalled."
-
-      - crispy form
+    - crispy form

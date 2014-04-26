@@ -143,7 +143,7 @@
         tz: "{{ TIME_ZONE }}",
         from: moment(start).format("HH:mm_YYYYMMDD"),
         until: moment(end).format("HH:mm_YYYYMMDD"),
-        bgcolor: window.UPAAS.rgb_to_hex($('#graph-placeholder').css('background-color'))
+        bgcolor: window.UPAAS.utils.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
       $("#graph").graphite(options);
       $('#upaas-stats-refresh-icon').addClass('fa-spin');

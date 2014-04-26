@@ -4,7 +4,6 @@
     :contact: l.mierzwa@gmail.com
 """
 
-
 from __future__ import unicode_literals
 
 import os
@@ -17,8 +16,8 @@ import re
 from copy import deepcopy
 
 from mongoengine import (Document, DateTimeField, StringField, LongField,
-                         ReferenceField, ListField, QuerySetManager,
-                         BooleanField, NULLIFY, signals)
+                         ReferenceField, ListField, DictField, QuerySetManager,
+                         BooleanField, IntField, NULLIFY, signals)
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
@@ -33,13 +32,14 @@ from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import StorageError
 from upaas import processes
 
-from upaas_admin.apps.servers.models import RouterServer
+from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.scheduler.base import select_best_backends
+from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.tasks.models import Task
-from upaas_admin.apps.tasks.base import VirtualTask
-from upaas_admin.apps.tasks.constants import TaskStatus, ACTIVE_TASK_STATUSES
+from upaas_admin.apps.applications.constants import (NeedsBuildingFlag,
+                                                     FLAGS_BY_NAME)
 
 
 log = logging.getLogger(__name__)
@@ -408,13 +408,28 @@ class ApplicationDomain(Document):
         return str(self.id)
 
 
+class ApplicationFlag(Document):
+    application = ReferenceField('Application', dbref=False, required=True)
+    name = StringField(required=True, unique_with='application')
+    options = DictField()
+    pending = BooleanField(default=True, required=True)
+    locked_since = DateTimeField()
+    locked_by_backend = ReferenceField(BackendServer)
+    locked_by_pid = IntField()
+
+    @property
+    def title(self):
+        return FLAGS_BY_NAME.get(self.name).title
+
+
 class Application(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, min_length=2, max_length=60,
                        unique_with='owner', verbose_name=_('name'))
     # FIXME reverse_delete_rule=DENY for owner
     owner = ReferenceField('User', dbref=False, required=True)
-    metadata = StringField(verbose_name=_('Application metadata'))
+    metadata = StringField(verbose_name=_('Application metadata'),
+                           required=True)
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
@@ -424,7 +439,7 @@ class Application(Document):
     meta = {
         'indexes': [
             {'fields': ['name', 'owner'], 'unique': True},
-            {'fields': ['packages']}
+            {'fields': ['packages']},
         ],
         'ordering': ['name'],
     }
@@ -507,21 +522,7 @@ class Application(Document):
         """
         List of all tasks for this application.
         """
-        return Task.find('ApplicationTask', application=self)
-
-    @property
-    def active_tasks(self):
-        """
-        List of all active (pending or running) application tasks.
-        """
-        return self.tasks.filter(status__in=ACTIVE_TASK_STATUSES)
-
-    @property
-    def pending_tasks(self):
-        """
-        List of all pending tasks for this application.
-        """
-        return self.tasks.filter(status=TaskStatus.pending)
+        return Task.objects(application=self)
 
     @property
     def running_tasks(self):
@@ -535,22 +536,7 @@ class Application(Document):
         """
         List of all build tasks for this application.
         """
-        return Task.find('BuildPackageTask', application=self)
-
-    @property
-    def active_build_tasks(self):
-        """
-        List of all active (pending or running) build tasks for this
-        application.
-        """
-        return self.build_tasks.filter(status__in=ACTIVE_TASK_STATUSES)
-
-    @property
-    def pending_build_tasks(self):
-        """
-        List of pending build tasks for this application.
-        """
-        return self.build_tasks.filter(status=TaskStatus.pending)
+        return self.tasks.filter(flag=NeedsBuildingFlag.name)
 
     @property
     def running_build_tasks(self):
@@ -558,6 +544,13 @@ class Application(Document):
         Returns list of running build tasks for this application.
         """
         return self.build_tasks.filter(status=TaskStatus.running)
+
+    @property
+    def flags(self):
+        """
+        Return list of application flags.
+        """
+        return ApplicationFlag.objects(application=self)
 
     @property
     def system_domain(self):
@@ -588,15 +581,17 @@ class Application(Document):
         return reverse('app_details', args=[self.safe_id])
 
     def build_package(self, force_fresh=False, interpreter_version=None):
-        if self.pending_build_tasks:
-            log.info(_("Application {name} is already queued for "
-                       "building").format(name=self.name))
-        else:
-            task = Task.put('BuildPackageTask', application=self,
-                            metadata=self.metadata,
-                            force_fresh=force_fresh,
-                            interpreter_version=interpreter_version)
-            return task
+        q = {
+            'set__options__{0:s}'.format(
+                NeedsBuildingFlag.Options.build_fresh_package): force_fresh,
+            'set__options__{0:s}'.format(
+                NeedsBuildingFlag.Options.build_interpreter_version):
+                    interpreter_version,
+            'unset__pending': True,
+            'upsert': True
+        }
+        ApplicationFlag.objects(application=self,
+                                name=NeedsBuildingFlag.name).update_one(**q)
 
     def start_application(self):
         # FIXME check if application can start (running apps limit)
@@ -614,28 +609,10 @@ class Application(Document):
                 run_plan.delete()
                 return
 
-            kwargs = {}
-            vtask = None
-            if len(backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Starting application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
             run_plan.backends = backends
             run_plan.save()
 
-            tasks = []
-            for backend_conf in backends:
-                log.info(_("Set backend '{backend}' in '{name}' run "
-                           "plan").format(backend=backend_conf.backend.name,
-                                          name=self.name))
-                tasks.append(Task.put('StartApplicationTask',
-                                      backend=backend_conf.backend,
-                                      application=self, limit=1, **kwargs))
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+            # FIXME set start flag ?
 
     def stop_application(self):
         if self.current_package:
@@ -645,45 +622,13 @@ class Application(Document):
                 # no backends in run plan, just delete it
                 self.run_plan.delete()
                 return
-
-            kwargs = {}
-            vtask = None
-            if len(self.run_plan.backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Stopping application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
-            tasks = []
-            for backend_conf in self.run_plan.backends:
-                tasks.append(Task.put('StopApplicationTask',
-                                      backend=backend_conf.backend,
-                                      application=self, limit=1, **kwargs))
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+            # FIXME set stop flag
 
     def upgrade_application(self):
         if self.current_package:
             if not self.run_plan:
                 return
-
-            kwargs = {}
-            vtask = None
-            if len(self.run_plan.backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Upgrading application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
-            tasks = []
-            for backend_conf in self.run_plan.backends:
-                tasks.append(Task.put('UpgradeApplicationTask',
-                                      backend=backend_conf.backend,
-                                      application=self, limit=1, **kwargs))
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+            # FIXME set upgrade flag
 
     def update_application(self):
         if self.run_plan:
@@ -697,15 +642,6 @@ class Application(Document):
                             "available").format(name=self.name))
                 return
 
-            kwargs = {}
-            vtask = None
-            if len(current_backends) > 1 or len(new_backends) > 1:
-                vtask = VirtualTask(
-                    title=_("Updating application {name}").format(
-                        name=self.name))
-                vtask.save()
-                kwargs['parent'] = vtask
-
             tasks = []
             for backend_conf in new_backends:
                 if backend_conf.backend in current_backends:
@@ -713,10 +649,6 @@ class Application(Document):
                     run_plan.update(
                         pull__backends__backend=backend_conf.backend)
                     run_plan.update(push__backends=backend_conf)
-                    tasks.append(Task.put('UpdateVassalTask',
-                                          backend=backend_conf.backend,
-                                          application=self,
-                                          limit=1, **kwargs))
                 else:
                     # add backend to run plan if not already there
                     ApplicationRunPlan.objects(
@@ -724,21 +656,14 @@ class Application(Document):
                         backends__backend__nin=[
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
-                    tasks.append(Task.put('StartApplicationTask',
-                                          backend=backend_conf.backend,
-                                          application=self, limit=1, **kwargs))
 
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
-                    tasks.append(Task.put('StopApplicationTask',
-                                          backend=backend, application=self,
-                                          **kwargs))
-
-            if vtask and len([_f for _f in tasks if _f]) == 0:
-                vtask.delete()
+                    # FIXME set stop flag?
+            # FIXME set update flag?
 
     def trim_package_files(self):
         """

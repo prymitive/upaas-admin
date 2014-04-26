@@ -12,8 +12,6 @@ from django.conf.urls import patterns, include, url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView, TemplateView
 
-from dajaxice.core import dajaxice_autodiscover, dajaxice_config
-
 from tastypie.api import Api
 
 from upaas_admin.apps.applications.api import (ApplicationResource,
@@ -22,10 +20,10 @@ from upaas_admin.apps.servers.api import (BackendResource, RouterResource)
 from upaas_admin.apps.scheduler.api import RunPlanResource
 
 from upaas_admin.apps.applications.views import IndexView
-from upaas_admin.apps.tasks.registry import tasks_autodiscover
 
 from upaas_admin.apps.users.forms import (UserPasswordChangeForm,
                                           UserPasswordSetForm)
+from upaas_admin.apps.tasks.api import TaskResource
 
 
 v1_api = Api(api_name='v1')
@@ -34,11 +32,7 @@ v1_api.register(PackageResource())
 v1_api.register(BackendResource())
 v1_api.register(RouterResource())
 v1_api.register(RunPlanResource())
-
-
-dajaxice_autodiscover()
-
-tasks_autodiscover()
+v1_api.register(TaskResource())
 
 
 handler400 = 'upaas_admin.common.handlers.bad_request'
@@ -84,7 +78,6 @@ urlpatterns = patterns(
         name='password_reset_complete'),
 
     url(r'^djs/', include('djangojs.urls')),
-    url(dajaxice_config.dajaxice_url, include('dajaxice.urls')),
 
     (r'^api/', include(v1_api.urls)),
 

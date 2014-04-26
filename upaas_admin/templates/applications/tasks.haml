@@ -21,17 +21,12 @@
       - for task in tasks
         %tr{'id':'={ task.safe_id }', 'class':'{% if task.is_active %}upaas-task-active {% endif %}{% if task.status == task_statuses.failed %}danger{% elif task.status == task_statuses.successful %}success{% elif task.status == task_statuses.running %}active{% endif %}'}
           %td
-            - if task.is_pending
-              %i.upaas-help-tooltip{'class':'={ task.icon_class }', 'title':'{% trans "Task is waiting to be started" %}'}
-            - else
-              %i{'class':'={ task.icon_class }'}
+            %i{'class':'={ task.icon_class }'}
           %td
             %a{'href':'{% url "app_task_details" task.safe_id %}'}
               = task.date_created
           %td
             = task.title
-            - if task.parent
-              %i.upaas-help-tooltip.pull-right.fa.fa-sitemap{'title':'{% trans "Task is part of a group of tasks" %}'}
 
       - empty
         %tr

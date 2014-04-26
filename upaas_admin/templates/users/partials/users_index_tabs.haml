@@ -13,6 +13,6 @@
             %span.badge{'class': 'upaas-user-badge-apps{% if not user.applications %} hidden{% endif %}'}
               = user.applications|length
           - if tab.tab_id == 'users_tasks'
-            %span.badge{'class': 'upaas-user-badge-recent_tasks{% if not user.recent_tasks %} hidden{% endif %}'}
-              = user.recent_tasks|length
+            %span.badge{'class': 'upaas-user-badge-tasks{% if not user.tasks %} hidden{% endif %}'}
+              = user.tasks|length
   .tab-content

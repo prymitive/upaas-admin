@@ -37,3 +37,29 @@
       - else
         .text-muted
           - trans "None"
+
+    %dt
+      {% trans "Status" %}:
+    %dd
+      - for flag in app.flags
+        %ul
+          %li
+            Name =>
+            = flag.name
+          %li
+            Pending =>
+            = flag.pending
+          %li
+            Options =>
+            = flag.options
+          %li
+            Locked since =>
+            = flag.locked_since
+          %li
+            Locked by backend =>
+            = flag.locked_by_backend
+          %li
+            Locked by pid =>
+            = flag.locked_by_pid
+        %hr
+

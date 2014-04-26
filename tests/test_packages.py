@@ -145,6 +145,7 @@ class PackageTest(MongoEngineTestCase):
         resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
+        self.assertNotEqual(self.app.run_plan.backends, [])
         config = self.pkg.generate_uwsgi_config(self.app.run_plan.backends[0])
         self.assertNotEqual(config, [])
         self.assertTrue('[uwsgi]' in config)
@@ -163,6 +164,7 @@ class PackageTest(MongoEngineTestCase):
         resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
         self.assertEqual(resp.status_code, 302)
         self.app.reload()
+        self.assertNotEqual(self.app.run_plan.backends, [])
         self.pkg.save_vassal_config(self.app.run_plan.backends[0])
         ini_path = '/tmp/%s.ini' % self.app.safe_id
         self.assertEqual(os.path.isfile(ini_path), True)

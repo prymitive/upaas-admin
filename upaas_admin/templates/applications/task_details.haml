@@ -18,7 +18,7 @@
   .progress.upaas-task-details-progressbar.active.progress-striped
     #task-progress.progress-bar{'role':'progressbar', 'aria-valuenow':'{{ task.progress }}', 'aria-valuemin':'0', 'aria-valuemax':'100', 'style':'width: {{ task.progress }}%;'}
 
-  .upaas-messages-table-area
+  .upaas-messages-table-area.small
     %table#upaas-task-messages-table.table.table-striped.table-condensed
       %thead
         %tr
@@ -84,17 +84,17 @@
       }
     }
 
-    function update_messages() {
-      Dajaxice.upaas_admin.apps.applications.task_messages(messages_callback, {
-        "task_id":"{{ task.safe_id }}",
-        "offset": offset
-      });
-    }
+    //function update_messages() {
+    //  Dajaxice.upaas_admin.apps.applications.task_messages(messages_callback, {
+    //    "task_id":"{{ task.safe_id }}",
+    //    "offset": offset
+    //  });
+    //}
 
-    $(document).ready(function(){
-      window.setTimeout(update_messages, 1000);
-      timer = window.setInterval(update_messages, 3000);
-    });
+    //$(document).ready(function(){
+    //  window.setTimeout(update_messages, 1000);
+    //  timer = window.setInterval(update_messages, 3000);
+    //});
 
 
 - block haml_templates
