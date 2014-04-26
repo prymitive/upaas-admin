@@ -16,6 +16,8 @@ from socket import gethostname
 
 from IPy import IP
 
+from optparse import make_option
+
 from django.core.management.base import NoArgsCommand
 from django.utils.translation import ugettext as _
 
@@ -37,9 +39,16 @@ log = logging.getLogger(__name__)
 
 class Command(NoArgsCommand):
 
+    option_list = NoArgsCommand.option_list + (
+        make_option('--task-limit', dest='task_limit', type=int, default=0,
+                    help=_('Exit after processing given number of tasks '
+                           '(default is no limit)')),
+    )
+
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
         self.is_exiting = False
+        self.tasks_done = 0
         self.cleanup()
         self.pid = getpid()
         self.register_backend()
@@ -85,8 +94,15 @@ class Command(NoArgsCommand):
                     signal.SIGQUIT]:
             signal.signal(sig, self.mark_exiting)
 
-        log.info(_("Builder mule ready, waiting for tasks"))
+        task_limit = options['task_limit']
+        log.info(_("Builder mule ready, waiting for tasks (limit: "
+                   "{task_limit})").format(task_limit=task_limit))
         while True:
+            if task_limit and self.tasks_done >= task_limit:
+                log.info(_('Task limit reached {task_limit}, exiting').format(
+                    task_limit=task_limit))
+                self.is_exiting = True
+
             if self.is_exiting:
                 return
 
@@ -108,6 +124,8 @@ class Command(NoArgsCommand):
                                     set__date_finished=datetime.now())
                             self.unlock_flag(flag)
                             continue
+
+                self.tasks_done += 1
 
                 app = flag.application
                 self.app_name = app.name
@@ -181,6 +199,8 @@ class Command(NoArgsCommand):
 
                 log.info(_("Building completed for {name} [{id}]").format(
                     name=app.name, id=app.safe_id))
+                log.info(_("Tasks done: {tasks_done} / {task_limit}").format(
+                    tasks_done=self.tasks_done, task_limit=task_limit))
             else:
                 sleep(2)
 
