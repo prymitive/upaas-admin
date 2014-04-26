@@ -108,8 +108,9 @@ window.UPAAS.tasks.RunningTasks.bind('remove', window.UPAAS.tasks.parse_removed_
 //= Init =======================================================================
 
 window.UPAAS.tasks.init = function() {
-    window.UPAAS.tasks.task_poller = Backbone.Poller.get(window.UPAAS.tasks.Tasks);
-    window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
+    // TODO enable once there is some use of it
+    //window.UPAAS.tasks.task_poller = Backbone.Poller.get(window.UPAAS.tasks.Tasks);
+    //window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
 
     window.UPAAS.tasks.running_task_poller = Backbone.Poller.get(window.UPAAS.tasks.RunningTasks);
     window.UPAAS.tasks.running_task_poller.set({delay: 5000}).start();
