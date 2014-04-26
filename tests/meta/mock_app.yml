@@ -1,17 +1,3 @@
-os:
-  Debian: &debian
-    packages:
-      - git-core
-      - rake
-      - libpq-dev
-      - libmysqlclient-dev
-      - libsqlite3-dev
-      - imagemagick
-      - libmagickcore-dev
-      - libmagickwand-dev
-  Ubuntu: *debian
-
-
 interpreter:
   type: ruby
   versions:

@@ -128,7 +128,6 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(flag.options.get(
             NeedsBuildingFlag.Options.build_interpreter_version), None)
 
-
     @pytest.mark.usefixtures("create_pkg")
     def test_build_package_forced_version_post(self):
         self.login_as_user()
@@ -453,10 +452,6 @@ class ApplicationTest(MongoEngineTestCase):
         self.assertEqual(self.user.limits_usage['workers'], 4)
 
         self.assertEqual(self.user.running_applications, [self.app])
-
-        # FIXME
-        # self.assertEqual(len(self.user.tasks), 1)
-        # self.assertEqual(len(self.user.recent_tasks), 1)
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 406)

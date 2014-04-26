@@ -10,7 +10,6 @@ from __future__ import unicode_literals
 import pytest
 
 from django.core.management import call_command
-from django.core.urlresolvers import reverse
 
 from upaas_admin.common.tests import MongoEngineTestCase
 
@@ -18,27 +17,13 @@ from upaas_admin.common.tests import MongoEngineTestCase
 GETPASS_TRY = 0
 
 
-class AdminTest(MongoEngineTestCase):
+class CommandTest(MongoEngineTestCase):
 
     def test_create_indexes_cmd(self):
         self.assertEqual(call_command('create_indexes'), None)
 
-# FIXME
-#    @pytest.mark.usefixtures("create_pkg", "create_backend")
-#    def test_backend_worker_cmd(self):
-#        self.login_as_user()
-#        url = reverse('app_start', args=[self.app.safe_id])
-#        resp = self.client.post(url, {'workers_min': 1, 'workers_max': 4})
-#        self.assertEqual(resp.status_code, 302)
-#        self.app.reload()
-#        self.assertNotEqual(self.app.run_plan, None)
-#        self.assertNotEqual(self.app.pending_tasks, [])
-#
-#        self.assertEqual(
-#            call_command('backend_worker', task_limit=1), None)
-#
-
-    @pytest.mark.usefixtures("create_app")
+    @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
+                             "create_buildable_app")
     def test_mule_builder_cmd(self):
         self.app.build_package()
         self.assertNotEqual(self.app.flags, [])

@@ -161,6 +161,8 @@ def create_app(request):
             domain.delete()
         for pkg in app.packages:
             pkg.delete()
+        for flag in app.flags:
+            flag.delete()
         app.delete()
     request.addfinalizer(cleanup)
 
@@ -196,6 +198,8 @@ def create_buildable_app(request):
             domain.delete()
         for pkg in app.packages:
             pkg.delete()
+        for flag in app.flags:
+            flag.delete()
         app.delete()
     request.addfinalizer(cleanup)
 

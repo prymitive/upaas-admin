@@ -417,6 +417,15 @@ class ApplicationFlag(Document):
     locked_by_backend = ReferenceField(BackendServer)
     locked_by_pid = IntField()
 
+    meta = {
+        'indexes': [
+            {'fields': ['name', 'application'], 'unique': True},
+            {'fields': ['name']},
+            {'fields': ['pending']},
+            {'fields': ['locked_by_backend', 'locked_by_pid']},
+        ]
+    }
+
     @property
     def title(self):
         return FLAGS_BY_NAME.get(self.name).title
