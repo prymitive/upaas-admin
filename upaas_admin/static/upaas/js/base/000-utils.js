@@ -39,3 +39,14 @@ window.UPAAS.utils.update_badge = function(id, value) {
         $(id).text('').addClass('hidden');
     }
 }
+
+
+window.UPAAS.utils.bind_backbone = function(what, callback_fn, exclude) {
+    var events = ['add', 'remove', 'reset', 'change', 'destroy'];
+    var excluded = exclude || [];
+    jQuery.each(events, function(i, event) {
+        if (jQuery.inArray(event, excluded) == -1) {
+            what.bind(event, callback_fn);
+        }
+    });
+}

@@ -83,6 +83,12 @@ class Task(Document):
     backend = ReferenceField(BackendServer, reverse_delete_rule=NULLIFY)
     pid = IntField(required=True)
 
+    meta = {
+        'ordering': ['-date_finished', '-date_created'],
+        'indexes': ['id', 'date_created', 'date_finished', 'application',
+                    'flag', 'status'],
+    }
+
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
         self.log_handler = None

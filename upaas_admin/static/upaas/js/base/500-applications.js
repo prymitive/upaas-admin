@@ -9,25 +9,6 @@ window.UPAAS.applications = window.UPAAS.applications || {};
 
 
 window.UPAAS.apps_updates_callback = function (data) {
-    $('#upaas-tasks-badge').text(data.tasks.running);
-
-    // update apps badges
-    $.each(data.apps.list, function (i, app) {
-        window.UPAAS.update_badge('.upaas-app-' + app.id + '-badge-packages', app.packages);
-        window.UPAAS.update_badge('.upaas-app-' + app.id + '-badge-instances', app.instances);
-        window.UPAAS.update_badge('.upaas-app-' + app.id + '-badge-tasks', app.active_tasks.length);
-        window.UPAAS.update_badge('.upaas-user-badge-apps', data.apps.list.length);
-        window.UPAAS.update_badge('.upaas-user-badge-recent_tasks', data.tasks.recent);
-    });
-
-    if (data.tasks.running > 0) {
-        if ($('#upaas-tasks-badge').hasClass('active') == false) {
-            $('#upaas-tasks-badge').addClass('active');
-        }
-    } else {
-        $('#upaas-tasks-badge').removeClass('active');
-    }
-
     var menu = new Array();
 
     if (data.tasks.list.length > 0) {
@@ -84,13 +65,15 @@ window.UPAAS.applications.Applications = new window.UPAAS.applications.Applicati
 
 window.UPAAS.applications.parse_updates = function(data) {
     window.UPAAS.utils.update_badge('.upaas-user-badge-apps', data.collection.length);
-}
 
-window.UPAAS.applications.Applications.bind('add', window.UPAAS.applications.parse_updates);
-window.UPAAS.applications.Applications.bind('remove', window.UPAAS.applications.parse_updates);
-window.UPAAS.applications.Applications.bind('reset', window.UPAAS.applications.parse_updates);
-window.UPAAS.applications.Applications.bind('change', window.UPAAS.applications.parse_updates);
-window.UPAAS.applications.Applications.bind('destroy', window.UPAAS.applications.parse_updates);
+    // update apps badges
+    $.each(data.collection.models, function (i, app) {
+        window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-packages', app.attributes.packages.length);
+        window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-tasks', app.attributes.running_tasks.length);
+        //window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-instances', app.attributes.instances); // TODO
+    });
+}
+window.UPAAS.utils.bind_backbone(window.UPAAS.applications.Applications, window.UPAAS.applications.parse_updates);
 
 
 //= Packages ===================================================================

@@ -23,6 +23,7 @@ from upaas_admin.apps.applications.views import IndexView
 
 from upaas_admin.apps.users.forms import (UserPasswordChangeForm,
                                           UserPasswordSetForm)
+from upaas_admin.apps.tasks.api import TaskResource
 
 
 v1_api = Api(api_name='v1')
@@ -31,6 +32,7 @@ v1_api.register(PackageResource())
 v1_api.register(BackendResource())
 v1_api.register(RouterResource())
 v1_api.register(RunPlanResource())
+v1_api.register(TaskResource())
 
 
 handler400 = 'upaas_admin.common.handlers.bad_request'

@@ -17,6 +17,7 @@ from django.conf.urls import url
 from django.utils.translation import ugettext_lazy as _
 
 from tastypie_mongoengine.resources import MongoEngineResource
+from tastypie_mongoengine.fields import ReferenceField, ReferencedListField
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
@@ -26,17 +27,26 @@ from tastypie.utils import trailing_slash
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
 
-
 log = logging.getLogger(__name__)
 
 
 class ApplicationResource(MongoEngineResource):
 
+    current_package = ReferenceField(
+        'upaas_admin.apps.applications.api.PackageResource', 'current_package',
+        full=True, null=True)
+    packages = ReferencedListField(
+        'upaas_admin.apps.applications.api.PackageResource', 'packages',
+        null=True)
+    tasks = ReferencedListField('upaas_admin.apps.tasks.api.TaskResource',
+                                'tasks', null=True)
+    running_tasks = ReferencedListField(
+        'upaas_admin.apps.tasks.api.TaskResource', 'running_tasks', null=True)
+
     class Meta:
         always_return_data = True
         queryset = Application.objects.all()
         resource_name = 'application'
-        excludes = ['current_package', 'packages']
         filtering = {
             'id': ALL,
             'name': ALL,
@@ -48,10 +58,6 @@ class ApplicationResource(MongoEngineResource):
     def __init__(self, *args, **kwargs):
         super(ApplicationResource, self).__init__(*args, **kwargs)
         self.fields['owner'].readonly = True
-
-    def dehydrate(self, bundle):
-        bundle.data['packages'] = len(bundle.obj.packages)
-        return bundle
 
     def obj_create(self, bundle, request=None, **kwargs):
         log.debug(_("Going to create new application for user "
@@ -182,6 +188,9 @@ class ApplicationResource(MongoEngineResource):
 
 
 class PackageResource(MongoEngineResource):
+
+    application = ReferenceField(
+        'upaas_admin.apps.applications.api.ApplicationResource', 'application')
 
     class Meta:
         always_return_data = True

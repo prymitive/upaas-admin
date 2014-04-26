@@ -72,7 +72,8 @@ class Command(NoArgsCommand):
         flag.delete()
         self.remove_logger()
         self.cleanup()
-        task.update(set__status=TaskStatus.failed)
+        task.update(set__status=TaskStatus.failed,
+                    set__date_finished=datetime.now())
         log.error(_("Building completed for {name} [{id}]").format(
             name=task.application.name, id=task.application.safe_id))
 
@@ -97,6 +98,14 @@ class Command(NoArgsCommand):
                             log.warning(_("Found flag locked by non-existing "
                                           "PID {pid}").format(
                                 pid=flag.locked_by_pid))
+                            flag_task = Task.objects(
+                                pid=flag.locked_by_pid,
+                                backend=flag.locked_by_backend,
+                                status=TaskStatus.running).first()
+                            if flag_task:
+                                flag_task.update(
+                                    set__status=TaskStatus.failed,
+                                    set__date_finished=datetime.now())
                             self.unlock_flag(flag)
                             continue
 

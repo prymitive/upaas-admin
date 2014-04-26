@@ -23,5 +23,6 @@ $(document).ready(function(){
 
     if (Django.user.is_authenticated) {
         window.UPAAS.applications.init();
+        window.UPAAS.tasks.init();
     }
 });

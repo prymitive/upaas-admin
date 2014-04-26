@@ -11,7 +11,6 @@ import hmac
 import uuid
 import hashlib
 import logging
-from datetime import datetime, timedelta
 
 from mongoengine.queryset import QuerySetManager
 from mongoengine.django.auth import User as MongoUser
@@ -20,7 +19,6 @@ from mongoengine import signals, Q
 
 from upaas_admin.apps.scheduler.models import UserLimits, ApplicationRunPlan
 from upaas_admin.apps.applications.models import Application, Task
-from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 log = logging.getLogger(__name__)
@@ -104,12 +102,6 @@ class User(MongoUser):
         List of all tasks for this application.
         """
         return Task.objects(application__in=self.applications)
-
-    @property
-    def recent_tasks(self):
-        return self.tasks.filter(
-            Q(status=TaskStatus.running) |
-            Q(date_finished__gte=datetime.now() - timedelta(seconds=3600)))
 
     @staticmethod
     def has_usable_password():
