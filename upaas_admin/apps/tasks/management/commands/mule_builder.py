@@ -169,15 +169,14 @@ class Command(NoArgsCommand):
                 except BuildError:
                     self.fail(flag, task)
                     continue
-                else:
-                    self.create_package(app, metadata_obj, metadata,
-                                        build_result, current_package)
 
+                self.remove_logger()
+                self.create_package(app, metadata_obj, metadata, build_result,
+                                    current_package)
                 flag.reload()
                 if not flag.pending:
                     flag.delete()
                 task.update(set__status=TaskStatus.successful)
-                self.remove_logger()
                 self.cleanup()
 
                 log.info(_("Building completed for {name} [{id}]").format(
@@ -187,7 +186,7 @@ class Command(NoArgsCommand):
 
     def create_package(self, app, metadata_obj, metadata, build_result,
                        parent_package):
-        log.info("Building completed")
+        log.info("Building completed, creating package")
         pkg = Package(metadata=metadata,
                       application=app,
                       interpreter_name=metadata_obj.interpreter.type,
