@@ -249,7 +249,7 @@ class Command(NoArgsCommand):
         """
         ApplicationFlag.objects(
             pending__ne=False,
-            name=NeedsBuildingFlag.name).order_by('date_created').update_one(
+            name=NeedsBuildingFlag.name).order_by('-date_created').update_one(
                 set__pending=False,
                 set__locked_since=datetime.now(),
                 set__locked_by_backend=self.backend,
