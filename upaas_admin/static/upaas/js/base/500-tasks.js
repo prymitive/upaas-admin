@@ -79,7 +79,6 @@ window.UPAAS.tasks.update_task_menu_badge = function(task) {
         $('#upaas-tasks-menu-li-dummy').hide();
     } else {
         $('#upaas-tasks-badge').removeClass('active');
-        $('#upaas-tasks-menu-li-dummy').show();
     }
 }
 
@@ -99,6 +98,9 @@ window.UPAAS.tasks.parse_removed_running_task = function(data) {
         $('#upaas-task-menu-item-' + task.attributes.id).remove();
         $('#upaas-task-menu-divider-' + task.attributes.id).remove();
         $('#upaas-tasks-menu').children('li').not('#upaas-tasks-menu-li-dummy').first().filter('.divider').remove();
+        if ($('#upaas-tasks-menu').children('li').not('#upaas-tasks-menu-li-dummy').length == 0) {
+            $('#upaas-tasks-menu-li-dummy').show();
+        }
     }, 60*1000);
 }
 
@@ -108,9 +110,8 @@ window.UPAAS.tasks.RunningTasks.bind('remove', window.UPAAS.tasks.parse_removed_
 //= Init =======================================================================
 
 window.UPAAS.tasks.init = function() {
-    // TODO enable once there is some use of it
-    //window.UPAAS.tasks.task_poller = Backbone.Poller.get(window.UPAAS.tasks.Tasks);
-    //window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
+    window.UPAAS.tasks.task_poller = Backbone.Poller.get(window.UPAAS.tasks.Tasks);
+    window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
 
     window.UPAAS.tasks.running_task_poller = Backbone.Poller.get(window.UPAAS.tasks.RunningTasks);
     window.UPAAS.tasks.running_task_poller.set({delay: 5000}).start();
