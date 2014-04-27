@@ -26,6 +26,7 @@ from tastypie.utils import trailing_slash
 
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.api import ReadOnlyResourceMixin
 
 log = logging.getLogger(__name__)
 
@@ -188,7 +189,7 @@ class ApplicationResource(MongoEngineResource):
             return HttpResponseNotFound(_("No such application"))
 
 
-class PackageResource(MongoEngineResource):
+class PackageResource(MongoEngineResource, ReadOnlyResourceMixin):
 
     application = ReferenceField(
         'upaas_admin.apps.applications.api.ApplicationResource', 'application')
@@ -211,21 +212,3 @@ class PackageResource(MongoEngineResource):
 
     def read_detail(self, object_list, bundle):
         return bundle.obj.application.owner == bundle.request.user
-
-    def create_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
-
-    def create_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
-
-    def update_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
-
-    def update_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
-
-    def delete_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
-
-    def delete_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))

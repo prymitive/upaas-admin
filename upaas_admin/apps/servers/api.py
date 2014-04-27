@@ -16,12 +16,13 @@ from tastypie.authorization import Authorization
 
 from upaas_admin.apps.servers.models import BackendServer, RouterServer
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.api import ReadOnlyResourceMixin
 
 
 log = logging.getLogger(__name__)
 
 
-class BackendResource(MongoEngineResource):
+class BackendResource(MongoEngineResource, ReadOnlyResourceMixin):
 
     class Meta:
         always_return_data = True
@@ -37,7 +38,7 @@ class BackendResource(MongoEngineResource):
         authorization = Authorization()
 
 
-class RouterResource(MongoEngineResource):
+class RouterResource(MongoEngineResource, ReadOnlyResourceMixin):
 
     class Meta:
         always_return_data = True
