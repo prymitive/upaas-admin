@@ -97,6 +97,7 @@ window.UPAAS.tasks.parse_removed_running_task = function(data) {
         $('#upaas-task-menu-header-' + task.attributes.id).remove();
         $('#upaas-task-menu-item-' + task.attributes.id).remove();
         $('#upaas-task-menu-divider-' + task.attributes.id).remove();
+        delete window.UPAAS.tasks.running_task_dict[task.attributes.id];
         $('#upaas-tasks-menu').children('li').not('#upaas-tasks-menu-li-dummy').first().filter('.divider').remove();
         if ($('#upaas-tasks-menu').children('li').not('#upaas-tasks-menu-li-dummy').length == 0) {
             $('#upaas-tasks-menu-li-dummy').show();
