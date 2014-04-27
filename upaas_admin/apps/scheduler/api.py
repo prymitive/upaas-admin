@@ -12,7 +12,7 @@ import logging
 import mongoengine
 
 from django.core import exceptions
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from tastypie_mongoengine.resources import MongoEngineResource
 
@@ -57,8 +57,8 @@ class RunPlanResource(MongoEngineResource):
         app = Application.objects(id=bundle.data['application'],
                                   owner=bundle.request.user).first()
         if not app or not app.current_package:
-            msg = str(_("Can't create new run plan, app not found, or"
-                        " no packages built yet"))
+            msg = _("Can't create new run plan, app not found, or no packages "
+                    "built yet")
             log.warning(msg)
             raise exceptions.ValidationError(msg)
 

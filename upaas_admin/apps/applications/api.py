@@ -34,14 +34,15 @@ class ApplicationResource(MongoEngineResource):
 
     current_package = ReferenceField(
         'upaas_admin.apps.applications.api.PackageResource', 'current_package',
-        full=True, null=True)
+        full=True, null=True, readonly=True)
     packages = ReferencedListField(
         'upaas_admin.apps.applications.api.PackageResource', 'packages',
-        null=True)
+        null=True, readonly=True)
     tasks = ReferencedListField('upaas_admin.apps.tasks.api.TaskResource',
-                                'tasks', null=True)
+                                'tasks', null=True, readonly=True)
     running_tasks = ReferencedListField(
-        'upaas_admin.apps.tasks.api.TaskResource', 'running_tasks', null=True)
+        'upaas_admin.apps.tasks.api.TaskResource', 'running_tasks', null=True,
+        readonly=True)
 
     class Meta:
         always_return_data = True
