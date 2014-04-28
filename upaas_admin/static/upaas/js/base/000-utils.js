@@ -50,3 +50,8 @@ window.UPAAS.utils.bind_backbone = function(what, callback_fn, exclude) {
         }
     });
 }
+
+
+window.UPAAS.utils.update_progress = function(selector, progress) {
+    $(selector).attr('aria-valuenow', progress).attr('style', 'width: ' + progress + '%;');
+}

@@ -2,7 +2,7 @@
   <script type="text/haml-template" id="upaas-haml-template-task-messages">
   - var tr_class = "";
   - var label_class = "label-info";
-  - switch(task.level) {
+  - switch(message.level) {
     - case "WARNING":
       - tr_class = "warning";
       - label_class =  "label-warning";
@@ -14,9 +14,9 @@
   %tr{class: tr_class}
     %td
       .label{class: label_class}
-        = moment(task.timestamp).calendar()
+        = moment(message.timestamp).calendar()
     %td
-      = task.message
+      = message.message
   </script>
 
   <script type="text/haml-template" id="upaas-haml-template-task-no-messages">

@@ -16,7 +16,7 @@
 
 
   .progress.upaas-task-details-progressbar.active.progress-striped
-    #task-progress.progress-bar{'role':'progressbar', 'aria-valuenow':'{{ task.progress }}', 'aria-valuemin':'0', 'aria-valuemax':'100', 'style':'width: {{ task.progress }}%;'}
+    #upaas-task-progress.progress-bar{'role':'progressbar', 'aria-valuenow':'{{ task.progress }}', 'aria-valuemin':'0', 'aria-valuemax':'100', 'style':'width: {{ task.progress }}%;'}
 
   .upaas-messages-table-area.small
     %table#upaas-task-messages-table.table.table-striped.table-condensed
@@ -37,64 +37,34 @@
 - block js_bottom
 
   :javascript
-    var timer;
-    var offset = 0;
-    var progress = {{ task.progress }};
-    var pending = true;
 
-    function messages_callback(data) {
-      if (progress != data.progress) {
-        $('#task-progress').attr('aria-valuenow', data.progress).attr('style', 'width: ' + data.progress + '%;');;
-        progress = data.progress;
-      }
-      if (offset == 0 && data.messages.length > 0) {
-        $('#upaas-task-messages-table tbody').html('');
-      }
+    $(document).ready(function(){
+      var task_id = '{{ task.safe_id }}';
+      window.UPAAS.tasks.Tasks.fetch({async: false});
+      var task = window.UPAAS.tasks.Tasks.where({id: task_id})[0];
 
-      var tasks = new Array();
-      $.each(data.messages, function(i, task) {
-        offset++;
-        tasks.push(
-          haml.compileHaml('upaas-haml-template-task-messages')({
-            task: task
-          })
-        );
+      var collection = window.UPAAS.tasks.create_task_messages_collection(task.get('resource_uri'));
+      var collection_poller = Backbone.Poller.get(collection);
+      collection_poller.set({delay: 3000}).start();
+      collection.bind('sync', window.UPAAS.tasks.parse_task_messages);
+
+      var task_poller = Backbone.Poller.get(task);
+      task_poller.set({delay: 3000}).start();
+      task.bind('change:progress', function(task){
+        window.UPAAS.utils.update_progress('#upaas-task-progress', task.attributes.progress);
+        if (task.attributes.is_finished) {
+          task_poller.stop();
+          collection_poller.stop();
+          $('.upaas-task-details-progressbar').removeClass('active progress-striped');
+          if (task.attributes.is_failed) {
+            $('#task-progress').addClass('progress-bar-danger');
+          }
+          if (task.attributes.is_successful) {
+            $('#task-progress').addClass('progress-bar-success');
+          }
+        }
       });
-      if (tasks.length > 0) {
-        $('#upaas-task-messages-table tbody').append(tasks.join('\n'));
-        $('.upaas-messages-table-area').animate({
-          scrollTop: $('.upaas-messages-table-area').get(0).scrollHeight
-          }, 300);
-      }
-
-      if (data.is_finished) {
-        window.clearInterval(timer);
-        $('.upaas-task-details-progressbar').removeClass('active progress-striped');
-        if (data.is_failed) {
-          $('#task-progress').addClass('progress-bar-danger');
-        }
-        if (data.is_successful) {
-          $('#task-progress').addClass('progress-bar-success');
-        }
-        if (tasks.length == 0) {
-          $('#upaas-task-messages-table tbody').append(
-            haml.compileHaml('upaas-haml-template-task-no-messages')()
-          );
-        }
-      }
-    }
-
-    //function update_messages() {
-    //  Dajaxice.upaas_admin.apps.applications.task_messages(messages_callback, {
-    //    "task_id":"{{ task.safe_id }}",
-    //    "offset": offset
-    //  });
-    //}
-
-    //$(document).ready(function(){
-    //  window.setTimeout(update_messages, 1000);
-    //  timer = window.setInterval(update_messages, 3000);
-    //});
+    });
 
 
 - block haml_templates

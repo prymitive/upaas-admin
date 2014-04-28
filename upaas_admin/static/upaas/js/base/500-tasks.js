@@ -108,6 +108,49 @@ window.UPAAS.tasks.parse_removed_running_task = function(data) {
 window.UPAAS.tasks.RunningTasks.bind('remove', window.UPAAS.tasks.parse_removed_running_task);
 
 
+//= Messages ===================================================================
+
+window.UPAAS.tasks.TaskMessageModel = Backbone.Model.extend({});
+
+
+window.UPAAS.tasks.create_task_messages_collection = function(task_url) {
+    var collection = Backbone.Collection.extend({
+        model: window.UPAAS.tasks.TaskMessageModel,
+        task_url: task_url,
+        offset: 0,
+        url: function() {
+            return this.task_url + 'messages/?format=json&offset=' + this.offset;
+        },
+        update_offset: function() {
+            this.offset = this.offset + this.length;
+        }
+    });
+    return new collection(task_url);
+}
+
+
+window.UPAAS.tasks.parse_task_messages = function(data) {
+    var old_offset = data.offset;
+    data.update_offset();
+    if (data.offset > old_offset) {
+        var messages = new Array();
+        $.each(data.models, function(i, msg) {
+            messages.push(
+                haml.compileHaml('upaas-haml-template-task-messages')({
+                    message: msg.attributes
+                })
+            );
+        });
+        if (messages.length > 0) {
+            $('#upaas-task-messages-table tbody').append(messages.join('\n'));
+            $('.upaas-messages-table-area').animate({
+                scrollTop: $('.upaas-messages-table-area').get(0).scrollHeight
+                }, 300);
+        }
+    }
+}
+
+
 //= Init =======================================================================
 
 window.UPAAS.tasks.init = function() {
