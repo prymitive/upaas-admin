@@ -10,9 +10,10 @@ from __future__ import unicode_literals
 import logging
 
 from django.conf.urls import url
+from django.utils.translation import ugettext_lazy as _
 
 from tastypie_mongoengine.resources import MongoEngineResource
-from tastypie_mongoengine.fields import ReferenceField, EmbeddedListField
+from tastypie_mongoengine.fields import ReferenceField
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
@@ -20,7 +21,7 @@ from tastypie.utils import trailing_slash
 
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
 from upaas_admin.common.api import ReadOnlyResourceMixin
-from upaas_admin.apps.tasks.models import Task, TaskMessage
+from upaas_admin.apps.tasks.models import Task
 
 
 log = logging.getLogger(__name__)
@@ -45,6 +46,15 @@ class TaskResource(MongoEngineResource, ReadOnlyResourceMixin):
         }
         authentication = UpaasApiKeyAuthentication()
         authorization = Authorization()
+
+    def authorized_read_list(self, object_list, bundle):
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
+        return object_list.filter(
+            application__in=bundle.request.user.applications)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
 
     def dehydrate(self, bundle):
         bundle.data['icon_class'] = bundle.obj.icon_class

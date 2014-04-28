@@ -55,3 +55,13 @@ window.UPAAS.utils.bind_backbone = function(what, callback_fn, exclude) {
 window.UPAAS.utils.update_progress = function(selector, progress) {
     $(selector).attr('aria-valuenow', progress).attr('style', 'width: ' + progress + '%;');
 }
+
+
+window.UPAAS.utils.set_progressbar_finished = function(outer_selector, bar_selector, is_successful) {
+    $(outer_selector).removeClass('active progress-striped');
+    if (is_successful) {
+        $(bar_selector).addClass('progress-bar-success');
+    } else {
+        $(bar_selector).addClass('progress-bar-danger');
+    }
+}

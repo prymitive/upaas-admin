@@ -48,22 +48,20 @@
       collection_poller.set({delay: 3000}).start();
       collection.bind('sync', window.UPAAS.tasks.parse_task_messages);
 
-      var task_poller = Backbone.Poller.get(task);
-      task_poller.set({delay: 3000}).start();
-      task.bind('change:progress', function(task){
-        window.UPAAS.utils.update_progress('#upaas-task-progress', task.attributes.progress);
-        if (task.attributes.is_finished) {
-          task_poller.stop();
-          collection_poller.stop();
-          $('.upaas-task-details-progressbar').removeClass('active progress-striped');
-          if (task.attributes.is_failed) {
-            $('#task-progress').addClass('progress-bar-danger');
+      if (task.attributes.is_finished) {
+        window.UPAAS.utils.set_progressbar_finished('.upaas-task-details-progressbar', '#upaas-task-progress', task.attributes.is_successful);
+      } else {
+        var task_poller = Backbone.Poller.get(task);
+        task_poller.set({delay: 3000}).start();
+        task.bind('change:progress', function(task){
+          window.UPAAS.utils.update_progress('#upaas-task-progress', task.attributes.progress);
+          if (task.attributes.is_finished) {
+            task_poller.stop();
+            collection_poller.stop();
+            window.UPAAS.utils.set_progressbar_finished('.upaas-task-details-progressbar', '#upaas-task-progress', task.attributes.is_successful);
           }
-          if (task.attributes.is_successful) {
-            $('#task-progress').addClass('progress-bar-success');
-          }
-        }
-      });
+        });
+      }
     });
 
 
