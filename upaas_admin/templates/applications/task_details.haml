@@ -55,10 +55,12 @@
         task_poller.set({delay: 3000}).start();
         task.bind('change:progress', function(task){
           window.UPAAS.utils.update_progress('#upaas-task-progress', task.attributes.progress);
+        });
+        task.bind('change:is_finished', function(task){
           if (task.attributes.is_finished) {
+            window.UPAAS.utils.set_progressbar_finished('.upaas-task-details-progressbar', '#upaas-task-progress', task.attributes.is_successful);
             task_poller.stop();
             collection_poller.stop();
-            window.UPAAS.utils.set_progressbar_finished('.upaas-task-details-progressbar', '#upaas-task-progress', task.attributes.is_successful);
           }
         });
       }
