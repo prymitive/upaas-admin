@@ -127,6 +127,15 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
                                  data=post_data,
                                  **self.get_apikey_auth(self.user)))
 
+    @pytest.mark.usefixtures("create_app")
+    def test_application_duplicated_name_post(self):
+        post_data = {'name': self.app_data['name'],
+                     'metadata': self.app_data['metadata']}
+        self.assertHttpBadRequest(
+            self.api_client.post('/api/v1/application/', format='json',
+                                 data=post_data,
+                                 **self.get_apikey_auth(self.user)))
+
     @pytest.mark.usefixtures("create_pkg_list")
     def test_package_list_get(self):
         resp = self.api_client.get('/api/v1/package/', format='json',
