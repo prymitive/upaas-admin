@@ -58,12 +58,74 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertValidJSONResponse(resp)
         self.assertEqual(len(self.deserialize(resp)['objects']), 1)
 
+    @pytest.mark.usefixtures("create_pkg")
+    def test_application_detail_get(self):
+        resp = self.api_client.get(
+            '/api/v1/application/%s/' % self.app.safe_id, format='json',
+            **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['name'], self.app.name)
+        self.assertEqual(self.deserialize(resp)['owner'], self.user.username)
+        self.assertEqual(self.deserialize(resp)['current_package']['id'],
+                         self.pkg.safe_id)
+        self.assertKeys(self.deserialize(resp),
+                        ['current_package', 'date_created', 'id', 'metadata',
+                         'name', 'owner', 'packages', 'resource_uri',
+                         'running_tasks', 'tasks'])
+
     @pytest.mark.usefixtures("create_user")
     def test_application_list_empty_get(self):
         resp = self.api_client.get('/api/v1/application/', format='json',
                                    **self.get_apikey_auth(self.user))
         self.assertValidJSONResponse(resp)
         self.assertEqual(len(self.deserialize(resp)['objects']), 0)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_post(self):
+        post_data = {'name': 'testapp1', 'metadata': self.app_data['metadata']}
+        self.assertHttpCreated(
+            self.api_client.post('/api/v1/application/', format='json',
+                                 data=post_data,
+                                 **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get('/api/v1/application/', format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(len(self.deserialize(resp)['objects']), 2)
+
+        resp = self.api_client.get('/api/v1/application/?name=testapp1',
+                                   format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(len(self.deserialize(resp)['objects']), 1)
+        self.assertEqual(self.deserialize(resp)['objects'][0]['name'],
+                         'testapp1')
+        self.assertEqual(self.deserialize(resp)['objects'][0]['metadata'],
+                         self.app_data['metadata'])
+
+    @pytest.mark.usefixtures("create_user")
+    def test_application_invalid_metadata_post(self):
+        post_data = {'name': 'testapp1', 'metadata': '12345'}
+        self.assertHttpBadRequest(
+            self.api_client.post('/api/v1/application/', format='json',
+                                 data=post_data,
+                                 **self.get_apikey_auth(self.user)))
+
+    @pytest.mark.usefixtures("create_user")
+    def test_application_missing_metadata_post(self):
+        post_data = {'name': 'testapp1'}
+        self.assertHttpBadRequest(
+            self.api_client.post('/api/v1/application/', format='json',
+                                 data=post_data,
+                                 **self.get_apikey_auth(self.user)))
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_invalid_name_post(self):
+        post_data = {'name': 'a', 'metadata': self.app_data['metadata']}
+        self.assertHttpBadRequest(
+            self.api_client.post('/api/v1/application/', format='json',
+                                 data=post_data,
+                                 **self.get_apikey_auth(self.user)))
 
     @pytest.mark.usefixtures("create_pkg_list")
     def test_package_list_get(self):
