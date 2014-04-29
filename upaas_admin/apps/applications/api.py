@@ -24,6 +24,8 @@ from tastypie.authorization import Authorization
 from tastypie.exceptions import Unauthorized
 from tastypie.utils import trailing_slash
 
+from upaas.config.metadata import MetadataConfig
+
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
 from upaas_admin.common.api import ReadOnlyResourceMixin
@@ -62,6 +64,14 @@ class ApplicationResource(MongoEngineResource):
         self.fields['owner'].readonly = True
 
     def obj_create(self, bundle, request=None, **kwargs):
+        metadata = bundle.data.get('metadata')
+        if not metadata:
+            raise exceptions.ValidationError(_('Missing metadata'))
+        try:
+            MetadataConfig.from_string(metadata)
+        except Exception as e:
+            raise exceptions.ValidationError(
+                _('Invalid metadata: {err}').format(err=e))
         log.debug(_("Going to create new application for user "
                     "'{name}'").format(name=bundle.request.user.username))
         try:
