@@ -39,7 +39,7 @@ window.UPAAS.tasks.running_task_dict = {};
 
 
 window.UPAAS.tasks.render_task_menu_item = function(task) {
-    var app = window.UPAAS.applications.Applications.where({
+    var app = window.UPAAS.utils.where_or_fetch(window.UPAAS.applications.Applications, {
         resource_uri: task.attributes.application
     })[0];
     var task_html = haml.compileHaml('upaas-tasks-dropdown-details')({
@@ -91,7 +91,8 @@ window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.t
 
 window.UPAAS.tasks.parse_removed_running_task = function(data) {
     window.UPAAS.tasks.update_task_menu_badge(data);
-    var task = window.UPAAS.utils.where_or_fetch(window.UPAAS.tasks.Tasks, {id: data.attributes.id})[0];
+    window.UPAAS.tasks.Tasks.fetch({async: false});
+    var task = window.UPAAS.tasks.Tasks.where({id: data.attributes.id})[0];
     window.UPAAS.tasks.render_task_menu_item(task);
     setTimeout(function(){
         $('#upaas-task-menu-header-' + task.attributes.id).remove();
@@ -161,5 +162,5 @@ window.UPAAS.tasks.init = function() {
     // window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
 
     window.UPAAS.tasks.running_task_poller = Backbone.Poller.get(window.UPAAS.tasks.RunningTasks);
-    window.UPAAS.tasks.running_task_poller.set({delay: 5000}).start();
+    window.UPAAS.tasks.running_task_poller.set({delay: 4000}).start();
 }

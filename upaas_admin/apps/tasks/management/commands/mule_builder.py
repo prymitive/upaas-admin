@@ -194,7 +194,8 @@ class Command(NoArgsCommand):
                 flag.reload()
                 if not flag.pending:
                     flag.delete()
-                task.update(set__status=TaskStatus.successful)
+                task.update(set__status=TaskStatus.successful,
+                            set__date_finished=datetime.now())
                 self.cleanup()
 
                 log.info(_("Building completed for {name} [{id}]").format(
