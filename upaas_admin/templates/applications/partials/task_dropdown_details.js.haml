@@ -14,7 +14,7 @@
       = moment(task.date_finished).fromNow()
     - else {
       = gettext("Started")
-      :
+      !
       = moment(task.date_created).fromNow()
 
   - var task_body_id = 'upaas-task-menu-item-' + task.id;

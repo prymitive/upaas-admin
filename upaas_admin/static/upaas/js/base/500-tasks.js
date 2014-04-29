@@ -14,8 +14,8 @@ window.UPAAS.tasks.TaskModel = Backbone.Model.extend({});
 //= All tasks ==================================================================
 
 window.UPAAS.tasks.TaskCollection = Backbone.Collection.extend({
-   model: window.UPAAS.tasks.TaskModel,
-   url : "/api/v1/task/?format=json"
+    model: window.UPAAS.tasks.TaskModel,
+    url : "/api/v1/task/?format=json",
 });
 window.UPAAS.tasks.Tasks = new window.UPAAS.tasks.TaskCollection();
 
@@ -29,8 +29,8 @@ window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.Tasks, window.UPAAS.tasks.pa
 //= Only running tasks =========================================================
 
 window.UPAAS.tasks.RunningTaskCollection = Backbone.Collection.extend({
-   model: window.UPAAS.tasks.TaskModel,
-   url : "/api/v1/task/?format=json&limit=5&status=RUNNING"
+    model: window.UPAAS.tasks.TaskModel,
+    url : "/api/v1/task/?format=json&status=RUNNING"
 });
 window.UPAAS.tasks.RunningTasks = new window.UPAAS.tasks.RunningTaskCollection();
 
@@ -91,7 +91,7 @@ window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.t
 
 window.UPAAS.tasks.parse_removed_running_task = function(data) {
     window.UPAAS.tasks.update_task_menu_badge(data);
-    var task = window.UPAAS.tasks.Tasks.where({id: data.attributes.id})[0];
+    var task = window.UPAAS.utils.where_or_fetch(window.UPAAS.tasks.Tasks, {id: data.attributes.id})[0];
     window.UPAAS.tasks.render_task_menu_item(task);
     setTimeout(function(){
         $('#upaas-task-menu-header-' + task.attributes.id).remove();
@@ -111,22 +111,6 @@ window.UPAAS.tasks.RunningTasks.bind('remove', window.UPAAS.tasks.parse_removed_
 //= Messages ===================================================================
 
 window.UPAAS.tasks.TaskMessageModel = Backbone.Model.extend({});
-
-
-window.UPAAS.tasks.create_task_messages_collection = function(task_url) {
-    var collection = Backbone.Collection.extend({
-        model: window.UPAAS.tasks.TaskMessageModel,
-        task_url: task_url,
-        offset: 0,
-        url: function() {
-            return this.task_url + 'messages/?format=json&offset=' + this.offset;
-        },
-        update_offset: function() {
-            this.offset = this.offset + this.length;
-        }
-    });
-    return new collection(task_url);
-}
 
 
 window.UPAAS.tasks.parse_task_messages = function(data) {
@@ -151,11 +135,30 @@ window.UPAAS.tasks.parse_task_messages = function(data) {
 }
 
 
+window.UPAAS.tasks.create_task_messages_collection = function(task_url) {
+    var collection = Backbone.Collection.extend({
+        model: window.UPAAS.tasks.TaskMessageModel,
+        task_url: task_url,
+        offset: 0,
+        url: function() {
+            return this.task_url + 'messages/?format=json&offset=' + this.offset;
+        },
+        update_offset: function() {
+            this.offset = this.offset + this.length;
+        }
+    });
+    var col = new collection(task_url);
+    col.bind('sync', window.UPAAS.tasks.parse_task_messages);
+    return col;
+}
+
+
 //= Init =======================================================================
 
 window.UPAAS.tasks.init = function() {
-    window.UPAAS.tasks.task_poller = Backbone.Poller.get(window.UPAAS.tasks.Tasks);
-    window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
+    // enable once used more widely
+    // window.UPAAS.tasks.task_poller = Backbone.Poller.get(window.UPAAS.tasks.Tasks);
+    // window.UPAAS.tasks.task_poller.set({delay: 5000}).start();
 
     window.UPAAS.tasks.running_task_poller = Backbone.Poller.get(window.UPAAS.tasks.RunningTasks);
     window.UPAAS.tasks.running_task_poller.set({delay: 5000}).start();

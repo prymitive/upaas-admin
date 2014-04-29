@@ -39,18 +39,15 @@
   :javascript
 
     $(document).ready(function(){
-      var task_id = '{{ task.safe_id }}';
-      window.UPAAS.tasks.Tasks.fetch({async: false});
-      var task = window.UPAAS.tasks.Tasks.where({id: task_id})[0];
-
+      var task = window.UPAAS.utils.where_or_fetch(window.UPAAS.tasks.Tasks, {id: '{{ task.safe_id }}'})[0];
       var collection = window.UPAAS.tasks.create_task_messages_collection(task.get('resource_uri'));
-      var collection_poller = Backbone.Poller.get(collection);
-      collection_poller.set({delay: 3000}).start();
-      collection.bind('sync', window.UPAAS.tasks.parse_task_messages);
-
       if (task.attributes.is_finished) {
         window.UPAAS.utils.set_progressbar_finished('.upaas-task-details-progressbar', '#upaas-task-progress', task.attributes.is_successful);
+        collection.fetch();
       } else {
+        var collection_poller = Backbone.Poller.get(collection);
+        collection_poller.set({delay: 3000}).start();
+
         var task_poller = Backbone.Poller.get(task);
         task_poller.set({delay: 3000}).start();
         task.bind('change:progress', function(task){

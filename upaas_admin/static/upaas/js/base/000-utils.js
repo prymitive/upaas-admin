@@ -52,6 +52,18 @@ window.UPAAS.utils.bind_backbone = function(what, callback_fn, exclude) {
 }
 
 
+window.UPAAS.utils.where_or_fetch = function(collection, options) {
+    var ret;
+    ret = collection.where(options);
+    if (ret.length > 0) {
+        return ret;
+    } else {
+        collection.fetch({async: false});
+        return collection.where(options);
+    }
+}
+
+
 window.UPAAS.utils.update_progress = function(selector, progress) {
     $(selector).attr('aria-valuenow', progress).attr('style', 'width: ' + progress + '%;');
 }

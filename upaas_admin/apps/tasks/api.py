@@ -82,19 +82,8 @@ class TaskResource(MongoEngineResource, ReadOnlyResourceMixin):
         messages = []
         for msg in task.messages[int(offset):]:
             messages.append({
-                'id': msg.timestamp.isoformat(),
                 'timestamp': msg.timestamp.isoformat(),
                 'level': logging.getLevelName(msg.level),
                 'message': msg.message,
             })
-        resp = {
-            'meta': {
-                'limit': 0,
-                'next': None,
-                'offset': 0,
-                'previous': None,
-                'total_count': len(messages),
-            },
-            'objects': messages,
-        }
-        return self.create_response(request, resp)
+        return self.create_response(request, messages)
