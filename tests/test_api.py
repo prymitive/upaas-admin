@@ -168,7 +168,7 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
     @pytest.mark.usefixtures("create_app")
     def test_application_delete_single(self):
         app_url = '/api/v1/application/%s/' % self.app.safe_id
-        self.assertHttpForbidden(self.api_client.delete(
+        self.assertHttpUnauthorized(self.api_client.delete(
             app_url, format='json', **self.get_apikey_auth(self.user)))
 
         resp = self.api_client.get(app_url, format='json',
@@ -180,7 +180,7 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
 
     @pytest.mark.usefixtures("create_app")
     def test_application_delete_all(self):
-        self.assertHttpForbidden(self.api_client.delete(
+        self.assertHttpUnauthorized(self.api_client.delete(
             '/api/v1/application/', format='json',
             **self.get_apikey_auth(self.user)))
 

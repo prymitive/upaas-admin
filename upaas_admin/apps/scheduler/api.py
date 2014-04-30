@@ -18,8 +18,7 @@ from tastypie_mongoengine.resources import MongoEngineResource
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
-from tastypie.exceptions import ImmediateHttpResponse
-from tastypie.http import HttpForbidden
+from tastypie.exceptions import Unauthorized
 
 from upaas_admin.apps.applications.models import Application
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
@@ -29,6 +28,35 @@ from upaas_admin.common.api_validation import MongoCleanedDataFormValidation
 
 
 log = logging.getLogger(__name__)
+
+
+class RunPlanAuthorization(Authorization):
+
+    def read_list(self, object_list, bundle):
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
+        return object_list.filter(
+            application__in=bundle.request.user.applications)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
+
+    def create_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        return object_list.filter(
+            application__in=bundle.request.user.applications)
+
+    def update_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized(_("Unauthorized for such operation"))
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized(_("Unauthorized for such operation"))
+
 
 
 class RunPlanResource(MongoEngineResource):
@@ -85,36 +113,3 @@ class RunPlanResource(MongoEngineResource):
             'memory_per_worker']
         bundle.obj.max_log_size = bundle.request.user.limits['max_log_size']
         return super(RunPlanResource, self).obj_update(bundle, **kwargs)
-
-    def authorized_read_list(self, object_list, bundle):
-        log.debug(_("Limiting query to user owned apps (length: "
-                    "{length})").format(length=len(object_list)))
-        return object_list.filter(
-            application__in=bundle.request.user.applications)
-
-    def read_detail(self, object_list, bundle):
-        return bundle.obj.application.owner == bundle.request.user
-
-    def create_list(self, object_list, bundle):
-        return object_list
-
-    def create_detail(self, object_list, bundle):
-        return bundle.obj.application.owner == bundle.request.user
-
-    def update_list(self, object_list, bundle):
-        allowed = []
-        for obj in object_list:
-            if bundle.obj.application.owner == bundle.request.user:
-                allowed.append(obj)
-        return allowed
-
-    def update_detail(self, object_list, bundle):
-        return bundle.obj.owner == bundle.request.user
-
-    def delete_list(self, request, **kwargs):
-        raise ImmediateHttpResponse(
-            response=HttpForbidden(_("Unauthorized for such operation")))
-
-    def delete_detail(self, request, **kwargs):
-        raise ImmediateHttpResponse(
-            response=HttpForbidden(_("Unauthorized for such operation")))

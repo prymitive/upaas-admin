@@ -20,18 +20,43 @@ from tastypie_mongoengine.resources import MongoEngineResource
 from tastypie_mongoengine.fields import ReferenceField, ReferencedListField
 
 from tastypie.resources import ALL
-from tastypie.authorization import Authorization
-from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.authorization import Authorization, ReadOnlyAuthorization
+from tastypie.exceptions import Unauthorized
 from tastypie.utils import trailing_slash
-from tastypie.http import HttpForbidden
 
 from upaas.config.metadata import MetadataConfig
 
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
-from upaas_admin.common.api import ReadOnlyResourceMixin
 
 log = logging.getLogger(__name__)
+
+
+class ApplicationAuthorization(Authorization):
+
+    def read_list(self, object_list, bundle):
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
+        return object_list.filter(owner=bundle.request.user)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def create_detail(self, object_list, bundle):
+        return bundle.obj.owner == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        return object_list.filter(owner=bundle.request.user)
+
+    def update_detail(self, object_list, bundle):
+        bundle.data['name'] = bundle.obj.name
+        return bundle.obj.owner == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized(_("Unauthorized for such operation"))
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized(_("Unauthorized for such operation"))
 
 
 class ApplicationResource(MongoEngineResource):
@@ -58,12 +83,11 @@ class ApplicationResource(MongoEngineResource):
             'owner': ALL,
         }
         authentication = UpaasApiKeyAuthentication()
-        authorization = Authorization()
+        authorization = ApplicationAuthorization()
 
     def __init__(self, *args, **kwargs):
         super(ApplicationResource, self).__init__(*args, **kwargs)
         self.fields['owner'].readonly = True
-        self.fields['name'].readonly = True
 
     def obj_create(self, bundle, request=None, **kwargs):
         # TODO use MongoCleanedDataFormValidation ??
@@ -88,38 +112,6 @@ class ApplicationResource(MongoEngineResource):
             log.warning(_("Can't create new application, duplicated fields: "
                           "{msg}").format(msg=e.message))
             raise exceptions.ValidationError(e.message)
-
-    def authorized_read_list(self, object_list, bundle):
-        log.debug(_("Limiting query to user owned apps (length: "
-                    "{length})").format(length=len(object_list)))
-        return object_list.filter(owner=bundle.request.user)
-
-    def read_detail(self, object_list, bundle):
-        return bundle.obj.owner == bundle.request.user
-
-    def create_list(self, object_list, bundle):
-        return object_list
-
-    def create_detail(self, object_list, bundle):
-        return bundle.obj.owner == bundle.request.user
-
-    def update_list(self, object_list, bundle):
-        allowed = []
-        for obj in object_list:
-            if bundle.obj.owner == bundle.request.user:
-                allowed.append(obj)
-        return allowed
-
-    def update_detail(self, object_list, bundle):
-        return bundle.obj.owner == bundle.request.user
-
-    def delete_list(self, request, **kwargs):
-        raise ImmediateHttpResponse(
-            response=HttpForbidden(_("Unauthorized for such operation")))
-
-    def delete_detail(self, request, **kwargs):
-        raise ImmediateHttpResponse(
-            response=HttpForbidden(_("Unauthorized for such operation")))
 
     def prepend_urls(self):
         return [
@@ -204,7 +196,19 @@ class ApplicationResource(MongoEngineResource):
             return HttpResponseNotFound(_("No such application"))
 
 
-class PackageResource(MongoEngineResource, ReadOnlyResourceMixin):
+class PakcageAuthorization(ReadOnlyAuthorization):
+
+    def read_list(self, object_list, bundle):
+        log.debug(_("Limiting query to user owned apps (length: "
+                    "{length})").format(length=len(object_list)))
+        return object_list.filter(
+            application__in=bundle.request.user.applications)
+
+    def read_detail(self, object_list, bundle):
+        return bundle.obj.application.owner == bundle.request.user
+
+
+class PackageResource(MongoEngineResource):
 
     application = ReferenceField(
         'upaas_admin.apps.applications.api.ApplicationResource', 'application')
@@ -217,13 +221,4 @@ class PackageResource(MongoEngineResource, ReadOnlyResourceMixin):
             'id': ALL,
         }
         authentication = UpaasApiKeyAuthentication()
-        authorization = Authorization()
-
-    def authorized_read_list(self, object_list, bundle):
-        log.debug(_("Limiting query to user owned apps (length: "
-                    "{length})").format(length=len(object_list)))
-        return object_list.filter(
-            application__in=bundle.request.user.applications)
-
-    def read_detail(self, object_list, bundle):
-        return bundle.obj.application.owner == bundle.request.user
+        authorization = PakcageAuthorization()
