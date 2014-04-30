@@ -7,27 +7,34 @@
 
 from __future__ import unicode_literals
 
-from django.utils.translation import ugettext_lazy as _
+from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.http import HttpForbidden
 
-from tastypie.exceptions import Unauthorized
+from django.utils.translation import ugettext_lazy as _
 
 
 class ReadOnlyResourceMixin:
 
     def create_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
     def create_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
     def update_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
     def update_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
-    def delete_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+    def delete_list(self, request, **kwargs):
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
-    def delete_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+    def delete_detail(self, request, **kwargs):
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))

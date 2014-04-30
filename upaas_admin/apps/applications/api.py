@@ -14,15 +14,16 @@ import mongoengine
 from django.core import exceptions
 from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from django.conf.urls import url
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from tastypie_mongoengine.resources import MongoEngineResource
 from tastypie_mongoengine.fields import ReferenceField, ReferencedListField
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
-from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.utils import trailing_slash
+from tastypie.http import HttpForbidden
 
 from upaas.config.metadata import MetadataConfig
 
@@ -62,8 +63,10 @@ class ApplicationResource(MongoEngineResource):
     def __init__(self, *args, **kwargs):
         super(ApplicationResource, self).__init__(*args, **kwargs)
         self.fields['owner'].readonly = True
+        self.fields['name'].readonly = True
 
     def obj_create(self, bundle, request=None, **kwargs):
+        # TODO use MongoCleanedDataFormValidation ??
         metadata = bundle.data.get('metadata')
         if not metadata:
             raise exceptions.ValidationError(_('Missing metadata'))
@@ -110,11 +113,13 @@ class ApplicationResource(MongoEngineResource):
     def update_detail(self, object_list, bundle):
         return bundle.obj.owner == bundle.request.user
 
-    def delete_list(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+    def delete_list(self, request, **kwargs):
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
-    def delete_detail(self, object_list, bundle):
-        raise Unauthorized(_("Unauthorized for such operation"))
+    def delete_detail(self, request, **kwargs):
+        raise ImmediateHttpResponse(
+            response=HttpForbidden(_("Unauthorized for such operation")))
 
     def prepend_urls(self):
         return [

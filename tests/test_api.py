@@ -103,6 +103,35 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertEqual(self.deserialize(resp)['objects'][0]['metadata'],
                          self.app_data['metadata'])
 
+    @pytest.mark.usefixtures("create_app")
+    def test_application_patch_metadata(self):
+        metadata = self.app_data['metadata'] + '\n\n#updated'
+        app_url = '/api/v1/application/%s/' % self.app.safe_id
+        self.assertHttpAccepted(self.api_client.patch(
+            app_url, format='json', data={'metadata': metadata},
+            **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get(app_url, format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['name'], self.app.name)
+        self.assertEqual(self.deserialize(resp)['metadata'], metadata)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_patch_name(self):
+        name = 'newappname'
+        app_url = '/api/v1/application/%s/' % self.app.safe_id
+        self.assertHttpAccepted(self.api_client.patch(
+            app_url, format='json', data={'name': name},
+            **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get(app_url, format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['name'], self.app.name)
+        self.assertEqual(self.deserialize(resp)['metadata'],
+                         self.app_data['metadata'])
+
     @pytest.mark.usefixtures("create_user")
     def test_application_invalid_metadata_post(self):
         post_data = {'name': 'testapp1', 'metadata': '12345'}
@@ -136,6 +165,30 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
                                  data=post_data,
                                  **self.get_apikey_auth(self.user)))
 
+    @pytest.mark.usefixtures("create_app")
+    def test_application_delete_single(self):
+        app_url = '/api/v1/application/%s/' % self.app.safe_id
+        self.assertHttpForbidden(self.api_client.delete(
+            app_url, format='json', **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get(app_url, format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['name'], self.app.name)
+        self.assertEqual(self.deserialize(resp)['metadata'],
+                         self.app_data['metadata'])
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_delete_all(self):
+        self.assertHttpForbidden(self.api_client.delete(
+            '/api/v1/application/', format='json',
+            **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get('/api/v1/application/', format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(len(self.deserialize(resp)['objects']), 1)
+
     @pytest.mark.usefixtures("create_pkg_list")
     def test_package_list_get(self):
         resp = self.api_client.get('/api/v1/package/', format='json',
@@ -156,6 +209,15 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
                                    **self.get_apikey_auth(self.user))
         self.assertValidJSONResponse(resp)
         self.assertEqual(len(self.deserialize(resp)['objects']), 33)
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_package_detail_get(self):
+        resp = self.api_client.get(
+            '/api/v1/package/%s/' % self.pkg.safe_id, format='json',
+            **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['builder'], 'fake builder')
+        self.assertEqual(self.deserialize(resp)['bytes'], '1024')
 
     @pytest.mark.usefixtures("create_user")
     def test_task_list_empty_get(self):
