@@ -250,7 +250,6 @@ class PackageResource(MongoEngineResource):
         authorization = PackageAuthorization()
 
     def obj_delete(self, bundle, **kwargs):
-        print(('DELETE', bundle))
         bundle.obj = self.obj_get(bundle=bundle, **kwargs)
         self.authorized_delete_detail(self.get_object_list(bundle.request),
                                       bundle)
