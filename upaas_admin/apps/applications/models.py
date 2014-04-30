@@ -81,6 +81,8 @@ class Package(Document):
     def pre_delete(cls, sender, document, **kwargs):
         log.debug(_("Pre delete signal on package {id}").format(
             id=document.safe_id))
+        Application.objects(id=document.application.id).update_one(
+            pull__packages=document.id)
         document.delete_package_file(null_filename=False)
 
     @property

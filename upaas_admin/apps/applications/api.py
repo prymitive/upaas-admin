@@ -196,7 +196,7 @@ class ApplicationResource(MongoEngineResource):
             return HttpResponseNotFound(_("No such application"))
 
 
-class PakcageAuthorization(ReadOnlyAuthorization):
+class PackageAuthorization(ReadOnlyAuthorization):
 
     def read_list(self, object_list, bundle):
         log.debug(_("Limiting query to user owned apps (length: "
@@ -207,11 +207,26 @@ class PakcageAuthorization(ReadOnlyAuthorization):
     def read_detail(self, object_list, bundle):
         return bundle.obj.application.owner == bundle.request.user
 
+    def delete_list(self, object_list, bundle):
+        # TODO optimize to single query?
+        active_pkgs = [
+            app.current_package.id for app in bundle.request.user.applications]
+        return object_list.filter(
+            application__in=bundle.request.user.applications,
+            id__not__in=active_pkgs)
+
+    def delete_detail(self, object_list, bundle):
+        if (bundle.obj.application.owner == bundle.request.user) and (
+                bundle.obj.id != bundle.obj.application.current_package.id):
+            return True
+        return False
+
 
 class PackageResource(MongoEngineResource):
 
     application = ReferenceField(
-        'upaas_admin.apps.applications.api.ApplicationResource', 'application')
+        'upaas_admin.apps.applications.api.ApplicationResource',
+        'application', readonly=True)
 
     class Meta:
         always_return_data = True
@@ -221,4 +236,13 @@ class PackageResource(MongoEngineResource):
             'id': ALL,
         }
         authentication = UpaasApiKeyAuthentication()
-        authorization = PakcageAuthorization()
+        authorization = PackageAuthorization()
+
+    def obj_delete(self, bundle, **kwargs):
+        print(('DELETE', bundle))
+        bundle.obj = self.obj_get(bundle=bundle, **kwargs)
+        self.authorized_delete_detail(self.get_object_list(bundle.request),
+                                      bundle)
+        if bundle.obj.id != bundle.obj.application.current_package.id:
+            return super(PackageResource, self).obj_delete(bundle, **kwargs)
+        return HttpResponseBadRequest(_("Package in use"))

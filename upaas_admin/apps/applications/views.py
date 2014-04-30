@@ -436,10 +436,6 @@ class PackageDeleteView(LoginRequiredMixin, OwnedPackagesMixin,
     def form_valid(self, form):
         self.get_context_data()
         if self.object.id != self.object.application.current_package.id:
-            if self.object.filename:
-                self.object.delete_package_file(null_filename=False)
-            Application.objects(id=self.application.id).update_one(
-                pull__packages=self.object.id)
             self.object.delete()
             return HttpResponseRedirect(self.get_success_url())
         else:

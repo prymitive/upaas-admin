@@ -219,6 +219,54 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertEqual(self.deserialize(resp)['builder'], 'fake builder')
         self.assertEqual(self.deserialize(resp)['bytes'], '1024')
 
+    @pytest.mark.usefixtures("create_pkg_list")
+    def test_package_delete_single(self):
+        pkg = self.pkg_list[15]
+        pkg_url = '/api/v1/package/%s/' % pkg.safe_id
+        self.assertHttpAccepted(self.api_client.delete(
+            pkg_url, format='json', **self.get_apikey_auth(self.user)))
+
+        self.assertHttpNotFound(self.api_client.get(
+            pkg_url, format='json', **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get('/api/v1/package/', format='json',
+                                   data={'limit': 40},
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(len(self.deserialize(resp)['objects']), 32)
+
+        self.app.reload()
+        self.assertEqual(len(self.app.packages), 32)
+
+    @pytest.mark.usefixtures("create_pkg")
+    def test_package_delete_single_current(self):
+        pkg_url = '/api/v1/package/%s/' % self.pkg.safe_id
+        self.assertHttpUnauthorized(self.api_client.delete(
+            pkg_url, format='json', **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get(pkg_url, format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['bytes'], str(self.pkg.bytes))
+
+    @pytest.mark.usefixtures("create_pkg_list")
+    def test_package_delete_all(self):
+        self.assertHttpAccepted(self.api_client.delete(
+            '/api/v1/package/', format='json',
+            **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get('/api/v1/package/', format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(len(self.deserialize(resp)['objects']), 1)
+
+        resp = self.api_client.get(
+            '/api/v1/package/%s/' % self.app.current_package.safe_id,
+            format='json', **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['bytes'],
+                         str(self.app.current_package.bytes))
+
     @pytest.mark.usefixtures("create_user")
     def test_task_list_empty_get(self):
         resp = self.api_client.get('/api/v1/task/', format='json',
