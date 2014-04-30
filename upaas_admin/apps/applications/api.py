@@ -23,6 +23,7 @@ from tastypie.resources import ALL
 from tastypie.authorization import Authorization, ReadOnlyAuthorization
 from tastypie.exceptions import Unauthorized
 from tastypie.utils import trailing_slash
+from tastypie.http import HttpCreated
 
 from upaas.config.metadata import MetadataConfig
 
@@ -139,14 +140,16 @@ class ApplicationResource(MongoEngineResource):
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
-            if app.metadata:
-                return self.create_response(request, app.build_package(
-                    force_fresh=force_fresh,
-                    interpreter_version=interpreter_version))
-            else:
+            if interpreter_version and (
+                    interpreter_version not in
+                    app.supported_interpreter_versions):
                 return HttpResponseBadRequest(
-                    _("No metadata registered for app '{name}' with id "
-                      "'{id}'").format(name=app.name, id=app.id))
+                    _("Unsupported interpreter version"))
+
+            return self.create_response(request, app.build_package(
+                force_fresh=force_fresh,
+                interpreter_version=interpreter_version),
+                response_class=HttpCreated)
         else:
             return HttpResponseNotFound(_("No such application"))
 
@@ -155,8 +158,9 @@ class ApplicationResource(MongoEngineResource):
         app = Application.objects(
             **self.remove_api_resource_names(kwargs)).first()
         if app:
-            if app.metadata and app.current_package:
-                return self.create_response(request, app.start_application())
+            if app.current_package:
+                return self.create_response(request, app.start_application(),
+                                            response_class=HttpCreated)
             else:
                 return HttpResponseBadRequest(
                     _("No package built or no metadata registered for app "
@@ -173,8 +177,9 @@ class ApplicationResource(MongoEngineResource):
             if not app.run_plan:
                 return HttpResponseBadRequest(_(
                     "Application is already stopped"))
-            if app.metadata and app.current_package:
-                return self.create_response(request, app.stop_application())
+            if app.current_package:
+                return self.create_response(request, app.stop_application(),
+                                            response_class=HttpCreated)
             else:
                 return HttpResponseBadRequest(
                     _("No package built or no metadata registered for app "
@@ -189,7 +194,8 @@ class ApplicationResource(MongoEngineResource):
             **self.remove_api_resource_names(kwargs)).first()
         if app:
             if app.run_plan:
-                return self.create_response(request, app.update_application())
+                return self.create_response(request, app.update_application(),
+                                            response_class=HttpCreated)
             else:
                 return HttpResponseBadRequest(_("Application is stopped"))
         else:

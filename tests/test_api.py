@@ -13,6 +13,8 @@ from tastypie.test import ResourceTestCase
 
 from upaas_admin.common.tests import MongoEngineTestCase
 
+from upaas_admin.apps.applications.constants import NeedsBuildingFlag
+
 
 class ApiTest(MongoEngineTestCase, ResourceTestCase):
 
@@ -188,6 +190,53 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
                                    **self.get_apikey_auth(self.user))
         self.assertValidJSONResponse(resp)
         self.assertEqual(len(self.deserialize(resp)['objects']), 1)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_build_package(self):
+        self.assertHttpCreated(self.api_client.put(
+            '/api/v1/application/%s/build/' % self.app.safe_id, format='json',
+            **self.get_apikey_auth(self.user)))
+        flag = self.app.flags.first()
+        self.assertNotEqual(flag, None)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_fresh_package], False)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_interpreter_version],
+            None)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_build_package_force_fresh(self):
+        self.assertHttpCreated(self.api_client.put(
+            '/api/v1/application/%s/build/?force_fresh=1' % self.app.safe_id,
+            format='json', **self.get_apikey_auth(self.user)))
+        flag = self.app.flags.first()
+        self.assertNotEqual(flag, None)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_fresh_package], True)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_interpreter_version],
+            None)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_build_package_interpreter_version(self):
+        self.assertHttpCreated(self.api_client.put(
+            '/api/v1/application/%s/build/?interpreter_version=1.9.3' % (
+                self.app.safe_id),
+            format='json', **self.get_apikey_auth(self.user)))
+        flag = self.app.flags.first()
+        self.assertNotEqual(flag, None)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_fresh_package], False)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_interpreter_version],
+            '1.9.3')
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_build_package_interpreter_version_unsupported(self):
+        self.assertHttpBadRequest(self.api_client.put(
+            '/api/v1/application/%s/build/?interpreter_version=123' % (
+                self.app.safe_id),
+            format='json', **self.get_apikey_auth(self.user)))
 
     @pytest.mark.usefixtures("create_pkg_list")
     def test_package_list_get(self):
