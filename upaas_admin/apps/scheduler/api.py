@@ -58,7 +58,6 @@ class RunPlanAuthorization(Authorization):
         raise Unauthorized(_("Unauthorized for such operation"))
 
 
-
 class RunPlanResource(MongoEngineResource):
 
     class Meta:
