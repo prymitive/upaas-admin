@@ -25,6 +25,8 @@ from tastypie.exceptions import Unauthorized
 from tastypie.utils import trailing_slash
 from tastypie.http import HttpCreated
 
+from mongoengine.errors import ValidationError
+
 from upaas.config.metadata import MetadataConfig
 
 from upaas_admin.apps.applications.models import Application, Package
@@ -130,6 +132,13 @@ class ApplicationResource(MongoEngineResource):
                 self.wrap_view('update_application'), name="update"),
         ]
 
+    def get_app(self, kwargs):
+        try:
+            return Application.objects(
+                **self.remove_api_resource_names(kwargs)).first()
+        except ValidationError:
+            return None
+
     def build_package(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
         try:
@@ -137,8 +146,7 @@ class ApplicationResource(MongoEngineResource):
         except:
             force_fresh = False
         interpreter_version = request.GET.get('interpreter_version') or None
-        app = Application.objects(
-            **self.remove_api_resource_names(kwargs)).first()
+        app = self.get_app(kwargs)
         if app:
             if interpreter_version and (
                     interpreter_version not in
@@ -155,8 +163,7 @@ class ApplicationResource(MongoEngineResource):
 
     def start_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
-        app = Application.objects(
-            **self.remove_api_resource_names(kwargs)).first()
+        app = self.get_app(kwargs)
         if app:
             if app.current_package:
                 return self.create_response(request, app.start_application(),
@@ -171,8 +178,7 @@ class ApplicationResource(MongoEngineResource):
 
     def stop_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
-        app = Application.objects(
-            **self.remove_api_resource_names(kwargs)).first()
+        app = self.get_app(kwargs)
         if app:
             if not app.run_plan:
                 return HttpResponseBadRequest(_(
@@ -190,8 +196,7 @@ class ApplicationResource(MongoEngineResource):
 
     def update_application(self, request, **kwargs):
         self.method_check(request, allowed=['put'])
-        app = Application.objects(
-            **self.remove_api_resource_names(kwargs)).first()
+        app = self.get_app(kwargs)
         if app:
             if app.run_plan:
                 return self.create_response(request, app.update_application(),

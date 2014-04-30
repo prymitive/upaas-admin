@@ -76,6 +76,18 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
                          'running_tasks', 'tasks'])
 
     @pytest.mark.usefixtures("create_user")
+    def test_application_detail_get_404(self):
+        self.assertHttpNotFound(self.api_client.get(
+            '/api/v1/application/535cd85d5ba72e0e61181382/', format='json',
+            **self.get_apikey_auth(self.user)))
+
+    @pytest.mark.usefixtures("create_user")
+    def test_application_detail_get_404_invalid(self):
+        self.assertHttpNotFound(self.api_client.get(
+            '/api/v1/application/1234/', format='json',
+            **self.get_apikey_auth(self.user)))
+
+    @pytest.mark.usefixtures("create_user")
     def test_application_list_empty_get(self):
         resp = self.api_client.get('/api/v1/application/', format='json',
                                    **self.get_apikey_auth(self.user))
@@ -205,6 +217,14 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
             None)
 
     @pytest.mark.usefixtures("create_app")
+    def test_application_build_package_404(self):
+        self.assertHttpNotFound(self.api_client.put(
+            '/api/v1/application/12345/build/', format='json',
+            **self.get_apikey_auth(self.user)))
+        flag = self.app.flags.first()
+        self.assertEqual(flag, None)
+
+    @pytest.mark.usefixtures("create_app")
     def test_application_build_package_force_fresh(self):
         self.assertHttpCreated(self.api_client.put(
             '/api/v1/application/%s/build/?force_fresh=1' % self.app.safe_id,
@@ -213,6 +233,19 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertNotEqual(flag, None)
         self.assertEqual(
             flag.options[NeedsBuildingFlag.Options.build_fresh_package], True)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_interpreter_version],
+            None)
+
+    @pytest.mark.usefixtures("create_app")
+    def test_application_build_package_force_fresh_invalid(self):
+        self.assertHttpCreated(self.api_client.put(
+            '/api/v1/application/%s/build/?force_fresh=a4x' % self.app.safe_id,
+            format='json', **self.get_apikey_auth(self.user)))
+        flag = self.app.flags.first()
+        self.assertNotEqual(flag, None)
+        self.assertEqual(
+            flag.options[NeedsBuildingFlag.Options.build_fresh_package], False)
         self.assertEqual(
             flag.options[NeedsBuildingFlag.Options.build_interpreter_version],
             None)
@@ -267,6 +300,18 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertValidJSONResponse(resp)
         self.assertEqual(self.deserialize(resp)['builder'], 'fake builder')
         self.assertEqual(self.deserialize(resp)['bytes'], '1024')
+
+    @pytest.mark.usefixtures("create_user")
+    def test_package_detail_get_404(self):
+        self.assertHttpNotFound(self.api_client.get(
+            '/api/v1/package/535cd85d5ba72e0e61181382/', format='json',
+            **self.get_apikey_auth(self.user)))
+
+    @pytest.mark.usefixtures("create_user")
+    def test_package_detail_get_404_invalid(self):
+        self.assertHttpNotFound(self.api_client.get(
+            '/api/v1/package/1234/', format='json',
+            **self.get_apikey_auth(self.user)))
 
     @pytest.mark.usefixtures("create_pkg_list")
     def test_package_delete_single(self):
