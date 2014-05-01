@@ -143,7 +143,7 @@ class Command(FlagMuleCommand):
             log.info(_("Application '{name}' started").format(
                 name=application.name))
             application.remove_unpacked_packages(
-                exclude=[application.current_package])
+                exclude=[application.current_package.id])
             self.mark_task_successful(task)
         else:
             log.error(_("Backend {backend} missing in run plan for "
