@@ -64,7 +64,7 @@ class Command(FlagMuleCommand):
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
             if app.flags.filter(name__in=[NeedsRemovingFlag.name,
-                                          NeedsStoppingFlag].name):
+                                          NeedsStoppingFlag.name]):
                 continue
             if not self.is_application_running(app):
                 log.info(_("Application {name} needs starting").format(
