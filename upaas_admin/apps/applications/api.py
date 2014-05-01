@@ -31,6 +31,7 @@ from upaas.config.metadata import MetadataConfig
 
 from upaas_admin.apps.applications.models import Application, Package
 from upaas_admin.common.apiauth import UpaasApiKeyAuthentication
+from upaas_admin.common.uwsgi import fetch_json_stats
 
 log = logging.getLogger(__name__)
 
@@ -137,6 +138,9 @@ class ApplicationResource(MongoEngineResource):
             url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/update%s$" %
                 (self._meta.resource_name, trailing_slash()),
                 self.wrap_view('update_application'), name="update"),
+            url(r"^(?P<resource_name>%s)/(?P<id>\w[\w/-]*)/instances%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('instances'), name="instances"),
         ]
 
     def get_app(self, kwargs):
@@ -212,6 +216,35 @@ class ApplicationResource(MongoEngineResource):
                 return HttpResponseBadRequest(_("Application is stopped"))
         else:
             return HttpResponseNotFound(_("No such application"))
+
+    def instances(self, request, **kwargs):
+        self.method_check(request, allowed=['get'])
+        stats = []
+        app = self.get_app(kwargs)
+        run_plan = app.run_plan
+        if run_plan:
+            for backend_conf in app.run_plan.backends:
+                backend_data = {
+                    'name': backend_conf.backend.name,
+                    'ip': str(backend_conf.backend.ip),
+                    'limits': {
+                        'workers_min': backend_conf.workers_min,
+                        'workers_max': backend_conf.workers_max,
+                        'memory_per_worker': run_plan.memory_per_worker,
+                        'memory_per_worker_bytes': run_plan.memory_per_worker *
+                        1024 * 1024,
+                        'backend_memory': run_plan.memory_per_worker *
+                        backend_conf.workers_max,
+                        'backend_memory_bytes': run_plan.memory_per_worker *
+                        backend_conf.workers_max * 1024 * 1024,
+                    }}
+                s = fetch_json_stats(str(backend_conf.backend.ip),
+                                     backend_conf.stats)
+                stats.append({'backend': backend_data, 'stats': s})
+        else:
+            return HttpResponseNotFound(_("No such application"))
+
+        return self.create_response(request, stats)
 
 
 class PackageAuthorization(ReadOnlyAuthorization):

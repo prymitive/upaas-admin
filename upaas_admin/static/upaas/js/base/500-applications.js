@@ -54,6 +54,38 @@ window.UPAAS.applications.PackageCollection = Backbone.Collection.extend({
 window.UPAAS.applications.Packages = new window.UPAAS.applications.PackageCollection();
 
 
+//= Instances ==================================================================
+
+window.UPAAS.applications.parse_instances = function(data) {
+    var instances_html = new Array();
+    $.each(data.models, function (i, instance) {
+        instances_html.push(
+            haml.compileHaml('upaas-haml-template-instance')({
+                instance: instance.attributes
+            })
+        );
+    });
+    if (instances_html.length == 0) {
+        instances_html.push(
+            haml.compileHaml('upaas-haml-template-stopped')()
+        );
+    }
+    $('#stats-container').html(instances_html.join('\n'));
+}
+
+window.UPAAS.applications.InstanceModel = Backbone.Model.extend({});
+
+window.UPAAS.applications.create_application_instances_collection = function(app_url) {
+    var collection = Backbone.Collection.extend({
+        model: window.UPAAS.applications.InstanceModel,
+        url: app_url + 'instances/?format=json'
+    });
+    var col = new collection(app_url);
+    col.bind('sync', window.UPAAS.applications.parse_instances);
+    return col;
+}
+
+
 //= INIT =======================================================================
 
 window.UPAAS.applications.init = function() {

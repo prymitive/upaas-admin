@@ -15,29 +15,12 @@
   = block.super
 
   :javascript
-    function instances_callback(data) {
-      var instances = new Array();
-      $.each(data.stats, function (i, item) {
-         instances.push(
-          haml.compileHaml('upaas-haml-template-instance')({
-            instance: item
-          })
-         );
-      });
-      if (instances.length == 0) {
-        instances.push(
-          haml.compileHaml('upaas-haml-template-stopped')()
-        );
-      }
-      $('#stats-container').html(instances.join('\n'));
-    }
-
-    // FIXME migrate to backbone
-
-    //$(document).ready(function(){
-    //  window.setTimeout(update_instances, 300);
-    //  window.setInterval(update_instances, 3000);
-    //});
+    $(document).ready(function(){
+      var app = window.UPAAS.utils.where_or_get_first(window.UPAAS.applications.Applications, {id: '{{ app.safe_id }}'});
+      var collection = window.UPAAS.applications.create_application_instances_collection(app.get('resource_uri'));
+      var collection_poller = Backbone.Poller.get(collection);
+      collection_poller.set({delay: 3000}).start();
+    });
 
 
 - block haml_templates

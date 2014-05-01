@@ -104,7 +104,7 @@
                 %td
                   = total_avg_rt_summary
                 %td
-                  = window.UPAAS.bytes_to_human(total_tx);
+                  = window.UPAAS.utils.bytes_to_human(total_tx);
             - else {
               %tr.danger
                 %td.text-center{colspan: 8}
