@@ -241,6 +241,7 @@ class FlagMuleCommand(BaseMuleCommand):
                     set__locked_by_pid=self.pid)
         return ApplicationFlag.objects(name__in=self.mule_flags,
                                        locked_by_backend=self.backend,
+                                       locked_by_pid=self.pid,
                                        pending=False).first()
 
     def unlock_flag(self, flag):

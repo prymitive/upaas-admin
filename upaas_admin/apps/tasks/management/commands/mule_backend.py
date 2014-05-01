@@ -54,6 +54,7 @@ class Command(FlagMuleCommand):
                 set__locked_by_pid=self.pid)
         return ApplicationFlag.objects(name__in=flags,
                                        locked_by_backend=self.backend,
+                                       locked_by_pid=self.pid,
                                        pending=False).first()
 
     def handle_task(self):
