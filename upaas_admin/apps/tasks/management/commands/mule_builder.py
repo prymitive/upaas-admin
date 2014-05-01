@@ -17,9 +17,8 @@ from upaas.builder.exceptions import BuildError
 
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.constants import NeedsBuildingFlag
-from upaas_admin.apps.applications.models import ApplicationFlag, Package
+from upaas_admin.apps.applications.models import Package
 from upaas_admin.apps.tasks.mule import FlagMuleCommand
-from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 log = logging.getLogger(__name__)
@@ -28,6 +27,7 @@ log = logging.getLogger(__name__)
 class Command(FlagMuleCommand):
 
     mule_name = _('Builder')
+    mule_flags = [NeedsBuildingFlag.name]
 
     def handle_flag(self, flag):
 
@@ -88,9 +88,7 @@ class Command(FlagMuleCommand):
         else:
             self.create_package(app, metadata_obj, metadata, build_result,
                                 current_package)
-
-        task.update(set__status=TaskStatus.successful,
-                    set__date_finished=datetime.now())
+        self.mark_task_successful(task)
 
     def create_package(self, app, metadata_obj, metadata, build_result,
                        parent_package):
@@ -128,20 +126,4 @@ class Command(FlagMuleCommand):
         app.packages.append(pkg)
         app.current_package = pkg
         app.save()
-        app.upgrade_application()
         app.trim_package_files()
-
-    def find_flag(self):
-        """
-        Find application that needs new package, return None if nothing to do.
-        """
-        ApplicationFlag.objects(
-            pending__ne=False,
-            name=NeedsBuildingFlag.name).order_by('-date_created').update_one(
-                set__pending=False,
-                set__locked_since=datetime.now(),
-                set__locked_by_backend=self.backend,
-                set__locked_by_pid=self.pid)
-        return ApplicationFlag.objects(name=NeedsBuildingFlag.name,
-                                       locked_by_backend=self.backend,
-                                       pending=False).first()

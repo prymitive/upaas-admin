@@ -29,8 +29,14 @@ class NeedsRestartFlag:
     title = _('Restarting application')
 
 
+class NeedsRemovingFlag:
+    name = 'NEEDS_REMOVING'
+    title = _('Removing application instance')
+
+
 FLAGS_BY_NAME = {
     NeedsBuildingFlag.name: NeedsBuildingFlag,
     NeedsStoppingFlag.name: NeedsStoppingFlag,
     NeedsRestartFlag.name: NeedsRestartFlag,
+    NeedsRemovingFlag.name: NeedsRemovingFlag,
 }

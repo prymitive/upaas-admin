@@ -38,8 +38,9 @@ from upaas_admin.apps.applications.exceptions import UnpackError
 from upaas_admin.apps.scheduler.base import select_best_backends
 from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.tasks.models import Task
-from upaas_admin.apps.applications.constants import (NeedsBuildingFlag,
-                                                     FLAGS_BY_NAME)
+from upaas_admin.apps.applications.constants import (
+    NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, NeedsRemovingFlag,
+    FLAGS_BY_NAME)
 
 
 log = logging.getLogger(__name__)
@@ -605,7 +606,6 @@ class Application(Document):
                                 name=NeedsBuildingFlag.name).update_one(**q)
 
     def start_application(self):
-        # FIXME check if application can start (running apps limit)
         if self.current_package:
             run_plan = self.run_plan
             if not run_plan:
@@ -623,8 +623,6 @@ class Application(Document):
             run_plan.backends = backends
             run_plan.save()
 
-            # FIXME set start flag ?
-
     def stop_application(self):
         if self.current_package:
             if not self.run_plan:
@@ -633,13 +631,17 @@ class Application(Document):
                 # no backends in run plan, just delete it
                 self.run_plan.delete()
                 return
-            # FIXME set stop flag
+        ApplicationFlag.objects(
+            application=self, name=NeedsStoppingFlag.name).update_one(
+                unset__pending=True, upsert=True)
 
-    def upgrade_application(self):
+    def restart_application(self):
         if self.current_package:
             if not self.run_plan:
                 return
-            # FIXME set upgrade flag
+        ApplicationFlag.objects(
+            application=self, name=NeedsRestartFlag.name).update_one(
+                unset__pending=True, upsert=True)
 
     def update_application(self):
         if self.run_plan:
@@ -653,7 +655,6 @@ class Application(Document):
                             "available").format(name=self.name))
                 return
 
-            tasks = []
             for backend_conf in new_backends:
                 if backend_conf.backend in current_backends:
                     # replace backend settings with updated version
@@ -668,13 +669,24 @@ class Application(Document):
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
 
+            needs_removing = False
+            q = {'unset__pending': True, 'upsert': True}
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
-                    # FIXME set stop flag?
-            # FIXME set update flag?
+                    q['set__options__%s' % backend.id] = True
+                    needs_removing = True
+
+            if needs_removing:
+                ApplicationFlag.objects(
+                    application=self,
+                    name=NeedsRemovingFlag.name).update_one(**q)
+
+            ApplicationFlag.objects(
+                application=self, name=NeedsRestartFlag.name).update_one(
+                    unset__pending=True, upsert=True)
 
     def trim_package_files(self):
         """

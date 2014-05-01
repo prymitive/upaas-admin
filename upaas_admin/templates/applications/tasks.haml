@@ -16,6 +16,8 @@
           - trans "Created"
         %th
           - trans "Title"
+        %th
+          - trans "Backend"
 
     %tbody
       - for task in tasks
@@ -27,6 +29,8 @@
               = task.date_created
           %td
             = task.title
+          %td
+            = task.backend.name
 
       - empty
         %tr

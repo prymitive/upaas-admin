@@ -92,6 +92,13 @@ class ApplicationResource(MongoEngineResource):
         super(ApplicationResource, self).__init__(*args, **kwargs)
         self.fields['owner'].readonly = True
 
+    def dehydrate(self, bundle):
+        instances = 0
+        if bundle.obj.run_plan:
+            instances = len(bundle.obj.run_plan.backends)
+        bundle.data['instance_count'] = instances
+        return bundle
+
     def obj_create(self, bundle, request=None, **kwargs):
         # TODO use MongoCleanedDataFormValidation ??
         metadata = bundle.data.get('metadata')

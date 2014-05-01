@@ -27,6 +27,7 @@ from upaas.processes import is_pid_running
 from upaas_admin.apps.servers.models import BackendServer
 from upaas_admin.apps.tasks.models import MongoLogHandler, Task
 from upaas_admin.apps.tasks.constants import TaskStatus
+from upaas_admin.apps.applications.models import ApplicationFlag
 
 
 log = logging.getLogger(__name__)
@@ -62,6 +63,17 @@ class BaseMuleCommand(NoArgsCommand):
 
     def cleanup(self):
         self.app_name = _('N/A')
+
+    def clean_failed_tasks(self):
+        for task in Task.objects(backend=self.backend,
+                                 status=TaskStatus.running):
+            if not is_pid_running(task.pid):
+                log.warning(_(
+                    "Found failed task, marking as failed (id: {id}, app: "
+                    "{name})").format(id=task.safe_id,
+                                      name=task.application.name))
+                task.update(set__status=TaskStatus.failed,
+                            set__date_finished=datetime.now())
 
     def add_logger(self, task):
         self.log_handler = MongoLogHandler(task)
@@ -101,6 +113,10 @@ class BaseMuleCommand(NoArgsCommand):
         task.save()
         self.add_logger(task)
         return task
+
+    def mark_task_successful(self, task):
+        task.update(set__status=TaskStatus.successful, set__progress=100,
+                    set__date_finished=datetime.now())
 
     def register_backend(self):
         name = gethostname()
@@ -157,10 +173,13 @@ class BaseMuleCommand(NoArgsCommand):
                            "{task_limit}]").format(tasks_done=self.tasks_done,
                                                    task_limit=task_limit))
             else:
+                self.clean_failed_tasks()
                 sleep(2)
 
 
 class FlagMuleCommand(BaseMuleCommand):
+
+    mule_flags = []
 
     def fail_flag(self, flag, task):
         flag.delete()
@@ -204,8 +223,25 @@ class FlagMuleCommand(BaseMuleCommand):
     def handle_flag(self, flag):
         raise NotImplementedError
 
+    def flag_filter(self):
+        return {}
+
     def find_flag(self):
-        raise NotImplementedError
+        if not self.mule_flags:
+            raise RuntimeError(_('No flags set for mule'))
+
+        ApplicationFlag.objects(
+            pending__ne=False,
+            name__in=self.mule_flags,
+            **self.flag_filter()).order_by(
+                '-date_created').update_one(
+                    set__pending=False,
+                    set__locked_since=datetime.now(),
+                    set__locked_by_backend=self.backend,
+                    set__locked_by_pid=self.pid)
+        return ApplicationFlag.objects(name__in=self.mule_flags,
+                                       locked_by_backend=self.backend,
+                                       pending=False).first()
 
     def unlock_flag(self, flag):
         flag.update(set__pending=True,

@@ -503,7 +503,6 @@ class RollbackApplicationView(OwnedPackagesMixin, AppActionView):
             app = self.object.application
             app.current_package = self.object
             app.save()
-            app.upgrade_application()
 
 
 class ApplicatiomMetadataFromPackageView(OwnedPackagesMixin, AppActionView):
