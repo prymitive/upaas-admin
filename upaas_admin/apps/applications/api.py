@@ -219,9 +219,10 @@ class PackageAuthorization(ReadOnlyAuthorization):
         return bundle.obj.application.owner == bundle.request.user
 
     def delete_list(self, object_list, bundle):
-        # TODO optimize to single query?
-        active_pkgs = [
-            app.current_package.id for app in bundle.request.user.applications]
+        active_pkgs = []
+        for app in bundle.request.user.applications:
+            if app:
+                active_pkgs.append(app.current_package.id)
         return object_list.filter(
             application__in=bundle.request.user.applications,
             id__not__in=active_pkgs)

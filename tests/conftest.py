@@ -127,6 +127,53 @@ def create_user(request):
 
 
 @pytest.fixture(scope="function")
+def create_user_list_with_apps(request):
+
+    with open(os.path.join(os.path.dirname(__file__), 'meta/redmine.yml'),
+              'rb') as meta:
+        metadata = meta.read()
+
+    users = []
+    users_data = {}
+    users_apps = {}
+    for i in range(0, 10):
+        data = {
+            'login': 'testuser%d' % i,
+            'first_name': 'FirstName%d' % i,
+            'last_name': 'LastName%d' % i,
+            'email': 'email%d@domain%d.com' % (i, i),
+            'password': '123456789źćż%d' % i,
+        }
+
+        u = User.objects(username=data['login']).first()
+        if u:
+            u.delete()
+
+        u = User(username=data['login'], first_name=data['first_name'],
+                 last_name=data['last_name'], email=data['email'],
+                 is_superuser=False)
+        u.set_password(data['password'])
+        u.save()
+        users.append(u)
+        users_data[u.safe_id] = u
+
+        app = Application(name='userApp', owner=u, metadata=metadata)
+        app.save()
+        users_apps[u] = app
+
+    def cleanup():
+        for us in users:
+            us.delete()
+        for ap in users_apps.values():
+            ap.delete()
+    request.addfinalizer(cleanup)
+
+    request.instance.user_list = users
+    request.instance.user_list_data = users_data
+    request.instance.user_list_apps = users_apps
+
+
+@pytest.fixture(scope="function")
 def create_superuser(request):
     create_user(request)
     request.instance.user.is_superuser = True

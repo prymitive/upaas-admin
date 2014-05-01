@@ -13,6 +13,7 @@ from tastypie.test import ResourceTestCase
 
 from upaas_admin.common.tests import MongoEngineTestCase
 
+from upaas_admin.apps.applications.models import Package
 from upaas_admin.apps.applications.constants import NeedsBuildingFlag
 
 
@@ -348,6 +349,43 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertHttpAccepted(self.api_client.delete(
             '/api/v1/package/', format='json',
             **self.get_apikey_auth(self.user)))
+
+        resp = self.api_client.get('/api/v1/package/', format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(len(self.deserialize(resp)['objects']), 1)
+
+        resp = self.api_client.get(
+            '/api/v1/package/%s/' % self.app.current_package.safe_id,
+            format='json', **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['bytes'],
+                         str(self.app.current_package.bytes))
+
+    @pytest.mark.usefixtures("create_pkg_list", "create_user_list_with_apps")
+    def test_package_delete_all_owned(self):
+        packages = {}
+        i = 10
+        for user, app in self.user_list_apps.items():
+            pkg = self.pkg_list[i]
+            pkg.application = app
+            pkg.save()
+            packages[user] = pkg
+            i += 1
+
+        self.assertHttpAccepted(self.api_client.delete(
+            '/api/v1/package/', format='json',
+            **self.get_apikey_auth(self.user)))
+
+        self.assertEqual(len(Package.objects()), 11)
+
+        for user, pkg in packages.items():
+            resp = self.api_client.get(
+                '/api/v1/package/%s/' % pkg.safe_id, format='json',
+                **self.get_apikey_auth(user))
+            self.assertValidJSONResponse(resp)
+            self.assertEqual(self.deserialize(resp)['builder'], 'fake builder')
+            self.assertEqual(self.deserialize(resp)['bytes'], '1024')
 
         resp = self.api_client.get('/api/v1/package/', format='json',
                                    **self.get_apikey_auth(self.user))
