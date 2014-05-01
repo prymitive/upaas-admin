@@ -221,6 +221,8 @@ class ApplicationResource(MongoEngineResource):
         self.method_check(request, allowed=['get'])
         stats = []
         app = self.get_app(kwargs)
+        if not app:
+            return HttpResponseNotFound(_("No such application"))
         run_plan = app.run_plan
         if run_plan:
             for backend_conf in app.run_plan.backends:
@@ -241,9 +243,6 @@ class ApplicationResource(MongoEngineResource):
                 s = fetch_json_stats(str(backend_conf.backend.ip),
                                      backend_conf.stats)
                 stats.append({'backend': backend_data, 'stats': s})
-        else:
-            return HttpResponseNotFound(_("No such application"))
-
         return self.create_response(request, stats)
 
 
