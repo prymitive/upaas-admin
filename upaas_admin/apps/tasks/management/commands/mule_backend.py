@@ -19,7 +19,7 @@ from django.utils.translation import ugettext as _
 from upaas_admin.apps.applications.models import ApplicationFlag
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
-    NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag)
+    NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag, IsStartingFlag)
 from upaas_admin.apps.tasks.mule import FlagMuleCommand
 from upaas_admin.common.uwsgi import fetch_json_stats
 from upaas_admin.apps.applications.exceptions import UnpackError
@@ -34,7 +34,7 @@ class Command(FlagMuleCommand):
 
     def find_flag(self):
         flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
-                 NeedsRemovingFlag.name]
+                 NeedsRemovingFlag.name, IsStartingFlag.name]
         remove_q = {
             'pending__ne': False,
             'name': NeedsRemovingFlag.name,
@@ -52,10 +52,12 @@ class Command(FlagMuleCommand):
                 set__locked_since=datetime.now(),
                 set__locked_by_backend=self.backend,
                 set__locked_by_pid=self.pid)
-        return ApplicationFlag.objects(name__in=flags,
-                                       locked_by_backend=self.backend,
-                                       locked_by_pid=self.pid,
-                                       pending=False).first()
+        return ApplicationFlag.objects(
+            name=IsStartingFlag.name, locked_by_backend=self.backend,
+            locked_by_pid=self.pid, pending=False).first() or \
+            ApplicationFlag.objects(
+                name__in=flags, locked_by_backend=self.backend,
+                locked_by_pid=self.pid, pending=False).first()
 
     def handle_task(self):
         task_handled = super(Command, self).handle_task()
@@ -67,14 +69,13 @@ class Command(FlagMuleCommand):
                                           NeedsStoppingFlag.name]):
                 continue
             if not self.is_application_running(app):
-                log.info(_("Application {name} needs starting").format(
-                    name=app.name))
-                run_plan = ApplicationRunPlan.objects(application=app).first()
-                if run_plan:
-                    task = self.create_task(
-                        app, _('Starting application instance'))
-                    self.start_app(task, app, run_plan)
-                    self.remove_logger()
+                ApplicationFlag.objects(
+                    application=app, name=IsStartingFlag.name).update_one(
+                        set__pending=False,
+                        set__locked_since=datetime.now(),
+                        set__locked_by_backend=self.backend,
+                        set__locked_by_pid=self.pid,
+                        upsert=True)
 
     def handle_flag(self, flag):
         if flag.name == NeedsStoppingFlag.name:
@@ -89,10 +90,22 @@ class Command(FlagMuleCommand):
             task = self.create_task(flag.application, flag.title,
                                     flag=flag.name)
             self.restart_app(task, flag.application)
+        elif flag.name == IsStartingFlag.name:
+            log.info(_("Application {name} needs starting").format(
+                name=flag.application.name))
+            run_plan = flag.application.run_plan
+            if run_plan:
+                task = self.create_task(flag.application, flag.title,
+                                        flag=flag.name)
+                self.start_app(task, flag.application, run_plan)
+                self.remove_logger()
 
     def is_application_running(self, application):
-        # FIXME better check
-        return os.path.exists(application.vassal_path)
+        if not os.path.exists(application.vassal_path):
+            return False
+        if not os.path.exists(application.current_package.ack_path):
+            return False
+        return True
 
     def start_app(self, task, application, run_plan):
         backend_conf = run_plan.backend_settings(self.backend)
@@ -105,15 +118,22 @@ class Command(FlagMuleCommand):
                        "{id}").format(name=application.name,
                                       id=backend_conf.package.safe_id))
 
-            if not os.path.exists(backend_conf.package.package_path):
-                try:
-                    backend_conf.package.unpack()
-                except UnpackError as e:
-                    log.error(_("Unpacking failed: {e}").format(e=e))
-                    raise Exception(_("Unpacking failed: {e}").format(e=e))
-            else:
+            if os.path.exists(backend_conf.package.package_path):
                 log.warning(_("Package already exists: {path}").format(
                     path=backend_conf.package.package_path))
+                if os.path.exists(application.vassal_path):
+                    log.info(_("Removing broken instance"))
+                    os.remove(application.vassal_path)
+                    self.wait_until(application, running=False)
+                application.remove_unpacked_packages()
+                task.update(set__progress=20)
+
+            log.info(_("Unpacking application package"))
+            try:
+                backend_conf.package.unpack()
+            except UnpackError as e:
+                log.error(_("Unpacking failed: {e}").format(e=e))
+                raise Exception(_("Unpacking failed: {e}").format(e=e))
             task.update(set__progress=50)
 
             backend_conf.package.save_vassal_config(backend_conf)

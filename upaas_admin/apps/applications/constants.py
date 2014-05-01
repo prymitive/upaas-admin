@@ -19,14 +19,19 @@ class NeedsBuildingFlag:
         build_interpreter_version = 'BUILD_INTERPRETER_VERSION'
 
 
+class IsStartingFlag:
+    name = 'IS_STARTING'
+    title = _('Starting application instance')
+
+
 class NeedsStoppingFlag:
     name = 'NEEDS_STOPPING'
-    title = _('Stopping application')
+    title = _('Stopping application instance')
 
 
 class NeedsRestartFlag:
     name = 'NEEDS_RESTART'
-    title = _('Restarting application')
+    title = _('Restarting application instance')
 
 
 class NeedsRemovingFlag:
@@ -36,6 +41,7 @@ class NeedsRemovingFlag:
 
 FLAGS_BY_NAME = {
     NeedsBuildingFlag.name: NeedsBuildingFlag,
+    IsStartingFlag.name: IsStartingFlag,
     NeedsStoppingFlag.name: NeedsStoppingFlag,
     NeedsRestartFlag.name: NeedsRestartFlag,
     NeedsRemovingFlag.name: NeedsRemovingFlag,

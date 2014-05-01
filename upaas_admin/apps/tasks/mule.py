@@ -10,7 +10,7 @@ from __future__ import unicode_literals
 import logging
 import signal
 from os import getpid
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import sleep
 from socket import gethostname
 
@@ -75,6 +75,28 @@ class BaseMuleCommand(NoArgsCommand):
                 task.update(set__status=TaskStatus.failed,
                             set__date_finished=datetime.now())
 
+    def clean_failed_remote_tasks(self):
+        # look for tasks locked at backends that did not ack itself to the
+        # database for at least 600 seconds
+        timestamp = datetime.now() - timedelta(seconds=600)
+        backends = BackendServer.objects(**{
+            'id__ne': self.backend.id,
+            'worker_ping__%s__lte' % self.mule_name.replace(' ', ''): timestamp
+        })
+        if backends:
+            log.debug(_("{len} non responsive backends: {names}").format(
+                len=len(backends), names=[b.name for b in backends]))
+            for task in Task.objects(locked_by_backend__in=backends,
+                                    locked_since__lte=timestamp):
+                log.warning(_("Task '{name}' with id {tid} is locked on non "
+                              "backend {backend}, but it didn't send any "
+                              "pings for 10 minutes, marking as "
+                              "failed").format(
+                    name=task.title, tid=task.safe_id,
+                    backend=task.locked_by_backend))
+                task.update(set__status=TaskStatus.failed,
+                            set__date_finished=datetime.now())
+
     def add_logger(self, task):
         self.log_handler = MongoLogHandler(task)
         root_logger = logging.getLogger()
@@ -120,8 +142,7 @@ class BaseMuleCommand(NoArgsCommand):
 
     def ping(self):
         args = {}
-        name = self.mule_name.replace(' ', '')
-        key = 'set__worker_ping__%s' % name
+        key = 'set__worker_ping__%s' % self.mule_name.replace(' ', '')
         args[key] = datetime.now()
         BackendServer.objects(id=self.backend.id).update_one(**args)
 
@@ -182,6 +203,7 @@ class BaseMuleCommand(NoArgsCommand):
                                                    task_limit=task_limit))
             else:
                 self.clean_failed_tasks()
+                self.clean_failed_remote_tasks()
                 sleep(2)
 
 

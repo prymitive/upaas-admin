@@ -71,6 +71,8 @@ class Package(Document):
     revision_description = StringField()
     revision_changelog = StringField()
 
+    ack_filename = '.upaas-unpacked'
+
     meta = {
         'indexes': ['filename'],
         'ordering': ['-date_created'],
@@ -106,6 +108,10 @@ class Package(Document):
         Unpacked package directory path
         """
         return os.path.join(settings.UPAAS_CONFIG.paths.apps, self.safe_id)
+
+    @property
+    def ack_path(self):
+        return os.path.join(self.package_path, self.ack_filename)
 
     def delete_package_file(self, null_filename=True):
         log.debug(_("Deleting package file for {pkg}").format(
@@ -386,6 +392,9 @@ class Package(Document):
             log.error("Error while unpacking package to '%s'" % workdir)
             utils.rmdirs(directory)
             raise UnpackError("Error during package unpack")
+
+        with open(self.ack_path, 'w') as ack:
+            ack.write(_('Unpacked: {now}').format(now=datetime.datetime.now()))
 
         log.info("Package unpacked, moving into '%s'" % self.package_path)
         try:
