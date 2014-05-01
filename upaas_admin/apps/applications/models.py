@@ -393,7 +393,7 @@ class Package(Document):
             utils.rmdirs(directory)
             raise UnpackError("Error during package unpack")
 
-        with open(self.ack_path, 'w') as ack:
+        with open(os.path.join(pkg_path, self.ack_filename), 'w') as ack:
             ack.write(_('Unpacked: {now}').format(now=datetime.datetime.now()))
 
         log.info("Package unpacked, moving into '%s'" % self.package_path)
