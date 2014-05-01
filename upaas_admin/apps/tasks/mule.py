@@ -118,6 +118,13 @@ class BaseMuleCommand(NoArgsCommand):
         task.update(set__status=TaskStatus.successful, set__progress=100,
                     set__date_finished=datetime.now())
 
+    def ping(self):
+        args = {}
+        name = self.mule_name.replace(' ', '')
+        key = 'set__worker_ping__%s' % name
+        args[key] = datetime.now()
+        BackendServer.objects(id=self.backend.id).update_one(**args)
+
     def register_backend(self):
         name = gethostname()
         local_ip = None
@@ -167,6 +174,7 @@ class BaseMuleCommand(NoArgsCommand):
             if self.is_exiting:
                 return
 
+            self.ping()
             if self.handle_task():
                 self.tasks_done += 1
                 log.info(_("Task completed, [done: {tasks_done}, limit: "
