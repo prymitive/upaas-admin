@@ -87,7 +87,7 @@ class BaseMuleCommand(NoArgsCommand):
             log.debug(_("{len} non responsive backends: {names}").format(
                 len=len(backends), names=[b.name for b in backends]))
             for task in Task.objects(locked_by_backend__in=backends,
-                                    locked_since__lte=timestamp):
+                                     locked_since__lte=timestamp):
                 log.warning(_("Task '{name}' with id {tid} is locked on non "
                               "backend {backend}, but it didn't send any "
                               "pings for 10 minutes, marking as "
