@@ -96,8 +96,7 @@ window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.t
 
 window.UPAAS.tasks.parse_removed_running_task = function(data) {
     window.UPAAS.tasks.update_task_menu_badge(data);
-    window.UPAAS.tasks.Tasks.fetch({async: false});
-    var task = window.UPAAS.tasks.Tasks.where({id: data.attributes.id})[0];
+    var task = window.UPAAS.utils.where_or_get_first(window.UPAAS.tasks.Tasks, {id: data.attributes.id});
     window.UPAAS.tasks.render_task_menu_item(task);
     setTimeout(function(){
         $('#upaas-task-menu-header-' + task.attributes.id).remove();
