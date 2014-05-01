@@ -11,7 +11,13 @@ window.UPAAS.applications = window.UPAAS.applications || {};
 //= Applications ===============================================================
 
 
-window.UPAAS.applications.ApplicationModel = Backbone.Model.extend({});
+window.UPAAS.applications.ApplicationModel = Backbone.Model.extend({
+    urlRoot: '/api/v1/application/',
+    url: function() {
+        return Backbone.Model.prototype.url.call(this) + '?format=json';
+    }
+});
+
 window.UPAAS.applications.ApplicationCollection = Backbone.Collection.extend({
    model: window.UPAAS.applications.ApplicationModel,
    url : "/api/v1/application/?format=json"
@@ -34,7 +40,13 @@ window.UPAAS.utils.bind_backbone(window.UPAAS.applications.Applications, window.
 //= Packages ===================================================================
 
 
-window.UPAAS.applications.PackageModel = Backbone.Model.extend({});
+window.UPAAS.applications.PackageModel = Backbone.Model.extend({
+    urlRoot: '/api/v1/application/',
+    url: function() {
+        return Backbone.Model.prototype.url.call(this) + '?format=json';
+    }
+});
+
 window.UPAAS.applications.PackageCollection = Backbone.Collection.extend({
    model: window.UPAAS.applications.PackageModel,
    url : "/api/v1/package/?format=json"

@@ -8,14 +8,19 @@ window.UPAAS = window.UPAAS || {};
 window.UPAAS.tasks = window.UPAAS.tasks || {};
 
 
-window.UPAAS.tasks.TaskModel = Backbone.Model.extend({});
+window.UPAAS.tasks.TaskModel = Backbone.Model.extend({
+    urlRoot: '/api/v1/task/',
+    url: function() {
+        return Backbone.Model.prototype.url.call(this) + '?format=json';
+    }
+});
 
 
 //= All tasks ==================================================================
 
 window.UPAAS.tasks.TaskCollection = Backbone.Collection.extend({
     model: window.UPAAS.tasks.TaskModel,
-    url : "/api/v1/task/?format=json",
+    url : "/api/v1/task/?format=json"
 });
 window.UPAAS.tasks.Tasks = new window.UPAAS.tasks.TaskCollection();
 
@@ -39,9 +44,9 @@ window.UPAAS.tasks.running_task_dict = {};
 
 
 window.UPAAS.tasks.render_task_menu_item = function(task) {
-    var app = window.UPAAS.utils.where_or_fetch(window.UPAAS.applications.Applications, {
+    var app = window.UPAAS.utils.where_or_get_first(window.UPAAS.applications.Applications, {
         resource_uri: task.attributes.application
-    })[0];
+    });
     var task_html = haml.compileHaml('upaas-tasks-dropdown-details')({
         task: task.attributes,
         application: app.attributes

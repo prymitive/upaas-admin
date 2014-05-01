@@ -64,6 +64,19 @@ window.UPAAS.utils.where_or_fetch = function(collection, options) {
 }
 
 
+window.UPAAS.utils.where_or_get_first = function(collection, options) {
+    var ret;
+    ret = collection.where(options);
+    if (ret.length > 0) {
+        return ret[0];
+    } else {
+        var model = new collection.model(options);
+        model.fetch({async: false});
+        return model;
+    }
+}
+
+
 window.UPAAS.utils.update_progress = function(selector, progress) {
     $(selector).attr('aria-valuenow', progress).attr('style', 'width: ' + progress + '%;');
 }
