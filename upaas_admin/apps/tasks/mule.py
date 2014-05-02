@@ -139,7 +139,7 @@ class MuleTaskHelper(object):
         name = 'local_locks'
         if not self.can_clean(name):
             return
-        for lock in FlagLock.objects(backend=backend):
+        for lock in FlagLock.objects(backend__in=[backend, None]):
             if not is_pid_running(lock.pid):
                 log.warning(_("Found stale lock, removing (app: {name}, pid: "
                               "{pid})").format(name=lock.application.name,
@@ -352,19 +352,25 @@ class MuleCommand(NoArgsCommand):
         self.fail_task(task)
 
     def flag_filter(self):
+        single_shot_flags = []
+        multi_show_flags = []
+        for flag in self.mule_flags:
+            if flag in SINGLE_SHOT_FLAGS:
+                single_shot_flags.append(flag)
+            else:
+                multi_show_flags.append(flag)
         return ApplicationFlag.objects(
-            Q(name__in=self.mule_flags) & (
-                (
-                    Q(pending__ne=False) &
-                    Q(name__in=SINGLE_SHOT_FLAGS) &
-                    Q(application__nin=FlagLock.objects().distinct(
-                        'application'))
-                ) | (
-                    Q(pending_backends=self.backend) &
-                    Q(name__nin=SINGLE_SHOT_FLAGS) &
-                    Q(application__nin=FlagLock.objects(
-                        backend=self.backend).distinct('application'))
-                )
+            (
+                Q(pending__ne=False) &
+                Q(name__in=single_shot_flags) &
+                Q(application__nin=FlagLock.objects(
+                    flag__in=single_shot_flags).distinct('application'))
+            ) | (
+                Q(pending_backends=self.backend) &
+                Q(name__in=multi_show_flags) &
+                Q(application__nin=FlagLock.objects(
+                    flag__in=multi_show_flags,
+                    backend=self.backend).distinct('application'))
             )
         )
 
@@ -374,12 +380,15 @@ class MuleCommand(NoArgsCommand):
         flag = self.flag_filter().first()
         if flag:
             print(('GOT FLAG, LOCKING', flag._data))
+            kwargs = {}
             if flag.name in SINGLE_SHOT_FLAGS:
                 print('SINGLE SHOT, UNSET PENDING')
                 flag.update(unset__pending=True)
+            else:
+                kwargs['backend'] = self.backend
 
             lock = FlagLock(application=flag.application, flag=flag.name,
-                            backend=self.backend, pid=self.pid)
+                            pid=self.pid, **kwargs)
             try:
                 lock.save()
             except NotUniqueError:
@@ -390,7 +399,12 @@ class MuleCommand(NoArgsCommand):
 
     def unlock_flag(self, flag):
         print(('UNLOCK FLAG', flag._data))
-        lock = FlagLock.objects(application=flag.application, flag=flag.name,
-                                backend=self.backend).first()
+        if flag.name in SINGLE_SHOT_FLAGS:
+            lock = FlagLock.objects(application=flag.application,
+                                    flag=flag.name).first()
+        else:
+            lock = FlagLock.objects(application=flag.application,
+                                    flag=flag.name,
+                                    backend=self.backend).first()
         if lock:
             lock.delete()

@@ -433,8 +433,7 @@ class FlagLock(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     application = ReferenceField('Application', dbref=False, required=True)
     flag = StringField(required=True)
-    backend = ReferenceField(BackendServer, required=True,
-                             reverse_delete_rule=NULLIFY)
+    backend = ReferenceField(BackendServer, reverse_delete_rule=NULLIFY)
     pid = IntField(required=True)
 
     meta = {
@@ -655,6 +654,12 @@ class Application(Document):
 
             run_plan.backends = backends
             run_plan.save()
+            ApplicationFlag.objects(
+                application=self, name=IsStartingFlag.name).update_one(
+                    set__pending_backends=[b.backend for b in backends],
+                    upsert=True)
+            ApplicationFlag.objects(name=NeedsStoppingFlag.name,
+                                    application=self).delete()
 
     def stop_application(self):
         if self.current_package:
@@ -668,6 +673,8 @@ class Application(Document):
             application=self, name=NeedsStoppingFlag.name).update_one(
                 set__pending_backends=[
                     b.backend for b in self.run_plan.backends], upsert=True)
+        ApplicationFlag.objects(name=IsStartingFlag.name,
+                                application=self).delete()
 
     def restart_application(self):
         if self.current_package:
