@@ -94,22 +94,20 @@ class Command(MuleCommand):
         last_check = self.vassal_config_mtimes.get(application.safe_id)
         if not last_check or last_check <= (
                 datetime.now() - timedelta(seconds=30)):
-            if os.path.exists(application.vassal_path):
-                self.vassal_config_checksums[
-                    application.safe_id] = calculate_file_sha256(
-                        application.vassal_path)
-                self.vassal_config_mtimes[application.safe_id] = datetime.now()
-            else:
-                # ignore missing vassals, is_application_running() will handle
-                # it
-                return True
+            backend_conf = application.run_plan.backend_settings(self.backend)
+            options = "\n".join(
+                application.current_package.generate_uwsgi_config(
+                    backend_conf))
+            self.vassal_config_checksums[
+                application.safe_id] = calculate_string_sha256(options)
+            self.vassal_config_mtimes[application.safe_id] = datetime.now()
 
-        backend_conf = application.run_plan.backend_settings(self.backend)
-        options = "\n".join(
-            application.current_package.generate_uwsgi_config(
-                backend_conf))
-        return self.vassal_config_checksums.get(
-            application.safe_id) == calculate_string_sha256(options)
+        if os.path.exists(application.vassal_path):
+            return self.vassal_config_checksums.get(application.safe_id) == \
+                calculate_file_sha256(application.vassal_path)
+        else:
+            # ignore missing vassals, is_application_running() will handle it
+            return True
 
     def start_app(self, task, application, run_plan):
         backend_conf = run_plan.backend_settings(self.backend)
