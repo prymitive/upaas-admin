@@ -62,10 +62,6 @@ class Command(MuleCommand):
                         add_to_set__pending_backends=self.backend, upsert=True)
 
     def handle_flag(self, flag):
-        if flag.application.safe_id in self.vassal_config_checksums:
-            del self.vassal_config_checksums[flag.application.safe_id]
-        if flag.application.safe_id in self.vassal_config_mtimes:
-            del self.vassal_config_mtimes[flag.application.safe_id]
         if flag.name in [NeedsStoppingFlag.name, NeedsRemovingFlag.name]:
             log.info(_("Application {name} needs stopping").format(
                 name=flag.application.name))
