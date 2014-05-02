@@ -340,16 +340,25 @@ class Package(Document):
         options.append('\n')
         return options
 
-    def save_vassal_config(self, backend):
-        log.info("Generating uWSGI vassal configuration")
-        options = "\n".join(self.generate_uwsgi_config(backend))
-
+    def check_vassal_config(self, options):
+        """
+        Verify is there is uWSGI vassal configuration file and if it doesn't
+         need updating.
+        """
         if os.path.exists(self.application.vassal_path):
             current_hash = calculate_file_sha256(self.application.vassal_path)
             new_hash = calculate_string_sha256(options)
             if current_hash == new_hash:
-                log.info("Vassal is present and valid, skipping rewrite")
-                return
+                return True
+        return False
+
+    def save_vassal_config(self, backend):
+        log.info("Generating uWSGI vassal configuration")
+        options = "\n".join(self.generate_uwsgi_config(backend))
+
+        if self.check_vassal_config(options):
+            log.info("Vassal is present and valid, skipping rewrite")
+            return
 
         log.info("Saving vassal configuration to "
                  "'%s'" % self.application.vassal_path)

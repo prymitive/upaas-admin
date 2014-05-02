@@ -45,6 +45,10 @@ class Command(MuleCommand):
                 ApplicationFlag.objects(
                     application=app, name=IsStartingFlag.name).update_one(
                         add_to_set__pending_backends=self.backend, upsert=True)
+            elif not self.is_vassal_config_valid(app):
+                ApplicationFlag.objects(
+                    application=app, name=NeedsRestartFlag.name).update_one(
+                        add_to_set__pending_backends=self.backend, upsert=True)
 
     def handle_flag(self, flag):
         if flag.name in [NeedsStoppingFlag.name, NeedsRemovingFlag.name]:
@@ -74,6 +78,10 @@ class Command(MuleCommand):
         if not os.path.exists(application.current_package.ack_path):
             return False
         return True
+
+    def is_vassal_config_valid(self, application):
+        return application.current_package.check_vassal_config(
+            "\n".join(self.generate_uwsgi_config(self.backend)))
 
     def start_app(self, task, application, run_plan):
         backend_conf = run_plan.backend_settings(self.backend)
