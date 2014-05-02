@@ -12,11 +12,9 @@ from datetime import datetime, timedelta
 import os
 import logging
 
-from mongoengine import Q
-
 from django.utils.translation import ugettext as _
 
-from upaas_admin.apps.applications.models import ApplicationFlag, FlagLock
+from upaas_admin.apps.applications.models import ApplicationFlag
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
     NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag, IsStartingFlag)
@@ -119,7 +117,7 @@ class Command(MuleCommand):
             log.error(_("Backend {backend} missing in run plan for "
                         "{name}").format(backend=self.backend.name,
                                          name=application.name))
-            self.fail(task)
+            self.fail_task(task)
 
     def restart_app(self, task, application):
         backend_conf = application.run_plan.backend_settings(self.backend)
@@ -131,7 +129,7 @@ class Command(MuleCommand):
                 name=application.name))
             self.mark_task_successful(task)
         else:
-            self.fail(task)
+            self.fail_task(task)
 
     def stop_app(self, task, application):
         if os.path.isfile(application.vassal_path):
@@ -143,7 +141,7 @@ class Command(MuleCommand):
                 log.error(_("Can't remove vassal config file at '{path}': "
                             "{err}").format(path=application.vassal_path,
                                             err=e))
-                self.fail(task)
+                self.fail_task(task)
         else:
             log.warning(_("Vassal config file not found at '{path}").format(
                 path=application.vassal_path))
@@ -161,7 +159,7 @@ class Command(MuleCommand):
                 run_plan.delete()
         else:
             log.warning(_("Missing run plan for {name}, already "
-                          "stopped?").format(name=self.application.name))
+                          "stopped?").format(name=application.name))
 
         application.remove_unpacked_packages()
         log.info(_("Application '{name}' stopped").format(
