@@ -431,11 +431,13 @@ class FlagLock(Document):
     meta = {
         'indexes': [
             {'fields': ['application', 'flag', 'backend'], 'unique': True},
-        ]
+        ],
+        'ordering': ['-date_created'],
     }
 
 
 class ApplicationFlag(Document):
+    date_created = DateTimeField(required=True, default=datetime.datetime.now)
     application = ReferenceField('Application', dbref=False, required=True)
     name = StringField(required=True, unique_with='application')
     options = DictField()
@@ -447,7 +449,8 @@ class ApplicationFlag(Document):
         'indexes': [
             {'fields': ['name', 'application'], 'unique': True},
             # TODO add indexes after profiling
-        ]
+        ],
+        'ordering': ['-date_created'],
     }
 
     @property
