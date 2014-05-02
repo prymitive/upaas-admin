@@ -95,9 +95,12 @@ class Command(MuleCommand):
         if not last_check or last_check <= (
                 datetime.now() - timedelta(seconds=30)):
             backend_conf = application.run_plan.backend_settings(self.backend)
+            level = log.getEffectiveLevel()
+            log.setLevel(logging.ERROR)
             options = "\n".join(
                 application.current_package.generate_uwsgi_config(
                     backend_conf))
+            log.setLevel(level)
             self.vassal_config_checksums[
                 application.safe_id] = calculate_string_sha256(options)
             self.vassal_config_mtimes[application.safe_id] = datetime.now()
