@@ -94,7 +94,7 @@ class Command(MuleCommand):
         last_check = self.vassal_config_mtimes.get(application.safe_id)
         if not last_check or last_check <= (
                 datetime.now() - timedelta(seconds=30)):
-            if os.path.exists(self.application.vassal_path):
+            if os.path.exists(application.vassal_path):
                 self.vassal_config_checksums[
                     application.safe_id] = calculate_file_sha256(
                         application.vassal_path)
