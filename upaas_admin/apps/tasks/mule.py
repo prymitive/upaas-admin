@@ -199,6 +199,9 @@ class MuleTaskHelper(object):
         self.last_clean[name] = datetime.now()
 
     def clean_orphaned_locks(self):
+        name = 'orphaned_locks'
+        if not self.can_clean(name):
+            return
         timestamp = datetime.now() - timedelta(seconds=60)
         for lock in FlagLock.objects(
                 backend__exists=False, flag__in=SINGLE_SHOT_FLAGS,
@@ -210,6 +213,7 @@ class MuleTaskHelper(object):
                               "{name})").format(name=lock.application.name))
                 self.reset_pending_state(lock)
                 lock.delete()
+        self.last_clean[name] = datetime.now()
 
 
 class MuleCommand(NoArgsCommand):
