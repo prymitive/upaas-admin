@@ -40,7 +40,7 @@ from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.applications.constants import (
     NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, NeedsRemovingFlag,
-    FLAGS_BY_NAME)
+    IsStartingFlag, FLAGS_BY_NAME)
 
 
 log = logging.getLogger(__name__)
@@ -712,7 +712,15 @@ class Application(Document):
                         set__pending_backends=updated_backends, upsert=True)
 
             for backend in current_backends:
-                if backend not in [bc.backend for bc in new_backends]:
+                if backend in [bc.backend for bc in new_backends]:
+                    log.info(_("Starting {name} on backend {backend}").format(
+                        name=self.name, backend=backend.name))
+                    ApplicationFlag.objects(
+                        pending_backends__ne=backend,
+                        application=self,
+                        name=IsStartingFlag.name).update_one(
+                            add_to_set__pending_backends=backend, upsert=True)
+                else:
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
