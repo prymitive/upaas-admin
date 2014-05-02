@@ -367,7 +367,7 @@ class MuleCommand(NoArgsCommand):
                 lock.save()
             except NotUniqueError:
                 print('CANT SAVE!')
-                pass
+                return
             else:
                 if flag.name in SINGLE_SHOT_FLAGS:
                     print('SINGLE SHOT, UNSET PENDING')
