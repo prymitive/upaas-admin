@@ -705,8 +705,6 @@ class Application(Document):
                     application=self, name=NeedsRestartFlag.name).update_one(
                         push__pending_backends=backend, upsert=True)
 
-            self.restart_application()
-
     def trim_package_files(self):
         """
         Removes over limit package files from database. Number of packages per
