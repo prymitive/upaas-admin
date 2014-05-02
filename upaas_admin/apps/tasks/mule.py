@@ -401,7 +401,7 @@ class MuleCommand(NoArgsCommand):
             kwargs = {}
             if flag.name in SINGLE_SHOT_FLAGS:
                 print('SINGLE SHOT, UNSET PENDING')
-                flag.update(unset__pending=True)
+                flag.update(set__pending=False)
             else:
                 kwargs['backend'] = self.backend
 
