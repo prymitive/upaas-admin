@@ -313,6 +313,7 @@ class MuleCommand(NoArgsCommand):
             try:
                 self.handle_flag(flag)
             except MuleTaskFailed:
+                print('FLAG FAILED')
                 failed = True
             finally:
                 print('CLEANING FLAG')

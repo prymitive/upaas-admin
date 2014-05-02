@@ -47,7 +47,7 @@ class Command(MuleCommand):
                         add_to_set__pending_backends=self.backend, upsert=True)
 
     def handle_flag(self, flag):
-        if flag.name == NeedsStoppingFlag.name:
+        if flag.name in [NeedsStoppingFlag.name, NeedsRemovingFlag.name]:
             log.info(_("Application {name} needs stopping").format(
                 name=flag.application.name))
             task = self.create_task(flag.application, flag.title,
