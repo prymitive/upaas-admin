@@ -238,8 +238,9 @@ class MuleCommand(NoArgsCommand):
         make_option('--task-limit', dest='task_limit', type=int, default=0,
                     help=_('Exit after processing given number of tasks '
                            '(default is no limit)')),
-        make_option('--ping-disabled', action="store_true", dest='ping_disabled',
-                    default=False, help=_('Disable health check pings')),
+        make_option('--ping-disabled', action="store_true",
+                    dest='ping_disabled', default=False,
+                    help=_('Disable health check pings')),
         make_option('--ping-interval', dest='ping_interval', type=int,
                     default=60, help=_('Health check ping interval (default is'
                                        ' 60 seconds)')),
