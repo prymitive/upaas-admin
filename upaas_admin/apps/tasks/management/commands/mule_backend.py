@@ -119,8 +119,10 @@ class Command(MuleCommand):
                        "{id}").format(name=application.name,
                                       id=backend_conf.package.safe_id))
 
-            if os.path.exists(backend_conf.package.package_path):
-                log.warning(_("Package already exists: {path}").format(
+            if os.path.exists(backend_conf.package.package_path) and not \
+                    os.path.exists(application.current_package.ack_path):
+                log.warning(_("Package already exists but it's broken: "
+                              "{path}").format(
                     path=backend_conf.package.package_path))
                 if os.path.exists(application.vassal_path):
                     log.info(_("Removing broken instance"))
