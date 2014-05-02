@@ -112,7 +112,7 @@ class MuleTaskHelper(object):
             ApplicationFlag.objects(
                 application=lock.application, name=lock.flag,
                 pending_backends__ne=lock.backend).update_one(
-                    push__pending_backends=lock.backend)
+                    add_to_set__pending_backends=lock.backend)
 
     def clean_failed_tasks(self, backend):
         name = 'local_tasks'

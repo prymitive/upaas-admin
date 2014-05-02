@@ -703,7 +703,7 @@ class Application(Document):
                 ApplicationFlag.objects(
                     pending_backends__ne=backend,
                     application=self, name=NeedsRestartFlag.name).update_one(
-                        push__pending_backends=backend, upsert=True)
+                        add_to_set__pending_backends=backend, upsert=True)
 
     def trim_package_files(self):
         """

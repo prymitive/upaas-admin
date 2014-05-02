@@ -44,7 +44,7 @@ class Command(MuleCommand):
             if not self.is_application_running(app):
                 ApplicationFlag.objects(
                     application=app, name=IsStartingFlag.name).update_one(
-                        push__pending_backends=self.backend, upsert=True)
+                        add_to_set__pending_backends=self.backend, upsert=True)
 
     def handle_flag(self, flag):
         if flag.name == NeedsStoppingFlag.name:
