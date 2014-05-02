@@ -170,7 +170,7 @@ class Package(Document):
         """
 
         def _load_template(path):
-            log.info("Loading uWSGI template from: %s" % path)
+            log.debug("Loading uWSGI template from: %s" % path)
             for search_path in UPAAS_CONFIG_DIRS:
                 template_path = os.path.join(search_path, path)
                 if os.path.exists(template_path):

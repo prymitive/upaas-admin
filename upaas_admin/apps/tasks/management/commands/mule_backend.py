@@ -97,12 +97,9 @@ class Command(MuleCommand):
     def is_vassal_config_valid(self, application):
         if os.path.exists(application.vassal_path):
             backend_conf = application.run_plan.backend_settings(self.backend)
-            level = log.getEffectiveLevel()
-            log.setLevel(logging.ERROR)
             options = "\n".join(
                 application.current_package.generate_uwsgi_config(
                     backend_conf))
-            log.setLevel(level)
             return calculate_string_sha256(options) == calculate_file_sha256(
                 application.vassal_path)
         else:
