@@ -48,19 +48,25 @@ class MuleTaskFailed(Exception):
 class MuleBackendHelper(object):
 
     def __init__(self, name):
+        self.exiting = False
         self.name = name
+        self.interval = 0
         self.backend = self.register_backend()
 
     def pinger(self):
         key = 'set__worker_ping__%s' % self.name
-        while True:
+        while not self.exiting:
             BackendServer.objects(id=self.backend.id).update_one(
                 **{key: datetime.now()})
-            sleep(10)
+            sleep(self.interval)
 
-    def ping_thread(self):
+    def start_pinger(self, interval=60):
+        self.interval = interval
         t1 = Thread(target=self.pinger)
         t1.start()
+
+    def stop_pinger(self):
+        self.exiting = True
 
     def register_backend(self):
         name = gethostname()
@@ -232,6 +238,11 @@ class MuleCommand(NoArgsCommand):
         make_option('--task-limit', dest='task_limit', type=int, default=0,
                     help=_('Exit after processing given number of tasks '
                            '(default is no limit)')),
+        make_option('--ping-disabled', action="store_true", dest='ping_disabled',
+                    default=False, help=_('Disable health check pings')),
+        make_option('--ping-interval', dest='ping_interval', type=int,
+                    default=60, help=_('Health check ping interval (default is'
+                                       ' 60 seconds)')),
     )
 
     def __init__(self, *args, **kwargs):
@@ -239,7 +250,6 @@ class MuleCommand(NoArgsCommand):
 
         self.backend_helper = MuleBackendHelper(
             self.mule_name.replace(' ', ''))
-        self.backend_helper.ping_thread()
         self.backend = self.backend_helper.backend
 
         self.task_helper = MuleTaskHelper(self.mule_name.replace(' ', ''))
@@ -310,6 +320,9 @@ class MuleCommand(NoArgsCommand):
                     signal.SIGQUIT]:
             signal.signal(sig, self.mark_exiting)
 
+        if not options['ping_disabled']:
+            self.backend_helper.start_pinger(interval=options['ping_interval'])
+
         self.task_limit = options['task_limit']
         log.info(_("{name} ready, waiting for tasks (limit: "
                    "{task_limit})").format(name=self.mule_name,
@@ -321,6 +334,7 @@ class MuleCommand(NoArgsCommand):
                 self.is_exiting = True
 
             if self.is_exiting:
+                self.backend_helper.stop_pinger()
                 return
 
             self.task_helper.clean(self.backend)

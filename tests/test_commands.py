@@ -28,7 +28,8 @@ class CommandTest(MongoEngineTestCase):
         self.app.build_package()
         self.assertNotEqual(self.app.flags, [])
         self.assertEqual(
-            call_command('mule_builder', task_limit=1), None)
+            call_command('mule_builder', task_limit=1, ping_disabled=True),
+            None)
 
     @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
                              "create_buildable_app")
@@ -38,7 +39,8 @@ class CommandTest(MongoEngineTestCase):
         self.app.build_package()
         self.assertNotEqual(self.app.flags, [])
         self.assertEqual(
-            call_command('mule_builder', task_limit=1), None)
+            call_command('mule_builder', task_limit=1, ping_disabled=True),
+            None)
 
     def test_create_user_cmd(self):
         from upaas_admin.apps.users.models import User
