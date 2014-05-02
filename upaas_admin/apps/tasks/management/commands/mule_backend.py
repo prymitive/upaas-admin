@@ -46,6 +46,7 @@ class Command(MuleCommand):
                 datetime.now() - timedelta(seconds=60)):
             return False
         log.info(_("Checking running applications"))
+        self.last_app_check = datetime.now()
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
             if app.flags.filter(name__in=[NeedsRemovingFlag.name,
