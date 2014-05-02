@@ -309,15 +309,19 @@ class MuleCommand(NoArgsCommand):
         flag = self.find_flag()
         if flag:
             print(('GOT FLAG', flag._data))
+            failed = False
             try:
                 self.handle_flag(flag)
             except MuleTaskFailed:
-                return True
+                failed = True
             finally:
+                print('CLEANING FLAG')
                 self.unlock_flag(flag)
                 self.remove_logger()
                 self.task_completed()
                 print('COMPLETED')
+            if failed:
+                return True
 
             if flag.name in SINGLE_SHOT_FLAGS:
                 print('DELETE SINGLE SHOT')
