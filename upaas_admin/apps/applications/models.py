@@ -705,6 +705,14 @@ class Application(Document):
                         backends__backend__nin=[
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
+                    log.info(_("Starting {name} on backend {backend}").format(
+                        name=self.name, backend=backend_conf.backend.name))
+                    ApplicationFlag.objects(
+                        pending_backends__ne=backend_conf.backend,
+                        application=self,
+                        name=IsStartingFlag.name).update_one(
+                            add_to_set__pending_backends=backend_conf.backend,
+                            upsert=True)
 
             if updated_backends:
                 ApplicationFlag.objects(
@@ -712,15 +720,7 @@ class Application(Document):
                         set__pending_backends=updated_backends, upsert=True)
 
             for backend in current_backends:
-                if backend in [bc.backend for bc in new_backends]:
-                    log.info(_("Starting {name} on backend {backend}").format(
-                        name=self.name, backend=backend.name))
-                    ApplicationFlag.objects(
-                        pending_backends__ne=backend,
-                        application=self,
-                        name=IsStartingFlag.name).update_one(
-                            add_to_set__pending_backends=backend, upsert=True)
-                else:
+                if backend not in [bc.backend for bc in new_backends]:
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
