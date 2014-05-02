@@ -206,9 +206,11 @@ class MuleTaskHelper(object):
         for lock in FlagLock.objects(
                 backend__exists=False, flag__in=SINGLE_SHOT_FLAGS,
                 date_created__lte=timestamp):
-            task = Task.objects(application=lock.application, flag=lock.flag,
-                                status=TaskStatus.running).first()
-            if not task:
+            if Task.objects(
+                Q(application=lock.application, flag=lock.flag) & (
+                    Q(status=TaskStatus.running) |
+                    Q(date_finished__gte=(
+                        datetime.now() - timedelta(seconds=30))))):
                 log.warning(_("Found stale lock, removing (app: "
                               "{name})").format(name=lock.application.name))
                 self.reset_pending_state(lock)
