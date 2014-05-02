@@ -401,10 +401,12 @@ class MuleCommand(NoArgsCommand):
         print(('UNLOCK FLAG', flag._data))
         if flag.name in SINGLE_SHOT_FLAGS:
             lock = FlagLock.objects(application=flag.application,
-                                    flag=flag.name).first()
+                                    flag=flag.name,
+                                    backend__exists=False).first()
         else:
             lock = FlagLock.objects(application=flag.application,
                                     flag=flag.name,
                                     backend=self.backend).first()
         if lock:
+            print(('DELETE LOCK', lock._data))
             lock.delete()
