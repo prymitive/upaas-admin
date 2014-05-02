@@ -139,7 +139,7 @@ class MuleTaskHelper(object):
         name = 'local_locks'
         if not self.can_clean(name):
             return
-        for lock in FlagLock.objects(backend__in=[backend, None]):
+        for lock in FlagLock.objects(backend=backend):
             if not is_pid_running(lock.pid):
                 log.warning(_("Found stale lock, removing (app: {name}, pid: "
                               "{pid})").format(name=lock.application.name,
@@ -195,6 +195,12 @@ class MuleTaskHelper(object):
                               "removing").format(backend=lock.backend))
                 self.reset_pending_state(lock)
                 lock.delete()
+        for lock in FlagLock.objects(backend__exists=False,
+                                     flag__in=SINGLE_SHOT_FLAGS):
+            log.warning(_("Found stale lock, removing (app: {name})").format(
+                name=lock.application.name))
+            self.reset_pending_state(lock)
+            lock.delete()
         self.last_clean[name] = datetime.now()
 
 
