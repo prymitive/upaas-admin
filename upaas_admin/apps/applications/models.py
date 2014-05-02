@@ -700,10 +700,11 @@ class Application(Document):
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
-                ApplicationFlag.objects(
-                    pending_backends__ne=backend,
-                    application=self, name=NeedsRemovingFlag.name).update_one(
-                        add_to_set__pending_backends=backend, upsert=True)
+                    ApplicationFlag.objects(
+                        pending_backends__ne=backend,
+                        application=self,
+                        name=NeedsRemovingFlag.name).update_one(
+                            add_to_set__pending_backends=backend, upsert=True)
 
     def trim_package_files(self):
         """
