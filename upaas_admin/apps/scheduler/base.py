@@ -99,8 +99,8 @@ def select_best_backends(run_plan, **kwargs):
                                    mapping=workers_per_backend))
 
     # FIXME find backends first, set values after that
-    workers_min = (run_plan.workers_min / needs_backends) \
-        or run_plan.workers_min
+    workers_min = ((run_plan.workers_min / needs_backends) + (
+        run_plan.workers_min % needs_backends)) or run_plan.workers_min
 
     backends = []
     for workers_count in workers_per_backend:
