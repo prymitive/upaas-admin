@@ -93,6 +93,12 @@ class MuleTaskHelper(object):
         self.name = name
         self.last_clean = {}
 
+    def clean(self, backend):
+        self.clean_failed_locks(backend)
+        self.clean_failed_tasks(backend)
+        self.clean_failed_remote_tasks(backend)
+        self.clean_failed_remote_locks(backend)
+
     def can_clean(self, name):
         if self.last_clean.get(name) is None:
             return True
@@ -298,10 +304,7 @@ class MuleCommand(NoArgsCommand):
                 return
 
             self.backend_helper.ping(self.backend)
-            self.task_helper.clean_failed_locks(self.backend)
-            self.task_helper.clean_failed_tasks(self.backend)
-            self.task_helper.clean_failed_remote_tasks(self.backend)
-            self.task_helper.clean_failed_remote_locks(self.backend)
+            self.task_helper.clean(self.backend)
             self.handle_task()
             sleep(1)
 
@@ -351,14 +354,19 @@ class MuleCommand(NoArgsCommand):
     def flag_filter(self):
         return ApplicationFlag.objects(
             Q(name__in=self.mule_flags) & (
-                (Q(pending__ne=False) & Q(name__in=SINGLE_SHOT_FLAGS))
-                | (
-                    Q(pending_backends=self.backend)
-                    & Q(name__nin=SINGLE_SHOT_FLAGS)
+                (
+                    Q(pending__ne=False) &
+                    Q(name__in=SINGLE_SHOT_FLAGS) &
+                    Q(application__nin=FlagLock.objects().distinct(
+                        'application'))
+                ) | (
+                    Q(pending_backends=self.backend) &
+                    Q(name__nin=SINGLE_SHOT_FLAGS) &
+                    Q(application__nin=FlagLock.objects(
+                        backend=self.backend).distinct('application'))
                 )
             )
-        ).filter(application__nin=FlagLock.objects(
-            backend=self.backend).distinct('application'))
+        )
 
     def find_flag(self):
         if not self.mule_flags:
@@ -366,18 +374,19 @@ class MuleCommand(NoArgsCommand):
         flag = self.flag_filter().first()
         if flag:
             print(('GOT FLAG, LOCKING', flag._data))
-            lock = FlagLock(application=flag.application, flag=flag.name,
-                            backend=self.backend, pid=self.pid)
-            try:
-                lock.save()
-            except NotUniqueError:
-                print('CANT SAVE!')
-                return
+            if flag.name in SINGLE_SHOT_FLAGS:
+                print('SINGLE SHOT, UNSET PENDING')
+                flag.update(unset__pending=True)
             else:
-                if flag.name in SINGLE_SHOT_FLAGS:
-                    print('SINGLE SHOT, UNSET PENDING')
-                    flag.update(unset__pending=True)
-                return flag
+                print('MULTI SHOT, CREATING LOCK')
+                lock = FlagLock(application=flag.application, flag=flag.name,
+                                backend=self.backend, pid=self.pid)
+                try:
+                    lock.save()
+                except NotUniqueError:
+                    print('CANT SAVE!')
+                    return
+            return flag
 
     def unlock_flag(self, flag):
         print(('UNLOCK FLAG', flag._data))
