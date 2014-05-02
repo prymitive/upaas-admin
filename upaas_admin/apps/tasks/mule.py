@@ -377,15 +377,15 @@ class MuleCommand(NoArgsCommand):
             if flag.name in SINGLE_SHOT_FLAGS:
                 print('SINGLE SHOT, UNSET PENDING')
                 flag.update(unset__pending=True)
-            else:
-                print('MULTI SHOT, CREATING LOCK')
-                lock = FlagLock(application=flag.application, flag=flag.name,
-                                backend=self.backend, pid=self.pid)
-                try:
-                    lock.save()
-                except NotUniqueError:
-                    print('CANT SAVE!')
-                    return
+
+            lock = FlagLock(application=flag.application, flag=flag.name,
+                            backend=self.backend, pid=self.pid)
+            try:
+                lock.save()
+            except NotUniqueError:
+                print('CANT SAVE!')
+                return
+
             return flag
 
     def unlock_flag(self, flag):
