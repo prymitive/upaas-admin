@@ -451,7 +451,6 @@ class ApplicationFlag(Document):
     options = DictField()
     pending = BooleanField(default=True)
     pending_backends = ListField(ReferenceField(BackendServer))
-    tasks = ListField(ReferenceField(Task))
 
     meta = {
         'indexes': [

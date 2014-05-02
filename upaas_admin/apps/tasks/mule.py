@@ -98,6 +98,7 @@ class MuleTaskHelper(object):
         self.clean_failed_tasks(backend)
         self.clean_failed_remote_tasks(backend)
         self.clean_failed_remote_locks(backend)
+        self.clean_orphaned_locks()
 
     def can_clean(self, name):
         if self.last_clean.get(name) is None:
@@ -195,13 +196,20 @@ class MuleTaskHelper(object):
                               "removing").format(backend=lock.backend))
                 self.reset_pending_state(lock)
                 lock.delete()
-        for lock in FlagLock.objects(backend__exists=False,
-                                     flag__in=SINGLE_SHOT_FLAGS):
-            log.warning(_("Found stale lock, removing (app: {name})").format(
-                name=lock.application.name))
-            self.reset_pending_state(lock)
-            lock.delete()
         self.last_clean[name] = datetime.now()
+
+    def clean_orphaned_locks(self):
+        timestamp = datetime.now() - timedelta(seconds=60)
+        for lock in FlagLock.objects(
+                backend__exists=False, flag__in=SINGLE_SHOT_FLAGS,
+                date_created__lte=timestamp):
+            task = Task.objects(application=lock.application, flag=lock.flag,
+                                status=TaskStatus.running).first()
+            if not task:
+                log.warning(_("Found stale lock, removing (app: "
+                              "{name})").format(name=lock.application.name))
+                self.reset_pending_state(lock)
+                lock.delete()
 
 
 class MuleCommand(NoArgsCommand):
