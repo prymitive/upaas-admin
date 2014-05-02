@@ -242,6 +242,7 @@ class MuleCommand(NoArgsCommand):
         self.backend_helper = MuleBackendHelper(
             self.mule_name.replace(' ', ''))
         self.backend_helper.ping_thread()
+        self.backend = self.backend_helper.backend
 
         self.task_helper = MuleTaskHelper(self.mule_name.replace(' ', ''))
 
