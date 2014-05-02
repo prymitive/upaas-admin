@@ -47,7 +47,6 @@ class Command(MuleCommand):
         if self.last_app_check and self.last_app_check >= (
                 datetime.now() - timedelta(seconds=60)):
             return False
-        log.info(_("Checking running applications"))
         self.last_app_check = datetime.now()
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
