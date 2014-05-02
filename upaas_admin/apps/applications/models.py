@@ -157,8 +157,8 @@ class Package(Document):
                     opt_name = opt.split('=')[0].rstrip(' ')
                     if regexp.match(opt_name):
                         options.append(opt)
-                        log.info(_("Adding safe uWSGI option from metadata: "
-                                   "{opt}").format(opt=opt))
+                        log.debug(_("Adding safe uWSGI option from metadata: "
+                                    "{opt}").format(opt=opt))
                         break
 
         return options
