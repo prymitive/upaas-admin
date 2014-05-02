@@ -16,11 +16,11 @@ from mongoengine import Q
 
 from django.utils.translation import ugettext as _
 
-from upaas_admin.apps.applications.models import ApplicationFlag
+from upaas_admin.apps.applications.models import ApplicationFlag, FlagLock
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
     NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag, IsStartingFlag)
-from upaas_admin.apps.tasks.mule import FlagMuleCommand
+from upaas_admin.apps.tasks.mule import MuleCommand
 from upaas_admin.common.uwsgi import fetch_json_stats
 from upaas_admin.apps.applications.exceptions import UnpackError
 
@@ -28,36 +28,11 @@ from upaas_admin.apps.applications.exceptions import UnpackError
 log = logging.getLogger(__name__)
 
 
-class Command(FlagMuleCommand):
+class Command(MuleCommand):
 
     mule_name = _('Backend')
-
-    def find_flag(self):
-        flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
-                 NeedsRemovingFlag.name, IsStartingFlag.name]
-        remove_q = {
-            'pending__ne': False,
-            'name': NeedsRemovingFlag.name,
-            'options__%s__ne' % self.backend.id: False,
-        }
-        other_q = {
-            'pending__ne': False,
-            'name__in': [NeedsStoppingFlag.name, NeedsRestartFlag.name],
-            'application__in': ApplicationRunPlan.objects(
-                backends__backend=self.backend).distinct('application'),
-        }
-        ApplicationFlag.objects(Q(**remove_q) | Q(**other_q)).order_by(
-            '-date_created').update_one(
-                set__pending=False,
-                set__locked_since=datetime.now(),
-                set__locked_by_backend=self.backend,
-                set__locked_by_pid=self.pid)
-        return ApplicationFlag.objects(
-            name=IsStartingFlag.name, locked_by_backend=self.backend,
-            locked_by_pid=self.pid, pending=False).first() or \
-            ApplicationFlag.objects(
-                name__in=flags, locked_by_backend=self.backend,
-                locked_by_pid=self.pid, pending=False).first()
+    mule_flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
+                  NeedsRemovingFlag.name, IsStartingFlag.name]
 
     def handle_task(self):
         task_handled = super(Command, self).handle_task()
@@ -71,11 +46,7 @@ class Command(FlagMuleCommand):
             if not self.is_application_running(app):
                 ApplicationFlag.objects(
                     application=app, name=IsStartingFlag.name).update_one(
-                        set__pending=False,
-                        set__locked_since=datetime.now(),
-                        set__locked_by_backend=self.backend,
-                        set__locked_by_pid=self.pid,
-                        upsert=True)
+                        push__pending_backends=self.backend, upsert=True)
 
     def handle_flag(self, flag):
         if flag.name == NeedsStoppingFlag.name:
@@ -98,7 +69,6 @@ class Command(FlagMuleCommand):
                 task = self.create_task(flag.application, flag.title,
                                         flag=flag.name)
                 self.start_app(task, flag.application, run_plan)
-                self.remove_logger()
 
     def is_application_running(self, application):
         if not os.path.exists(application.vassal_path):

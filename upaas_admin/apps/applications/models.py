@@ -420,21 +420,33 @@ class ApplicationDomain(Document):
         return str(self.id)
 
 
+class FlagLock(Document):
+    date_created = DateTimeField(required=True, default=datetime.datetime.now)
+    application = ReferenceField('Application', dbref=False, required=True)
+    flag = StringField(required=True)
+    backend = ReferenceField(BackendServer, required=True,
+                             reverse_delete_rule=NULLIFY)
+    pid = IntField(required=True)
+
+    meta = {
+        'indexes': [
+            {'fields': ['application', 'flag', 'backend'], 'unique': True},
+        ]
+    }
+
+
 class ApplicationFlag(Document):
     application = ReferenceField('Application', dbref=False, required=True)
     name = StringField(required=True, unique_with='application')
     options = DictField()
-    pending = BooleanField(default=True, required=True)
-    locked_since = DateTimeField()
-    locked_by_backend = ReferenceField(BackendServer)
-    locked_by_pid = IntField()
+    pending = BooleanField(default=True)
+    pending_backends = ListField(ReferenceField(BackendServer))
+    tasks = ListField(ReferenceField(Task))
 
     meta = {
         'indexes': [
             {'fields': ['name', 'application'], 'unique': True},
-            {'fields': ['name']},
-            {'fields': ['pending']},
-            {'fields': ['locked_by_backend', 'locked_by_pid']},
+            # TODO add indexes after profiling
         ]
     }
 
@@ -642,7 +654,8 @@ class Application(Document):
                 return
         ApplicationFlag.objects(
             application=self, name=NeedsStoppingFlag.name).update_one(
-                unset__pending=True, upsert=True)
+                set__pending_backends=[
+                    b.backend for b in self.run_plan.backends], upsert=True)
 
     def restart_application(self):
         if self.current_package:
@@ -650,7 +663,8 @@ class Application(Document):
                 return
         ApplicationFlag.objects(
             application=self, name=NeedsRestartFlag.name).update_one(
-                unset__pending=True, upsert=True)
+                set__pending_backends=[
+                    b.backend for b in self.run_plan.backends], upsert=True)
 
     def update_application(self):
         if self.run_plan:
@@ -678,24 +692,17 @@ class Application(Document):
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
 
-            needs_removing = False
-            q = {'unset__pending': True, 'upsert': True}
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
                     log.info(_("Stopping {name} on old backend "
                                "{backend}").format(name=self.name,
                                                    backend=backend.name))
-                    q['set__options__%s' % backend.id] = True
-                    needs_removing = True
-
-            if needs_removing:
                 ApplicationFlag.objects(
-                    application=self,
-                    name=NeedsRemovingFlag.name).update_one(**q)
+                    pending_backends__ne=backend,
+                    application=self, name=NeedsRestartFlag.name).update_one(
+                        push__pending_backends=backend, upsert=True)
 
-            ApplicationFlag.objects(
-                application=self, name=NeedsRestartFlag.name).update_one(
-                    unset__pending=True, upsert=True)
+            self.restart_application()
 
     def trim_package_files(self):
         """

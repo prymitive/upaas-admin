@@ -46,3 +46,7 @@ FLAGS_BY_NAME = {
     NeedsRestartFlag.name: NeedsRestartFlag,
     NeedsRemovingFlag.name: NeedsRemovingFlag,
 }
+
+
+# list of flags that should execute single task on single backend
+SINGLE_SHOT_FLAGS = [NeedsBuildingFlag.name]

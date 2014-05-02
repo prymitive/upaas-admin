@@ -51,6 +51,10 @@ class BackendServer(Document):
                 return backend
 
     @property
+    def safe_id(self):
+        return str(self.id)
+
+    @property
     def run_plans(self):
         """
         Returns the list of application run plans scheduled to be running on
@@ -148,3 +152,7 @@ class RouterServer(Document):
         'indexes': ['name', 'private_ip', 'public_ip', 'is_enabled'],
         'ordering': ['name'],
     }
+
+    @property
+    def safe_id(self):
+        return str(self.id)

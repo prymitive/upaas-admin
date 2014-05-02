@@ -18,13 +18,13 @@ from upaas.builder.exceptions import BuildError
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.applications.constants import NeedsBuildingFlag
 from upaas_admin.apps.applications.models import Package
-from upaas_admin.apps.tasks.mule import FlagMuleCommand
+from upaas_admin.apps.tasks.mule import MuleCommand
 
 
 log = logging.getLogger(__name__)
 
 
-class Command(FlagMuleCommand):
+class Command(MuleCommand):
 
     mule_name = _('Builder')
     mule_flags = [NeedsBuildingFlag.name]

@@ -18,6 +18,9 @@ from IPy import IP
 
 from optparse import make_option
 
+from mongoengine import Q
+from mongoengine.errors import NotUniqueError
+
 from django.core.management.base import NoArgsCommand
 from django.utils.translation import ugettext as _
 
@@ -27,7 +30,8 @@ from upaas.processes import is_pid_running
 from upaas_admin.apps.servers.models import BackendServer
 from upaas_admin.apps.tasks.models import MongoLogHandler, Task
 from upaas_admin.apps.tasks.constants import TaskStatus
-from upaas_admin.apps.applications.models import ApplicationFlag
+from upaas_admin.apps.applications.constants import SINGLE_SHOT_FLAGS
+from upaas_admin.apps.applications.models import ApplicationFlag, FlagLock
 
 
 log = logging.getLogger(__name__)
@@ -40,111 +44,16 @@ class MuleTaskFailed(Exception):
     pass
 
 
-class BaseMuleCommand(NoArgsCommand):
+class MuleBackendHelper(object):
 
-    mule_name = _('Mule')
+    def __init__(self, name):
+        self.name = name
 
-    option_list = NoArgsCommand.option_list + (
-        make_option('--task-limit', dest='task_limit', type=int, default=0,
-                    help=_('Exit after processing given number of tasks '
-                           '(default is no limit)')),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(BaseMuleCommand, self).__init__(*args, **kwargs)
-        self.is_exiting = False
-        self.tasks_done = 0
-        self.cleanup()
-        self.pid = getpid()
-        self.register_backend()
-        self.log_handler = None
-        self.log_handlers_level = {}
-        # FIXME capture all logs and prefix with self.logger
-
-    def cleanup(self):
-        self.app_name = _('N/A')
-
-    def clean_failed_tasks(self):
-        for task in Task.objects(backend=self.backend,
-                                 status=TaskStatus.running):
-            if not is_pid_running(task.pid):
-                log.warning(_(
-                    "Found failed task, marking as failed (id: {id}, app: "
-                    "{name})").format(id=task.safe_id,
-                                      name=task.application.name))
-                task.update(set__status=TaskStatus.failed,
-                            set__date_finished=datetime.now())
-
-    def clean_failed_remote_tasks(self):
-        # look for tasks locked at backends that did not ack itself to the
-        # database for at least 600 seconds
-        timestamp = datetime.now() - timedelta(seconds=600)
-        backends = BackendServer.objects(**{
-            'id__ne': self.backend.id,
-            'worker_ping__%s__lte' % self.mule_name.replace(' ', ''): timestamp
-        })
-        if backends:
-            log.debug(_("{len} non responsive backends: {names}").format(
-                len=len(backends), names=[b.name for b in backends]))
-            for task in Task.objects(locked_by_backend__in=backends,
-                                     locked_since__lte=timestamp):
-                log.warning(_("Task '{name}' with id {tid} is locked on non "
-                              "backend {backend}, but it didn't send any "
-                              "pings for 10 minutes, marking as "
-                              "failed").format(
-                    name=task.title, tid=task.safe_id,
-                    backend=task.locked_by_backend))
-                task.update(set__status=TaskStatus.failed,
-                            set__date_finished=datetime.now())
-
-    def add_logger(self, task):
-        self.log_handler = MongoLogHandler(task)
-        root_logger = logging.getLogger()
-        for handler in root_logger.handlers:
-            self.log_handlers_level[handler] = handler.level
-            handler.level = logging.ERROR
-        root_logger.addHandler(self.log_handler)
-
-    def remove_logger(self):
-        self.log_handler.flush()
-        root_logger = logging.getLogger()
-        for handler in root_logger.handlers:
-            level = self.log_handlers_level.get(handler)
-            if level is not None:
-                handler.level = level
-        root_logger.removeHandler(self.log_handler)
-
-    def mark_exiting(self, *args):
-        log.info(_("Shutting down, waiting for current task to finish"))
-        self.is_exiting = True
-
-    def fail(self, task):
-        self.remove_logger()
-        self.cleanup()
-        task.update(set__status=TaskStatus.failed,
-                    set__date_finished=datetime.now())
-        log.error(_("Task failed for {name} [{id}]").format(
-            name=task.application.name, id=task.application.safe_id))
-        raise MuleTaskFailed
-
-    def create_task(self, application, title, flag=None):
-        task = Task(backend=self.backend, pid=self.pid, title=title,
-                    application=application)
-        if flag:
-            task.flag = flag
-        task.save()
-        self.add_logger(task)
-        return task
-
-    def mark_task_successful(self, task):
-        task.update(set__status=TaskStatus.successful, set__progress=100,
-                    set__date_finished=datetime.now())
-
-    def ping(self):
+    def ping(self, backend):
         args = {}
-        key = 'set__worker_ping__%s' % self.mule_name.replace(' ', '')
+        key = 'set__worker_ping__%s' % self.name
         args[key] = datetime.now()
-        BackendServer.objects(id=self.backend.id).update_one(**args)
+        BackendServer.objects(id=backend.id).update_one(**args)
 
     def register_backend(self):
         name = gethostname()
@@ -175,76 +84,252 @@ class BaseMuleCommand(NoArgsCommand):
             backend = BackendServer(name=name, ip=local_ip, is_enabled=False)
             backend.save()
 
-        self.backend = backend
+        return backend
+
+
+class MuleTaskHelper(object):
+
+    def __init__(self, name):
+        self.name = name
+        self.last_clean = {}
+
+    def can_clean(self, name):
+        if self.last_clean.get(name) is None:
+            return True
+        if self.last_clean.get(name, 0) < (
+                datetime.now() - timedelta(seconds=60)):
+            return True
+        return False
+
+    def reset_pending_state(self, lock):
+        if lock.flag in SINGLE_SHOT_FLAGS:
+            print('RESET FLAG PENDING')
+            ApplicationFlag.objects(
+                application=lock.application, name=lock.flag,
+                pending__ne=True).update_one(set__pending=True)
+        else:
+            print('RESET FLAG, PUSH BACKEND')
+            ApplicationFlag.objects(
+                application=lock.application, name=lock.flag,
+                pending_backends__ne=lock.backend).update_one(
+                    push__pending_backends=lock.backend)
+
+    def clean_failed_tasks(self, backend):
+        name = 'local_tasks'
+        if not self.can_clean(name):
+            return
+        for task in Task.objects(backend=backend,
+                                 status=TaskStatus.running):
+            if not is_pid_running(task.pid):
+                log.warning(_(
+                    "Found failed task, marking as failed (id: {id}, app: "
+                    "{name})").format(id=task.safe_id,
+                                      name=task.application.name))
+                task.update(set__status=TaskStatus.failed,
+                            set__date_finished=datetime.now())
+        self.last_clean[name] = datetime.now()
+
+    def clean_failed_locks(self, backend):
+        name = 'local_locks'
+        if not self.can_clean(name):
+            return
+        for lock in FlagLock.objects(backend=backend):
+            if not is_pid_running(lock.pid):
+                log.warning(_("Found stale lock, removing (app: {name}, pid: "
+                              "{pid})").format(name=lock.application.name,
+                                               pid=lock.pid))
+                self.reset_pending_state(lock)
+                lock.delete()
+        self.last_clean[name] = datetime.now()
+
+    def clean_failed_remote_tasks(self, local_backend):
+        name = 'remote_tasks'
+        if not self.can_clean(name):
+            return
+        # look for tasks locked at backends that did not ack itself to the
+        # database for at least 600 seconds
+        timestamp = datetime.now() - timedelta(seconds=600)
+        backends = BackendServer.objects(**{
+            'id__ne': local_backend.id,
+            'worker_ping__%s__lte' % self.name: timestamp
+        })
+        if backends:
+            log.debug(_("{len} non responsive backends: {names}").format(
+                len=len(backends), names=[b.name for b in backends]))
+            for task in Task.objects(locked_by_backend__in=backends,
+                                     locked_since__lte=timestamp):
+                log.warning(_("Task '{name}' with id {tid} is locked on non "
+                              "backend {backend}, but it didn't send any "
+                              "pings for 10 minutes, marking as "
+                              "failed").format(
+                    name=task.title, tid=task.safe_id,
+                    backend=task.locked_by_backend))
+                task.update(set__status=TaskStatus.failed,
+                            set__date_finished=datetime.now())
+        self.last_clean[name] = datetime.now()
+
+    def clean_failed_remote_locks(self, local_backend):
+        name = 'remote_tasks'
+        if not self.can_clean(name):
+            return
+        # look for tasks locked at backends that did not ack itself to the
+        # database for at least 600 seconds
+        timestamp = datetime.now() - timedelta(seconds=600)
+        backends = BackendServer.objects(**{
+            'id__ne': local_backend.id,
+            'worker_ping__%s__lte' % self.name: timestamp
+        })
+        if backends:
+            log.debug(_("{len} non responsive backends: {names}").format(
+                len=len(backends), names=[b.name for b in backends]))
+            for lock in FlagLock.objects(backend__in=backends,
+                                         date_created__lte=timestamp):
+                log.warning(_("Found old lock on  backend {backend}, but it "
+                              "didn't send any pings for 10 minutes, "
+                              "removing").format(backend=lock.backend))
+                self.reset_pending_state(lock)
+                lock.delete()
+        self.last_clean[name] = datetime.now()
+
+
+class MuleCommand(NoArgsCommand):
+
+    mule_name = _('Mule')
+    mule_flags = []
+
+    option_list = NoArgsCommand.option_list + (
+        make_option('--task-limit', dest='task_limit', type=int, default=0,
+                    help=_('Exit after processing given number of tasks '
+                           '(default is no limit)')),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(MuleCommand, self).__init__(*args, **kwargs)
+
+        self.backend_helper = MuleBackendHelper(
+            self.mule_name.replace(' ', ''))
+        self.backend = self.backend_helper.register_backend()
+
+        self.task_helper = MuleTaskHelper(self.mule_name.replace(' ', ''))
+
+        self.is_exiting = False
+        self.tasks_done = 0
+        self.task_limit = 0
+        self.cleanup()
+        self.pid = getpid()
+        self.log_handler = None
+        self.log_handlers_level = {}
+        # FIXME capture all logs and prefix with self.logger
+
+    def cleanup(self):
+        self.app_name = _('N/A')
+
+    def add_logger(self, task):
+        print('ADD LOGGER')
+        self.log_handler = MongoLogHandler(task)
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers:
+            self.log_handlers_level[handler] = handler.level
+            handler.level = logging.ERROR
+        root_logger.addHandler(self.log_handler)
+
+    def remove_logger(self):
+        print('REMOVE LOGGER')
+        self.log_handler.flush()
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers:
+            level = self.log_handlers_level.get(handler)
+            if level is not None:
+                handler.level = level
+        root_logger.removeHandler(self.log_handler)
+
+    def mark_exiting(self, *args):
+        log.info(_("Shutting down, waiting for current task to finish"))
+        self.is_exiting = True
+
+    def create_task(self, application, title, flag=None):
+        task = Task(backend=self.backend, pid=self.pid, title=title,
+                    application=application)
+        print(('TASK CREATED', task._data))
+        if flag:
+            task.flag = flag
+        task.save()
+        self.add_logger(task)
+        return task
+
+    def fail_task(self, task):
+        print(('FAIL TASK', task._data))
+        self.remove_logger()
+        self.cleanup()
+        task.update(set__status=TaskStatus.failed,
+                    set__date_finished=datetime.now())
+        log.error(_("Task failed for {name} [{id}]").format(
+            name=task.application.name, id=task.application.safe_id))
+        raise MuleTaskFailed
+
+    def mark_task_successful(self, task):
+        print(('MARK SUCCESSFUL', task._data))
+        task.update(set__status=TaskStatus.successful, set__progress=100,
+                    set__date_finished=datetime.now())
+
+    def task_completed(self):
+        print('TASK COMPLETED')
+        self.tasks_done += 1
+        log.info(_("Task completed, [done: {tasks_done}, limit: "
+                   "{task_limit}]").format(tasks_done=self.tasks_done,
+                                           task_limit=self.task_limit))
 
     def handle_noargs(self, **options):
         for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP,
                     signal.SIGQUIT]:
             signal.signal(sig, self.mark_exiting)
 
-        task_limit = options['task_limit']
+        self.task_limit = options['task_limit']
         log.info(_("{name} ready, waiting for tasks (limit: "
                    "{task_limit})").format(name=self.mule_name,
-                                           task_limit=task_limit))
+                                           task_limit=self.task_limit))
         while True:
-            if task_limit and self.tasks_done >= task_limit:
+            if self.task_limit and self.tasks_done >= self.task_limit:
                 log.info(_('Task limit reached {task_limit}, exiting').format(
-                    task_limit=task_limit))
+                    task_limit=self.task_limit))
                 self.is_exiting = True
 
             if self.is_exiting:
                 return
 
-            self.ping()
-            if self.handle_task():
-                self.tasks_done += 1
-                log.info(_("Task completed, [done: {tasks_done}, limit: "
-                           "{task_limit}]").format(tasks_done=self.tasks_done,
-                                                   task_limit=task_limit))
-            else:
-                self.clean_failed_tasks()
-                self.clean_failed_remote_tasks()
-                sleep(2)
-
-
-class FlagMuleCommand(BaseMuleCommand):
-
-    mule_flags = []
-
-    def fail_flag(self, flag, task):
-        flag.delete()
-        self.fail(task)
+            self.backend_helper.ping(self.backend)
+            self.task_helper.clean_failed_locks(self.backend)
+            self.task_helper.clean_failed_tasks(self.backend)
+            self.task_helper.clean_failed_remote_tasks(self.backend)
+            self.task_helper.clean_failed_remote_locks(self.backend)
+            self.handle_task()
+            sleep(1)
 
     def handle_task(self):
         flag = self.find_flag()
         if flag:
-            if flag.locked_since:
-                if flag.locked_by_pid != self.pid:
-                    if not is_pid_running(flag.locked_by_pid):
-                        log.warning(_("Found flag locked by non-existing "
-                                      "PID {pid}").format(
-                            pid=flag.locked_by_pid))
-                        flag_task = Task.objects(
-                            pid=flag.locked_by_pid,
-                            backend=flag.locked_by_backend,
-                            status=TaskStatus.running).first()
-                        if flag_task:
-                            flag_task.update(
-                                set__status=TaskStatus.failed,
-                                set__date_finished=datetime.now())
-                        self.unlock_flag(flag)
-                        return False
-
+            print(('GOT FLAG', flag._data))
             try:
                 self.handle_flag(flag)
             except MuleTaskFailed:
                 return True
             finally:
+                self.unlock_flag(flag)
                 self.remove_logger()
+                self.task_completed()
+                print('COMPLETED')
 
-            flag.reload()
-            if not flag.pending:
-                flag.delete()
+            if flag.name in SINGLE_SHOT_FLAGS:
+                print('DELETE SINGLE SHOT')
+                ApplicationFlag.objects(application=flag.application,
+                                        name=flag.name,
+                                        pending__ne=True).delete()
+            else:
+                print('MULTI, PULL BACKEND')
+                flag.update(pull__pending_backends=self.backend)
+                ApplicationFlag.objects(application=flag.application,
+                                        name=flag.name,
+                                        pending_backends__size=0).delete()
             self.cleanup()
             return True
 
@@ -253,29 +338,40 @@ class FlagMuleCommand(BaseMuleCommand):
     def handle_flag(self, flag):
         raise NotImplementedError
 
+    def fail_flag(self, flag, task):
+        print(('FAIL FLAG', flag._data, task._data))
+        flag.delete()
+        self.fail_task(task)
+
     def flag_filter(self):
-        return {}
+        return ApplicationFlag.objects(
+            Q(name__in=self.mule_flags) &
+            (Q(pending__ne=False) | Q(pending_backends=self.backend))).filter(
+                id__nin=FlagLock.objects(backend=self.backend).distinct(
+                    'application'))
 
     def find_flag(self):
         if not self.mule_flags:
             raise RuntimeError(_('No flags set for mule'))
-
-        ApplicationFlag.objects(
-            pending__ne=False,
-            name__in=self.mule_flags,
-            **self.flag_filter()).order_by(
-                '-date_created').update_one(
-                    set__pending=False,
-                    set__locked_since=datetime.now(),
-                    set__locked_by_backend=self.backend,
-                    set__locked_by_pid=self.pid)
-        return ApplicationFlag.objects(name__in=self.mule_flags,
-                                       locked_by_backend=self.backend,
-                                       locked_by_pid=self.pid,
-                                       pending=False).first()
+        flag = self.flag_filter().first()
+        if flag:
+            print(('GOT FLAG, LOCKING', flag._data))
+            lock = FlagLock(application=flag.application, flag=flag.name,
+                            backend=self.backend, pid=self.pid)
+            try:
+                lock.save()
+            except NotUniqueError:
+                print('CANT SAVE!')
+                pass
+            else:
+                if flag.name in SINGLE_SHOT_FLAGS:
+                    print('SINGLE SHOT, UNSET PENDING')
+                    flag.update(unset__pending=True)
+                return flag
 
     def unlock_flag(self, flag):
-        flag.update(set__pending=True,
-                    unset__locked_since=True,
-                    unset__locked_by_backend=True,
-                    unset__locked_by_pid=True)
+        print(('UNLOCK FLAG', flag._data))
+        lock = FlagLock.objects(application=flag.application, flag=flag.name,
+                                backend=self.backend).first()
+        if lock:
+            lock.delete()
