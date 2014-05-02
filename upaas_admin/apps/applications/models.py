@@ -706,9 +706,10 @@ class Application(Document):
                             backend_conf.backend]).update_one(
                         push__backends=backend_conf)
 
-            ApplicationFlag.objects(
-                application=self, name=NeedsRestartFlag.name).update_one(
-                    set__pending_backends=updated_backends, upsert=True)
+            if updated_backends:
+                ApplicationFlag.objects(
+                    application=self, name=NeedsRestartFlag.name).update_one(
+                        set__pending_backends=updated_backends, upsert=True)
 
             for backend in current_backends:
                 if backend not in [bc.backend for bc in new_backends]:
