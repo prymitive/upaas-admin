@@ -80,9 +80,10 @@ class Command(MuleCommand):
         return True
 
     def is_vassal_config_valid(self, application):
+        backend_conf = application.run_plan.backend_settings(self.backend)
         return application.current_package.check_vassal_config(
             "\n".join(application.current_package.generate_uwsgi_config(
-                self.backend)))
+                backend_conf)))
 
     def start_app(self, task, application, run_plan):
         backend_conf = run_plan.backend_settings(self.backend)
