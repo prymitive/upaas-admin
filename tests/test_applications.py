@@ -310,7 +310,6 @@ class ApplicationTest(MongoEngineTestCase):
         url = reverse('app_assign_domain', args=[self.app.safe_id])
         resp = self.client.post(url, {'name': 'www.u-paas.org'})
         self.assertEqual(resp.status_code, 200)
-        print(resp.content)
         self.assertContains(resp,
                             "Unhandled exception during domain verification")
         self.assertEqual(len(self.app.custom_domains), 0)

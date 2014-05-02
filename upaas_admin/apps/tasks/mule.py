@@ -117,12 +117,10 @@ class MuleTaskHelper(object):
 
     def reset_pending_state(self, lock):
         if lock.flag in SINGLE_SHOT_FLAGS:
-            print('RESET FLAG PENDING')
             ApplicationFlag.objects(
                 application=lock.application, name=lock.flag,
                 pending__ne=True).update_one(set__pending=True)
         else:
-            print('RESET FLAG, PUSH BACKEND')
             ApplicationFlag.objects(
                 application=lock.application, name=lock.flag,
                 pending_backends__ne=lock.backend).update_one(
@@ -259,7 +257,6 @@ class MuleCommand(NoArgsCommand):
         self.app_name = _('N/A')
 
     def add_logger(self, task):
-        print('ADD LOGGER')
         self.log_handler = MongoLogHandler(task)
         root_logger = logging.getLogger()
         for handler in root_logger.handlers:
@@ -268,7 +265,6 @@ class MuleCommand(NoArgsCommand):
         root_logger.addHandler(self.log_handler)
 
     def remove_logger(self):
-        print('REMOVE LOGGER')
         self.log_handler.flush()
         root_logger = logging.getLogger()
         for handler in root_logger.handlers:
@@ -284,7 +280,6 @@ class MuleCommand(NoArgsCommand):
     def create_task(self, application, title, flag=None):
         task = Task(backend=self.backend, pid=self.pid, title=title,
                     application=application)
-        print(('TASK CREATED', task._data))
         if flag:
             task.flag = flag
         task.save()
@@ -292,7 +287,6 @@ class MuleCommand(NoArgsCommand):
         return task
 
     def fail_task(self, task):
-        print(('FAIL TASK', task._data))
         self.remove_logger()
         self.cleanup()
         task.update(set__status=TaskStatus.failed,
@@ -302,12 +296,10 @@ class MuleCommand(NoArgsCommand):
         raise MuleTaskFailed
 
     def mark_task_successful(self, task):
-        print(('MARK SUCCESSFUL', task._data))
         task.update(set__status=TaskStatus.successful, set__progress=100,
                     set__date_finished=datetime.now())
 
     def task_completed(self):
-        print('TASK COMPLETED')
         self.tasks_done += 1
         log.info(_("Task completed, [done: {tasks_done}, limit: "
                    "{task_limit}]").format(tasks_done=self.tasks_done,
@@ -338,34 +330,23 @@ class MuleCommand(NoArgsCommand):
     def handle_task(self):
         flag = self.find_flag()
         if flag:
-            print(('GOT FLAG', flag._data))
             failed = False
             try:
                 self.handle_flag(flag)
             except MuleTaskFailed:
-                print('FLAG FAILED')
                 failed = True
             finally:
-                print('CLEANING FLAG')
                 self.unlock_flag(flag)
                 self.remove_logger()
                 self.task_completed()
-                print('COMPLETED')
             if failed:
                 return True
 
             if flag.name in SINGLE_SHOT_FLAGS:
-                print(('BEFORE DELETE SINGLE SHOT',
-                       [(a.name, a.pending) for a in ApplicationFlag.objects(
-                           application=flag.application,name=flag.name)]))
                 ApplicationFlag.objects(application=flag.application,
                                         name=flag.name,
                                         pending=False).delete()
-                print(('AFTER DELETE SINGLE SHOT',
-                       [(a.name, a.pending) for a in ApplicationFlag.objects(
-                           application=flag.application,name=flag.name)]))
             else:
-                print('MULTI, PULL BACKEND')
                 flag.update(pull__pending_backends=self.backend)
                 ApplicationFlag.objects(application=flag.application,
                                         name=flag.name,
@@ -379,7 +360,6 @@ class MuleCommand(NoArgsCommand):
         raise NotImplementedError
 
     def fail_flag(self, flag, task):
-        print(('FAIL FLAG', flag._data, task._data))
         flag.delete()
         self.fail_task(task)
 
@@ -411,10 +391,8 @@ class MuleCommand(NoArgsCommand):
             raise RuntimeError(_('No flags set for mule'))
         flag = self.flag_filter().first()
         if flag:
-            print(('GOT FLAG, LOCKING', flag._data))
             kwargs = {}
             if flag.name in SINGLE_SHOT_FLAGS:
-                print('SINGLE SHOT, UNSET PENDING')
                 flag.update(set__pending=False)
             else:
                 kwargs['backend'] = self.backend
@@ -424,13 +402,11 @@ class MuleCommand(NoArgsCommand):
             try:
                 lock.save()
             except NotUniqueError:
-                print('CANT SAVE!')
                 return
 
             return flag
 
     def unlock_flag(self, flag):
-        print(('UNLOCK FLAG', flag._data))
         if flag.name in SINGLE_SHOT_FLAGS:
             lock = FlagLock.objects(application=flag.application,
                                     flag=flag.name,
@@ -440,5 +416,4 @@ class MuleCommand(NoArgsCommand):
                                     flag=flag.name,
                                     backend=self.backend).first()
         if lock:
-            print(('DELETE LOCK', lock._data))
             lock.delete()
