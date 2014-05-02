@@ -14,6 +14,8 @@ import logging
 
 from django.utils.translation import ugettext as _
 
+from upaas.checksum import calculate_file_sha256, calculate_string_sha256
+
 from upaas_admin.apps.applications.models import ApplicationFlag
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
@@ -31,6 +33,11 @@ class Command(MuleCommand):
     mule_name = _('Backend')
     mule_flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
                   NeedsRemovingFlag.name, IsStartingFlag.name]
+
+    def __init__(self, *args, **kwargs):
+        super(Command, self).__init__(*args, **kwargs)
+        self.vassal_config_checksums = {}
+        self.vassal_config_mtimes = {}
 
     def handle_task(self):
         task_handled = super(Command, self).handle_task()
@@ -80,10 +87,25 @@ class Command(MuleCommand):
         return True
 
     def is_vassal_config_valid(self, application):
+        last_check = self.vassal_config_mtimes.get(application.safe_id)
+        if not last_check or last_check <= (
+                datetime.now() - timedelta(seconds=30)):
+            if os.path.exists(self.application.vassal_path):
+                self.vassal_config_checksums[
+                    application.safe_id] = calculate_file_sha256(
+                        application.vassal_path)
+                self.vassal_config_mtimes[application.safe_id] = datetime.now()
+            else:
+                # ignore missing vassals, is_application_running() will handle
+                # it
+                return True
+
         backend_conf = application.run_plan.backend_settings(self.backend)
-        return application.current_package.check_vassal_config(
-            "\n".join(application.current_package.generate_uwsgi_config(
-                backend_conf)))
+        options = "\n".join(
+            application.current_package.generate_uwsgi_config(
+                backend_conf))
+        return self.vassal_config_checksums.get(
+            application.safe_id) == calculate_string_sha256(options)
 
     def start_app(self, task, application, run_plan):
         backend_conf = run_plan.backend_settings(self.backend)
