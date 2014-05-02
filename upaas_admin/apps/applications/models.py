@@ -40,7 +40,7 @@ from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.applications.constants import (
     NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, NeedsRemovingFlag,
-    IsStartingFlag, FLAGS_BY_NAME)
+    IsStartingFlag, NeedsUpgradeFlag, FLAGS_BY_NAME)
 
 
 log = logging.getLogger(__name__)
@@ -681,6 +681,15 @@ class Application(Document):
                 return
         ApplicationFlag.objects(
             application=self, name=NeedsRestartFlag.name).update_one(
+                set__pending_backends=[
+                    b.backend for b in self.run_plan.backends], upsert=True)
+
+    def upgrade_application(self):
+        if self.current_package:
+            if not self.run_plan:
+                return
+        ApplicationFlag.objects(
+            application=self, name=NeedsUpgradeFlag.name).update_one(
                 set__pending_backends=[
                     b.backend for b in self.run_plan.backends], upsert=True)
 

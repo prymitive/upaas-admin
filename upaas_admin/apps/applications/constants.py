@@ -24,6 +24,11 @@ class IsStartingFlag:
     title = _('Starting application instance')
 
 
+class NeedsUpgradeFlag:
+    name = 'NEEDS_UPGRADE'
+    title = _('Upgrading application instance')
+
+
 class NeedsStoppingFlag:
     name = 'NEEDS_STOPPING'
     title = _('Stopping application instance')
@@ -42,6 +47,7 @@ class NeedsRemovingFlag:
 FLAGS_BY_NAME = {
     NeedsBuildingFlag.name: NeedsBuildingFlag,
     IsStartingFlag.name: IsStartingFlag,
+    NeedsUpgradeFlag.name: NeedsUpgradeFlag,
     NeedsStoppingFlag.name: NeedsStoppingFlag,
     NeedsRestartFlag.name: NeedsRestartFlag,
     NeedsRemovingFlag.name: NeedsRemovingFlag,

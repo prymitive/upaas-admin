@@ -19,7 +19,8 @@ from upaas.checksum import calculate_file_sha256, calculate_string_sha256
 from upaas_admin.apps.applications.models import ApplicationFlag
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
-    NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag, IsStartingFlag)
+    NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag, IsStartingFlag,
+    NeedsUpgradeFlag)
 from upaas_admin.apps.tasks.mule import MuleCommand
 from upaas_admin.common.uwsgi import fetch_json_stats
 from upaas_admin.apps.applications.exceptions import UnpackError
@@ -32,7 +33,8 @@ class Command(MuleCommand):
 
     mule_name = _('Backend')
     mule_flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
-                  NeedsRemovingFlag.name, IsStartingFlag.name]
+                  NeedsRemovingFlag.name, IsStartingFlag.name,
+                  NeedsUpgradeFlag.name]
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -74,9 +76,13 @@ class Command(MuleCommand):
             task = self.create_task(flag.application, flag.title,
                                     flag=flag.name)
             self.restart_app(task, flag.application)
-        elif flag.name == IsStartingFlag.name:
-            log.info(_("Application {name} needs starting").format(
-                name=flag.application.name))
+        elif flag.name in [IsStartingFlag.name, NeedsUpgradeFlag.name]:
+            if flag.name == IsStartingFlag.name:
+                log.info(_("Application {name} needs starting").format(
+                    name=flag.application.name))
+            else:
+                log.info(_("Application {name} needs upgrading").format(
+                    name=flag.application.name))
             run_plan = flag.application.run_plan
             if run_plan:
                 task = self.create_task(flag.application, flag.title,

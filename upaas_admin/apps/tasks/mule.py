@@ -348,10 +348,15 @@ class MuleCommand(NoArgsCommand):
                 return True
 
             if flag.name in SINGLE_SHOT_FLAGS:
-                print('DELETE SINGLE SHOT')
+                print(('BEFORE DELETE SINGLE SHOT',
+                       [(a.name, a.pending) for a in ApplicationFlag.objects(
+                           application=flag.application,name=flag.name)]))
                 ApplicationFlag.objects(application=flag.application,
                                         name=flag.name,
-                                        pending__ne=True).delete()
+                                        pending=False).delete()
+                print(('AFTER DELETE SINGLE SHOT',
+                       [(a.name, a.pending) for a in ApplicationFlag.objects(
+                           application=flag.application,name=flag.name)]))
             else:
                 print('MULTI, PULL BACKEND')
                 flag.update(pull__pending_backends=self.backend)

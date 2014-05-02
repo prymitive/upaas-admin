@@ -122,8 +122,7 @@ class Command(MuleCommand):
         pkg.save()
         log.info(_("Package saved with id {id}").format(id=pkg.safe_id))
 
+        app.update(add_to_set__packages=pkg, set__current_package=pkg)
         app.reload()
-        app.packages.append(pkg)
-        app.current_package = pkg
-        app.save()
+        app.upgrade_application()
         app.trim_package_files()
