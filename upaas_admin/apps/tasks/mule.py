@@ -13,6 +13,7 @@ from os import getpid
 from datetime import datetime, timedelta
 from time import sleep
 from socket import gethostname
+from threading import Thread
 
 from IPy import IP
 
@@ -48,12 +49,18 @@ class MuleBackendHelper(object):
 
     def __init__(self, name):
         self.name = name
+        self.backend = self.register_backend()
 
-    def ping(self, backend):
-        args = {}
+    def pinger(self):
         key = 'set__worker_ping__%s' % self.name
-        args[key] = datetime.now()
-        BackendServer.objects(id=backend.id).update_one(**args)
+        while True:
+            BackendServer.objects(id=self.backend.id).update_one(
+                **{key: datetime.now()})
+            sleep(10)
+
+    def ping_thread(self):
+        t1 = Thread(target=self.pinger)
+        t1.start()
 
     def register_backend(self):
         name = gethostname()
@@ -234,7 +241,7 @@ class MuleCommand(NoArgsCommand):
 
         self.backend_helper = MuleBackendHelper(
             self.mule_name.replace(' ', ''))
-        self.backend = self.backend_helper.register_backend()
+        self.backend_helper.ping_thread()
 
         self.task_helper = MuleTaskHelper(self.mule_name.replace(' ', ''))
 
@@ -323,7 +330,6 @@ class MuleCommand(NoArgsCommand):
             if self.is_exiting:
                 return
 
-            self.backend_helper.ping(self.backend)
             self.task_helper.clean(self.backend)
             self.handle_task()
             sleep(1)

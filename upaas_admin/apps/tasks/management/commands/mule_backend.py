@@ -51,7 +51,8 @@ class Command(MuleCommand):
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
             if app.flags.filter(name__in=[NeedsRemovingFlag.name,
-                                          NeedsStoppingFlag.name]):
+                                          NeedsStoppingFlag.name,
+                                          NeedsUpgradeFlag.name]):
                 continue
             if not self.is_application_running(app):
                 ApplicationFlag.objects(
