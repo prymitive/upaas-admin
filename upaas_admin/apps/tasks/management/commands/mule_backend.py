@@ -36,13 +36,16 @@ class Command(MuleCommand):
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
-        self.vassal_config_checksums = {}
-        self.vassal_config_mtimes = {}
+        self.last_app_check = None
 
     def handle_task(self):
         task_handled = super(Command, self).handle_task()
         if task_handled:
             return task_handled
+        if self.last_app_check and self.last_app_check >= (
+                datetime.now() - timedelta(seconds=60)):
+            return False
+        log.info(_("Checking running applications"))
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
             if app.flags.filter(name__in=[NeedsRemovingFlag.name,
@@ -91,9 +94,7 @@ class Command(MuleCommand):
         return True
 
     def is_vassal_config_valid(self, application):
-        last_check = self.vassal_config_mtimes.get(application.safe_id)
-        if not last_check or last_check <= (
-                datetime.now() - timedelta(seconds=30)):
+        if os.path.exists(application.vassal_path):
             backend_conf = application.run_plan.backend_settings(self.backend)
             level = log.getEffectiveLevel()
             log.setLevel(logging.ERROR)
@@ -101,13 +102,8 @@ class Command(MuleCommand):
                 application.current_package.generate_uwsgi_config(
                     backend_conf))
             log.setLevel(level)
-            self.vassal_config_checksums[
-                application.safe_id] = calculate_string_sha256(options)
-            self.vassal_config_mtimes[application.safe_id] = datetime.now()
-
-        if os.path.exists(application.vassal_path):
-            return self.vassal_config_checksums.get(application.safe_id) == \
-                calculate_file_sha256(application.vassal_path)
+            return calculate_string_sha256(options) == calculate_file_sha256(
+                application.vassal_path)
         else:
             # ignore missing vassals, is_application_running() will handle it
             return True
