@@ -347,8 +347,8 @@ class MuleCommand(NoArgsCommand):
         return ApplicationFlag.objects(
             Q(name__in=self.mule_flags) &
             (Q(pending__ne=False) | Q(pending_backends=self.backend))).filter(
-                id__nin=FlagLock.objects(backend=self.backend).distinct(
-                    'application'))
+                application__nin=FlagLock.objects(
+                    backend=self.backend).distinct('application'))
 
     def find_flag(self):
         if not self.mule_flags:
