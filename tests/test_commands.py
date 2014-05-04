@@ -58,7 +58,7 @@ class CommandTest(MongoEngineTestCase):
     @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan")
     def test_mule_backend_cmd_start_missing_pkg_file(self):
         self.app.start_application()
-        self.assertNotEqual(self.app.flags, [])
+        self.assertNotEqual(len(self.app.flags), 0)
         call_command('mule_backend', task_limit=1, ping_disabled=True)
         task = self.app.tasks.first()
         self.assertNotEqual(task, None)
@@ -71,9 +71,19 @@ class CommandTest(MongoEngineTestCase):
         self.assertEqual(task.backend, self.backend)
 
     @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan")
+    def test_mule_backend_cmd_start_from_run_plan(self):
+        self.app.start_application()
+        self.app.flags.delete()
+        self.assertEqual(len(self.app.flags), 0)
+        call_command('mule_backend', task_limit=1, ping_disabled=True)
+        task = self.app.tasks.first()
+        self.assertNotEqual(task, None)
+        self.assertEqual(task.flag, 'IS_STARTING')
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan")
     def test_mule_backend_cmd_stop(self):
         self.app.stop_application()
-        self.assertNotEqual(self.app.flags, [])
+        self.assertNotEqual(len(self.app.flags), 0)
         call_command('mule_backend', task_limit=1, ping_disabled=True)
         self.check_task_is_successful(self.app.tasks.first())
 
@@ -84,7 +94,7 @@ class CommandTest(MongoEngineTestCase):
                                  'mule_backend.fetch_json_stats',
                                  lambda x, y: True)
         self.app.restart_application()
-        self.assertNotEqual(self.app.flags, [])
+        self.assertNotEqual(len(self.app.flags), 0)
         call_command('mule_backend', task_limit=1, ping_disabled=True)
         self.check_task_is_successful(self.app.tasks.first())
 
