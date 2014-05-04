@@ -51,6 +51,7 @@ class Package(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     metadata = StringField(help_text=_('Application metadata'))
     application = ReferenceField('Application', dbref=False, required=True)
+    task = ReferenceField(Task, dbref=False)
 
     interpreter_name = StringField(required=True)
     interpreter_version = StringField(required=True)

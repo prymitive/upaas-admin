@@ -59,6 +59,13 @@
           %dd
             = pkg.builder
 
+          - if pkg.task
+            %dt
+              {% trans "Task" %}:
+            %dd
+              %a{'href':'{% url "app_task_details" pkg.task.safe_id %}'}
+                = pkg.task.safe_id
+
           %br/
 
           %dt

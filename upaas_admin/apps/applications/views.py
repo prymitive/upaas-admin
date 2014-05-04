@@ -225,7 +225,6 @@ class ApplicationTaskDetailsView(LoginRequiredMixin, OwnedAppTasksMixin,
     template_name = 'task_details.html'
     slug_field = 'id'
     context_object_name = 'task'
-    # TODO add support for virtual tasks
 
 
 class UpdateApplicationMetadataView(LoginRequiredMixin, OwnedAppsMixin,

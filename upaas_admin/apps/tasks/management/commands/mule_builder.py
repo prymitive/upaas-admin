@@ -86,15 +86,16 @@ class Command(MuleCommand):
         except BuildError:
             self.fail_flag(flag, task)
         else:
-            self.create_package(app, metadata_obj, metadata, build_result,
-                                current_package)
+            self.create_package(app, task, metadata_obj, metadata,
+                                build_result, current_package)
         self.mark_task_successful(task)
 
-    def create_package(self, app, metadata_obj, metadata, build_result,
+    def create_package(self, app, task, metadata_obj, metadata, build_result,
                        parent_package):
         log.info("Building completed, saving package")
         pkg = Package(metadata=metadata,
                       application=app,
+                      task=task,
                       interpreter_name=metadata_obj.interpreter.type,
                       interpreter_version=build_result.interpreter_version,
                       bytes=build_result.bytes,
