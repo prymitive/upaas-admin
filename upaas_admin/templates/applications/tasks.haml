@@ -11,30 +11,29 @@
     %thead
       %tr
         %th
-          - trans "Status"
-        %th
-          - trans "Created"
         %th
           - trans "Title"
+        %th
+          - trans "Created"
         %th
           - trans "Backend"
 
     %tbody
       - for task in tasks
-        %tr{'id':'={ task.safe_id }', 'class':'{% if task.is_active %}upaas-task-active {% endif %}{% if task.status == task_statuses.failed %}danger{% elif task.status == task_statuses.successful %}success{% elif task.status == task_statuses.running %}active{% endif %}'}
+        %tr{'id':'={ task.safe_id }'}
           %td
-            %i{'class':'={ task.icon_class }'}
+            %i{'class':'={ task.icon_class } ={ task.css_class }'}
+          %td
+            = task.title
           %td
             %a{'href':'{% url "app_task_details" task.safe_id %}'}
               = task.date_created
-          %td
-            = task.title
           %td
             = task.backend.name
 
       - empty
         %tr
-          %td.text-center.text-muted{'colspan':'4'}
+          %td.text-center{'colspan':'4'}
             - trans "No tasks"
 
   - include "partials/pagination_footer.html"
