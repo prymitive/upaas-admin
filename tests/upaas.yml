@@ -36,6 +36,8 @@ paths:
 storage:
   # class implementing storage access
   handler: upaas.storage.mongodb.MongoDBStorage
+  settings:
+    database: upaas-tests-database
 
 
 # commands used to create empty system image

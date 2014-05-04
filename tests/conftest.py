@@ -210,6 +210,8 @@ def create_app(request):
             pkg.delete()
         for flag in app.flags:
             flag.delete()
+        for task in app.tasks:
+            task.delete()
         app.delete()
     request.addfinalizer(cleanup)
 
@@ -247,6 +249,8 @@ def create_buildable_app(request):
             pkg.delete()
         for flag in app.flags:
             flag.delete()
+        for task in app.tasks:
+            task.delete()
         app.delete()
     request.addfinalizer(cleanup)
 

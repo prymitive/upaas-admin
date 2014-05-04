@@ -11,8 +11,9 @@ import pytest
 
 from tastypie.test import ResourceTestCase
 
-from upaas_admin.common.tests import MongoEngineTestCase
+from django.core.management import call_command
 
+from upaas_admin.common.tests import MongoEngineTestCase
 from upaas_admin.apps.applications.models import Package
 from upaas_admin.apps.applications.constants import NeedsBuildingFlag
 
@@ -405,6 +406,35 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
                                    **self.get_apikey_auth(self.user))
         self.assertValidJSONResponse(resp)
         self.assertEqual(len(self.deserialize(resp)['objects']), 0)
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan")
+    def test_task_details_get(self):
+        self.app.start_application()
+        call_command('mule_backend', task_limit=1, ping_disabled=True)
+        task = self.app.tasks.first()
+
+        resp = self.api_client.get('/api/v1/task/%s/' % task.safe_id,
+                                   format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertEqual(self.deserialize(resp)['title'],
+                         'Starting application instance')
+        self.assertEqual(self.deserialize(resp)['flag'], 'IS_STARTING')
+        self.assertEqual(self.deserialize(resp)['status'], 'FAILED')
+        self.assertEqual(self.deserialize(resp)['is_finished'], True)
+        self.assertEqual(self.deserialize(resp)['is_running'], False)
+        self.assertEqual(self.deserialize(resp)['is_failed'], True)
+        self.assertEqual(self.deserialize(resp)['is_successful'], False)
+
+        resp = self.api_client.get('/api/v1/task/%s/messages/' % task.safe_id,
+                                   format='json',
+                                   **self.get_apikey_auth(self.user))
+        self.assertValidJSONResponse(resp)
+        self.assertNotEqual(len(self.deserialize(resp)), 0)
+        msg = self.deserialize(resp)[0]
+        self.assertEqual(msg['level'], 'INFO')
+        self.assertTrue(msg['message'].startswith('Starting application'))
+        self.assertTrue(msg['timestamp'])
 
     @pytest.mark.usefixtures("create_user", "create_backend_list")
     def test_backend_list_get(self):

@@ -354,18 +354,18 @@ class Package(Document):
         return False
 
     def save_vassal_config(self, backend):
-        log.info("Generating uWSGI vassal configuration")
+        log.info(_("Generating uWSGI vassal configuration"))
         options = "\n".join(self.generate_uwsgi_config(backend))
 
         if self.check_vassal_config(options):
             log.info("Vassal is present and valid, skipping rewrite")
             return
 
-        log.info("Saving vassal configuration to "
-                 "'%s'" % self.application.vassal_path)
+        log.info(_("Saving vassal configuration to {path}").format(
+            path=self.application.vassal_path))
         with open(self.application.vassal_path, 'w') as vassal:
             vassal.write(options)
-        log.info("Vassal saved")
+        log.info(_("Vassal saved"))
 
     def unpack(self):
         # directory is encoded into string to prevent unicode errors
@@ -382,40 +382,42 @@ class Package(Document):
         pkg_path = os.path.join(directory, self.filename)
 
         if os.path.exists(self.package_path):
-            log.error("Package directory already exists: "
-                      "%s" % self.package_path)
-            raise UnpackError("Package directory already exists")
+            log.error(_("Package directory already exists: {path}").format(
+                path=self.package_path))
+            raise UnpackError(_("Package directory already exists"))
 
         log.info("Fetching package '%s'" % self.filename)
         try:
             storage.get(self.filename, pkg_path)
         except StorageError:
-            log.error("Storage error while fetching package "
-                      "'%s'" % self.filename)
+            log.error(_("Storage error while fetching package {name}").format(
+                name=self.filename))
             utils.rmdirs(directory)
-            raise StorageError("Can't fetch package '%s' from "
-                               "storage" % self.filename)
+            raise UnpackError(_("Storage error while fetching package "
+                                "{name}").format(name=self.filename))
 
         log.info("Unpacking package")
         os.mkdir(workdir, 0o755)
         if not tar.unpack_tar(pkg_path, workdir):
-            log.error("Error while unpacking package to '%s'" % workdir)
+            log.error(_("Error while unpacking package to '{workdir}'").format(
+                workdir=workdir))
             utils.rmdirs(directory)
-            raise UnpackError("Error during package unpack")
+            raise UnpackError(_("Error during package unpack"))
 
         with open(os.path.join(workdir, self.ack_filename), 'w') as ack:
             ack.write(_('Unpacked: {now}').format(now=datetime.datetime.now()))
 
-        log.info("Package unpacked, moving into '%s'" % self.package_path)
+        log.info(_("Package unpacked, moving into '{path}'").format(
+            path=self.package_path))
         try:
             shutil.move(workdir, self.package_path)
         except shutil.Error as e:
-            log.error("Error while moving unpacked package to final "
-                      "destination: %s" % e)
+            log.error(_("Error while moving unpacked package to final "
+                        "destination: e").format(e=e))
             utils.rmdirs(directory, self.package_path)
-            raise UnpackError("Can't move to final directory "
-                              "'%s'" % self.package_path)
-        log.info("Package moved")
+            raise UnpackError(_("Can't move to final directory: "
+                                "{path}").format(path=self.package_path))
+        log.info(_("Package moved"))
         utils.rmdirs(directory)
 
 

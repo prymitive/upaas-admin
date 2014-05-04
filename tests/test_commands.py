@@ -19,6 +19,16 @@ GETPASS_TRY = 0
 
 class CommandTest(MongoEngineTestCase):
 
+    def check_task_is_successful(self, task):
+        self.assertNotEqual(task, None)
+        self.assertEqual(task.is_running, False)
+        self.assertEqual(task.is_failed, False)
+        self.assertEqual(task.is_successful, True)
+        self.assertEqual(task.is_finished, True)
+        self.assertEqual(task.progress, 100)
+        self.assertNotEqual(task.date_finished, None)
+        self.assertNotEqual(len(task.messages), 0)
+
     def test_create_indexes_cmd(self):
         self.assertEqual(call_command('create_indexes'), None)
 
@@ -27,9 +37,14 @@ class CommandTest(MongoEngineTestCase):
     def test_mule_builder_cmd(self):
         self.app.build_package()
         self.assertNotEqual(self.app.flags, [])
-        self.assertEqual(
-            call_command('mule_builder', task_limit=1, ping_disabled=True),
-            None)
+        call_command('mule_builder', task_limit=1, ping_disabled=True)
+
+    @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
+                             "create_buildable_app_with_pkg")
+    def test_mule_builder_cmd_incremental(self):
+        self.app.build_package()
+        self.assertNotEqual(self.app.flags, [])
+        call_command('mule_builder', task_limit=1, ping_disabled=True)
 
     @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
                              "create_buildable_app")
@@ -38,9 +53,40 @@ class CommandTest(MongoEngineTestCase):
         self.app.save()
         self.app.build_package()
         self.assertNotEqual(self.app.flags, [])
-        self.assertEqual(
-            call_command('mule_builder', task_limit=1, ping_disabled=True),
-            None)
+        call_command('mule_builder', task_limit=1, ping_disabled=True)
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan")
+    def test_mule_backend_cmd_start_missing_pkg_file(self):
+        self.app.start_application()
+        self.assertNotEqual(self.app.flags, [])
+        call_command('mule_backend', task_limit=1, ping_disabled=True)
+        task = self.app.tasks.first()
+        self.assertNotEqual(task, None)
+        self.assertEqual(task.is_running, False)
+        self.assertEqual(task.is_failed, True)
+        self.assertEqual(task.is_successful, False)
+        self.assertEqual(task.is_finished, True)
+        self.assertNotEqual(task.date_finished, None)
+        self.assertNotEqual(len(task.messages), 0)
+        self.assertEqual(task.backend, self.backend)
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan")
+    def test_mule_backend_cmd_stop(self):
+        self.app.stop_application()
+        self.assertNotEqual(self.app.flags, [])
+        call_command('mule_backend', task_limit=1, ping_disabled=True)
+        self.check_task_is_successful(self.app.tasks.first())
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_run_plan",
+                             "setup_monkeypatch")
+    def test_mule_backend_cmd_restart(self):
+        self.monkeypatch.setattr('upaas_admin.apps.tasks.management.commands.'
+                                 'mule_backend.fetch_json_stats',
+                                 lambda x, y: True)
+        self.app.restart_application()
+        self.assertNotEqual(self.app.flags, [])
+        call_command('mule_backend', task_limit=1, ping_disabled=True)
+        self.check_task_is_successful(self.app.tasks.first())
 
     def test_create_user_cmd(self):
         from upaas_admin.apps.users.models import User

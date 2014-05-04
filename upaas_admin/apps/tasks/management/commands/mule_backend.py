@@ -133,7 +133,7 @@ class Command(MuleCommand):
                 backend_conf.package.unpack()
             except UnpackError as e:
                 log.error(_("Unpacking failed: {e}").format(e=e))
-                raise Exception(_("Unpacking failed: {e}").format(e=e))
+                self.fail_task(task)
             task.update(set__progress=50)
 
             backend_conf.package.save_vassal_config(backend_conf)

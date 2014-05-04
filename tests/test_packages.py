@@ -15,6 +15,7 @@ from django.core.urlresolvers import reverse
 
 from upaas_admin.common.tests import MongoEngineTestCase
 from upaas_admin.apps.applications.models import Package
+from upaas_admin.apps.applications.exceptions import UnpackError
 
 
 class PackageTest(MongoEngineTestCase):
@@ -177,8 +178,7 @@ class PackageTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_pkg")
     def test_pkg_unpack_missing_method(self):
-        from upaas.storage.exceptions import StorageError
-        with pytest.raises(StorageError):
+        with pytest.raises(UnpackError):
             self.pkg.unpack()
 
     @pytest.mark.usefixtures("create_pkg")
