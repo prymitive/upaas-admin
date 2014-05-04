@@ -39,18 +39,12 @@ class NeedsRestartFlag:
     title = _('Restarting application instance')
 
 
-class NeedsRemovingFlag:
-    name = 'NEEDS_REMOVING'
-    title = _('Removing application instance')
-
-
 FLAGS_BY_NAME = {
     NeedsBuildingFlag.name: NeedsBuildingFlag,
     IsStartingFlag.name: IsStartingFlag,
     NeedsUpgradeFlag.name: NeedsUpgradeFlag,
     NeedsStoppingFlag.name: NeedsStoppingFlag,
     NeedsRestartFlag.name: NeedsRestartFlag,
-    NeedsRemovingFlag.name: NeedsRemovingFlag,
 }
 
 

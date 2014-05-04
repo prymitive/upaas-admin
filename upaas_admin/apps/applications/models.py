@@ -39,8 +39,8 @@ from upaas_admin.apps.scheduler.base import select_best_backends
 from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.applications.constants import (
-    NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, NeedsRemovingFlag,
-    IsStartingFlag, NeedsUpgradeFlag, FLAGS_BY_NAME)
+    NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, IsStartingFlag,
+    NeedsUpgradeFlag, FLAGS_BY_NAME)
 
 
 log = logging.getLogger(__name__)
@@ -742,7 +742,7 @@ class Application(Document):
                     ApplicationFlag.objects(
                         pending_backends__ne=backend,
                         application=self,
-                        name=NeedsRemovingFlag.name).update_one(
+                        name=NeedsStoppingFlag.name).update_one(
                             add_to_set__pending_backends=backend, upsert=True)
 
     def trim_package_files(self):

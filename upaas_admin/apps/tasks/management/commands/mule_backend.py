@@ -19,8 +19,7 @@ from upaas.checksum import calculate_file_sha256, calculate_string_sha256
 from upaas_admin.apps.applications.models import ApplicationFlag
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
-    NeedsRestartFlag, NeedsStoppingFlag, NeedsRemovingFlag, IsStartingFlag,
-    NeedsUpgradeFlag)
+    NeedsRestartFlag, NeedsStoppingFlag, IsStartingFlag, NeedsUpgradeFlag)
 from upaas_admin.apps.tasks.mule import MuleCommand
 from upaas_admin.common.uwsgi import fetch_json_stats
 from upaas_admin.apps.applications.exceptions import UnpackError
@@ -33,8 +32,7 @@ class Command(MuleCommand):
 
     mule_name = _('Backend')
     mule_flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
-                  NeedsRemovingFlag.name, IsStartingFlag.name,
-                  NeedsUpgradeFlag.name]
+                  IsStartingFlag.name, NeedsUpgradeFlag.name]
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -50,8 +48,7 @@ class Command(MuleCommand):
         self.last_app_check = datetime.now()
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
-            if app.flags.filter(name__in=[NeedsRemovingFlag.name,
-                                          NeedsStoppingFlag.name,
+            if app.flags.filter(name__in=[NeedsStoppingFlag.name,
                                           NeedsUpgradeFlag.name]):
                 continue
             if not self.is_application_running(app):
@@ -64,7 +61,7 @@ class Command(MuleCommand):
                         add_to_set__pending_backends=self.backend, upsert=True)
 
     def handle_flag(self, flag):
-        if flag.name in [NeedsStoppingFlag.name, NeedsRemovingFlag.name]:
+        if flag.name == NeedsStoppingFlag.name:
             log.info(_("Application {name} needs stopping").format(
                 name=flag.application.name))
             task = self.create_task(flag.application, flag.title,
