@@ -122,11 +122,3 @@ class Task(Document):
         elif self.is_successful:
             return ICON_SUCCESSFUL
         return ICON_UNKNOWN
-
-    @property
-    def css_class(self):
-        if self.is_failed:
-            return 'text-danger'
-        elif self.is_successful:
-            return 'text-success'
-        return ''

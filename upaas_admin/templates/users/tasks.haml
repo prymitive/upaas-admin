@@ -23,9 +23,9 @@
 
     %tbody
       - for task in tasks
-        %tr{'id':'={ task.safe_id }'}
-          %td
-            %i{'class':'={ task.icon_class } ={ task.css_class }'}
+        %tr{'id':'upaas-task-list-={ task.safe_id }'}
+          %td.upaas-list-col-status
+            %i{'class':'={ task.icon_class }'}
           %td
             = task.title
           %td

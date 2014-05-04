@@ -43,6 +43,12 @@ window.UPAAS.tasks.RunningTasks = new window.UPAAS.tasks.RunningTaskCollection()
 window.UPAAS.tasks.running_task_dict = {};
 
 
+window.UPAAS.tasks.update_task_list_view = function(task) {
+    var task_id = '#upaas-task-list-' + task.attributes.id;
+    $(task_id).find('td.upaas-list-col-status').find('i').attr('class', task.attributes.icon_class);
+}
+
+
 window.UPAAS.tasks.render_task_menu_item = function(task) {
     var app = window.UPAAS.utils.where_or_get_first(window.UPAAS.applications.Applications, {
         resource_uri: task.attributes.application
@@ -90,6 +96,7 @@ window.UPAAS.tasks.update_task_menu_badge = function(task) {
 window.UPAAS.tasks.parse_running_task = function(task) {
     window.UPAAS.tasks.update_task_menu_badge(task);
     window.UPAAS.tasks.render_task_menu_item(task);
+    window.UPAAS.tasks.update_task_list_view(task);
 }
 window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.tasks.parse_running_task, ['remove']);
 
@@ -98,6 +105,7 @@ window.UPAAS.tasks.parse_removed_running_task = function(data) {
     window.UPAAS.tasks.update_task_menu_badge(data);
     var task = window.UPAAS.utils.where_or_get_first(window.UPAAS.tasks.Tasks, {id: data.attributes.id});
     window.UPAAS.tasks.render_task_menu_item(task);
+    window.UPAAS.tasks.update_task_list_view(task);
     setTimeout(function(){
         $('#upaas-task-menu-header-' + task.attributes.id).remove();
         $('#upaas-task-menu-item-' + task.attributes.id).remove();
