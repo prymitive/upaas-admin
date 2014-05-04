@@ -125,7 +125,7 @@ class MuleTaskHelper(object):
         if lock.flag in SINGLE_SHOT_FLAGS:
             ApplicationFlag.objects(
                 application=lock.application, name=lock.flag,
-                pending__ne=True).update_one(set__pending=True)
+                pending=False).update_one(set__pending=True)
         else:
             ApplicationFlag.objects(
                 application=lock.application, name=lock.flag,
