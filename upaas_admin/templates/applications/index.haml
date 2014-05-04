@@ -29,9 +29,9 @@
         %tr
           %td
             - if app.run_plan
-              %i.fa.fa-play{'title':'{% trans "Running" %}'}
+              %i.fa.fa-play{'title':'{% trans "Running" %}', 'id':'upaas-app-status-icon-={ app.safe_id }'}
             - else
-              %i.fa.fa-stop{'title':'{% trans "Stopped" %}'}
+              %i.fa.fa-stop{'title':'{% trans "Stopped" %}', 'id':'upaas-app-status-icon-={ app.safe_id }'}
           %td
             %a{'href':'{% url "app_details" app.id %}'}
               = app.name
