@@ -41,6 +41,7 @@ from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.applications.constants import (
     NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, IsStartingFlag,
     NeedsUpgradeFlag, FLAGS_BY_NAME)
+from upaas_admin.apps.applications.helpers import ApplicationStateHelper
 
 
 log = logging.getLogger(__name__)
@@ -487,6 +488,10 @@ class Application(Document):
         'ordering': ['name'],
     }
 
+    def __init__(self, *args, **kwargs):
+        super(Application, self).__init__(*args, **kwargs)
+        self.state_helper = ApplicationStateHelper(self)
+
     @property
     def safe_id(self):
         return str(self.id)
@@ -657,8 +662,9 @@ class Application(Document):
                 application=self, name=IsStartingFlag.name).update_one(
                     set__pending_backends=[b.backend for b in backends],
                     upsert=True)
-            ApplicationFlag.objects(name=NeedsStoppingFlag.name,
-                                    application=self).delete()
+
+            # FIXME what if there are waiting stop tasks on other backends ?
+            self.flags.filter(name=NeedsStoppingFlag.name).delete()
 
     def stop_application(self):
         if self.current_package:
@@ -672,8 +678,8 @@ class Application(Document):
             application=self, name=NeedsStoppingFlag.name).update_one(
                 set__pending_backends=[
                     b.backend for b in self.run_plan.backends], upsert=True)
-        ApplicationFlag.objects(name=IsStartingFlag.name,
-                                application=self).delete()
+        self.flags.filter(
+            name__in=[IsStartingFlag.name, NeedsRestartFlag.name]).delete()
 
     def restart_application(self):
         if self.current_package:

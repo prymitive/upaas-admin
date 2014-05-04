@@ -1,0 +1,8 @@
+- if flag
+  %dt
+    ={ title }:
+  %dd
+    - for backend in flag.pending_backends
+      = backend.name
+      - if not foorloop.last
+        %br/

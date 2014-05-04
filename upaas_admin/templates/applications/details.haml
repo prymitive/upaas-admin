@@ -38,21 +38,27 @@
         .text-muted
           - trans "None"
 
-    %dt
-      {% trans "Status" %}:
-    %dd
-      - for flag in app.flags
-        %ul
-          %li
-            Name =>
-            = flag.name
-          %li
-            Pending =>
-            = flag.pending
-          %li
-            Options =>
-            = flag.options
-          %li
-            Pending backends =>
-            = flag.pending_backends
-        %hr
+    %br/
+
+    - with app.state_helper.needs_building as flag
+      - if flag
+        %dt
+          {% trans "Pending task" %}:
+        %dd
+          = flag.title
+
+    - with app.state_helper.needs_starting as flag
+      - trans "Starting on" as title
+      - include 'applications/partials/flag_status.html'
+
+    - with app.state_helper.needs_restarting as flag
+      - trans "Restarting on" as title
+      - include 'applications/partials/flag_status.html'
+
+    - with app.state_helper.needs_stopping as flag
+      - trans "Stopping on" as title
+      - include 'applications/partials/flag_status.html'
+
+    - with app.state_helper.needs_upgrade as flag
+      - trans "Upgrading on" as title
+      - include 'applications/partials/flag_status.html'
