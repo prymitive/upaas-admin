@@ -21,8 +21,6 @@ class ApplicationStateHelper(object):
 
     @property
     def needs_building(self):
-        print((self.app.flags, self.app.flags.filter(
-            name=flags.NeedsBuildingFlag.name, pending__ne=False).first()))
         return self.app.flags.filter(name=flags.NeedsBuildingFlag.name,
                                      pending__ne=False).first()
 
