@@ -73,7 +73,7 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertEqual(self.deserialize(resp)['current_package']['id'],
                          self.pkg.safe_id)
         self.assertKeys(self.deserialize(resp),
-                        ['current_package', 'date_created', 'id',
+                        ['can_start', 'current_package', 'date_created', 'id',
                          'instance_count', 'metadata', 'name', 'owner',
                          'packages', 'resource_uri', 'running_tasks', 'tasks'])
 
