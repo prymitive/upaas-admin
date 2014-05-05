@@ -24,6 +24,31 @@ window.UPAAS.applications.ApplicationCollection = Backbone.Collection.extend({
 });
 window.UPAAS.applications.Applications = new window.UPAAS.applications.ApplicationCollection();
 
+window.UPAAS.applications.update_actions = function(app) {
+    var start_id = '.upaas-app-action-start-' + app.id;
+    var edit_id = '.upaas-app-action-edit-' + app.id;
+    var stop_id = '.upaas-app-action-stop-' + app.id;
+
+    if (app.can_start) {
+        // stopped, can start
+        $(start_id).attr('href', Django.url('app_start', app.id)).parent().removeClass('disabled');
+        $(edit_id).attr('href', '#').parent().addClass('disabled');
+        $(stop_id).attr('href', '#').parent().addClass('disabled');
+    }
+    else if (app.instance_count == 0 && app.can_start == false) {
+        // stopped, can't start
+        $(start_id).attr('href', '#').parent().addClass('disabled');
+        $(edit_id).attr('href', '#').parent().addClass('disabled');
+        $(stop_id).attr('href', '#').parent().addClass('disabled');
+    }
+    else {
+        // running
+        $(start_id).attr('href', '#').parent().addClass('disabled');
+        $(edit_id).attr('href', Django.url('app_edit_run_plan', app.id)).parent().removeClass('disabled');
+        $(stop_id).attr('href', Django.url('app_stop', app.id)).parent().removeClass('disabled');
+    }
+}
+
 window.UPAAS.applications.parse_updates = function(data) {
     window.UPAAS.utils.update_badge('.upaas-user-badge-apps', data.collection.length);
 
@@ -37,6 +62,7 @@ window.UPAAS.applications.parse_updates = function(data) {
         } else {
             $('#upaas-app-status-icon-' + app.attributes.id).removeClass('fa-play').addClass('fa-stop');
         }
+        window.UPAAS.applications.update_actions(app.attributes);
     });
 }
 window.UPAAS.utils.bind_backbone(window.UPAAS.applications.Applications, window.UPAAS.applications.parse_updates);
