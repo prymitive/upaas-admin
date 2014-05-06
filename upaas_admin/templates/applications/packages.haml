@@ -2,6 +2,7 @@
 
 
 - load i18n
+- load inline_truncate
 
 
 - block app_content
@@ -14,9 +15,9 @@
         %th
           - trans "Created"
         %th
-          - trans "Interpreter name"
+          - trans "Interpreter"
         %th
-          - trans "Interpreter version"
+          - trans "Revision"
         %th
 
     %tbody
@@ -34,9 +35,9 @@
               %span.label.label-primary
                 - trans "Current"
           %td
-            = package.interpreter_name
+            ={ package.interpreter_name } ={ package.interpreter_version }
           %td
-            = package.interpreter_version
+            = package.revision_id|default_if_none:""|inline_truncate:16
           %td.upaas-table-action
             - if app.current_package.id != package.id
               .btn-group
@@ -64,7 +65,7 @@
 
       - empty
         %tr
-          %td.text-center.text-muted{'colspan':'4'}
+          %td.text-center.text-muted{'colspan':'5'}
             - trans "No packages built yet"
 
   - include "partials/pagination_footer.html"
