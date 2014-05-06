@@ -19,7 +19,7 @@ def inline_truncate(value, size):
 
     Code from: https://djangosnippets.org/snippets/860/
     """
-    if len(value) > size > 3:
+    if len(value) > size > 4:
         start = (size - 3) / 2
         end = (size - 3) - start
         return value[0:start] + '...' + value[-end:]
