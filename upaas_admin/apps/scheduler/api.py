@@ -15,6 +15,7 @@ from django.core import exceptions
 from django.utils.translation import ugettext as _
 
 from tastypie_mongoengine.resources import MongoEngineResource
+from tastypie_mongoengine.fields import ReferenceField
 
 from tastypie.resources import ALL
 from tastypie.authorization import Authorization
@@ -60,6 +61,10 @@ class RunPlanAuthorization(Authorization):
 
 class RunPlanResource(MongoEngineResource):
 
+    application = ReferenceField(
+        'upaas_admin.apps.applications.api.ApplicationResource', 'application',
+        full=False, readonly=True)
+
     class Meta:
         always_return_data = True
         queryset = ApplicationRunPlan.objects.all()
@@ -95,9 +100,11 @@ class RunPlanResource(MongoEngineResource):
             'memory_per_worker']
         kwargs['max_log_size'] = bundle.request.user.limits['max_log_size']
         try:
-            return super(MongoEngineResource, self).obj_create(bundle,
-                                                               request=request,
-                                                               **kwargs)
+            ret = super(MongoEngineResource, self).obj_create(bundle,
+                                                              request=request,
+                                                              **kwargs)
+            app.update(set__run_plan=ret.obj)
+            return ret
         except mongoengine.ValidationError as e:
             log.warning(_("Can't create new run plan, invalid data payload: "
                           "{msg}").format(msg=e.message))

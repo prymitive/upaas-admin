@@ -80,11 +80,11 @@ class Command(MuleCommand):
             else:
                 log.info(_("Application {name} needs upgrading").format(
                     name=flag.application.name))
-            run_plan = flag.application.run_plan
-            if run_plan:
+            if flag.application.run_plan:
                 task = self.create_task(flag.application, flag.title,
                                         flag=flag.name)
-                self.start_app(task, flag.application, run_plan)
+                self.start_app(task, flag.application,
+                               flag.application.run_plan)
 
     def is_application_running(self, application):
         if not os.path.exists(application.vassal_path):
@@ -182,13 +182,12 @@ class Command(MuleCommand):
         self.wait_until(application, running=False)
         task.update(set__progress=75)
 
-        run_plan = application.run_plan
-        if run_plan:
-            run_plan.remove_backend_settings(self.backend)
-            run_plan.reload()
-            if not run_plan.backends:
+        if application.run_plan:
+            application.run_plan.remove_backend_settings(self.backend)
+            application.run_plan.reload()
+            if not application.run_plan.backends:
                 log.info(_("Removing application run plan"))
-                run_plan.delete()
+                application.run_plan.delete()
         else:
             log.warning(_("Missing run plan for {name}, already "
                           "stopped?").format(name=application.name))

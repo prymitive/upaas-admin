@@ -71,6 +71,9 @@ class ApplicationResource(MongoEngineResource):
     packages = ReferencedListField(
         'upaas_admin.apps.applications.api.PackageResource', 'packages',
         null=True, readonly=True)
+    run_plan = ReferenceField(
+        'upaas_admin.apps.scheduler.api.RunPlanResource', 'run_plan',
+        full=True, null=True, readonly=True)
     tasks = ReferencedListField('upaas_admin.apps.tasks.api.TaskResource',
                                 'tasks', null=True, readonly=True)
     running_tasks = ReferencedListField(
@@ -224,8 +227,7 @@ class ApplicationResource(MongoEngineResource):
         app = self.get_app(kwargs)
         if not app:
             return HttpResponseNotFound(_("No such application"))
-        run_plan = app.run_plan
-        if run_plan:
+        if app.run_plan:
             for backend_conf in app.run_plan.backends:
                 backend_data = {
                     'name': backend_conf.backend.name,
@@ -233,12 +235,13 @@ class ApplicationResource(MongoEngineResource):
                     'limits': {
                         'workers_min': backend_conf.workers_min,
                         'workers_max': backend_conf.workers_max,
-                        'memory_per_worker': run_plan.memory_per_worker,
-                        'memory_per_worker_bytes': run_plan.memory_per_worker *
-                        1024 * 1024,
-                        'backend_memory': run_plan.memory_per_worker *
+                        'memory_per_worker': app.run_plan.memory_per_worker,
+                        'memory_per_worker_bytes':
+                        app.run_plan.memory_per_worker * 1024 * 1024,
+                        'backend_memory': app.run_plan.memory_per_worker *
                         backend_conf.workers_max,
-                        'backend_memory_bytes': run_plan.memory_per_worker *
+                        'backend_memory_bytes':
+                        app.run_plan.memory_per_worker *
                         backend_conf.workers_max * 1024 * 1024,
                     }}
                 s = fetch_json_stats(str(backend_conf.backend.ip),

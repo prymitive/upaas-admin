@@ -428,6 +428,8 @@ def create_run_plan(request):
                                   workers_min=1, workers_max=4,
                                   memory_per_worker=128, max_log_size=1)
     run_plan.save()
+    request.instance.app.update(set__run_plan=run_plan)
+    request.instance.app.reload()
 
     def cleanup():
         run_plan.delete()
@@ -452,6 +454,8 @@ def create_run_plan_pkg_list(request):
                                   workers_min=1, workers_max=4,
                                   memory_per_worker=128, max_log_size=1)
     run_plan.save()
+    request.instance.app.update(set__run_plan=run_plan)
+    request.instance.app.reload()
 
     def cleanup():
         run_plan.delete()

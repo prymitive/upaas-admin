@@ -7,12 +7,17 @@
 
 from __future__ import unicode_literals
 
+import logging
+
 from mongoengine import (Document, EmbeddedDocument, QuerySetManager,
                          IntField, ReferenceField, EmbeddedDocumentField,
-                         ListField)
+                         ListField, signals)
 
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
+
+
+log = logging.getLogger(__name__)
 
 
 class UserLimits(Document):
@@ -79,6 +84,12 @@ class ApplicationRunPlan(Document):
 
     _default_manager = QuerySetManager()
 
+    @classmethod
+    def pre_delete(cls, sender, document, **kwargs):
+        log.debug(_("Pre delete signal on run_plan for {name}").format(
+            name=document.application.name))
+        document.application.update(unset__run_plan=True)
+
     def backend_settings(self, backend):
         for backend_conf in self.backends:
             if backend_conf.backend == backend:
@@ -99,3 +110,7 @@ class ApplicationRunPlan(Document):
         self.append_backend_settings(BackendRunPlanSettings(**data))
         self.reload()
         return self.backend_settings(backend)
+
+
+signals.pre_delete.connect(ApplicationRunPlan.pre_delete,
+                           sender=ApplicationRunPlan)

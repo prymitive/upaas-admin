@@ -75,7 +75,8 @@ class ApiTest(MongoEngineTestCase, ResourceTestCase):
         self.assertKeys(self.deserialize(resp),
                         ['can_start', 'current_package', 'date_created', 'id',
                          'instance_count', 'metadata', 'name', 'owner',
-                         'packages', 'resource_uri', 'running_tasks', 'tasks'])
+                         'packages', 'resource_uri', 'run_plan',
+                         'running_tasks', 'tasks'])
 
     @pytest.mark.usefixtures("create_user")
     def test_application_detail_get_404(self):

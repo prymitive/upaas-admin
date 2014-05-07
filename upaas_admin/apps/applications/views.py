@@ -299,6 +299,8 @@ class StartApplicationView(LoginRequiredMixin, OwnedAppsMixin,
             'memory_per_worker']
         form.instance.max_log_size = self.request.user.limits['max_log_size']
         ret = super(StartApplicationView, self).form_valid(form)
+        self.app.update(set__run_plan=form.instance)
+        self.app.reload()
         self.app.start_application()
         return ret
 

@@ -199,10 +199,8 @@ class Package(Document):
         except (AttributeError, KeyError):
             pass
 
-        run_plan = self.application.run_plan
-
         max_memory = backend_conf.workers_max
-        max_memory *= run_plan.memory_per_worker
+        max_memory *= self.application.run_plan.memory_per_worker
         max_memory *= 1024 * 1024
 
         variables = {
@@ -217,8 +215,9 @@ class Package(Document):
             'pkg_id': self.safe_id,
             'max_workers': backend_conf.workers_max,
             'max_memory': max_memory,
-            'memory_per_worker': run_plan.memory_per_worker,
-            'max_log_size': run_plan.max_log_size * 1024 * 1024,
+            'memory_per_worker': self.application.run_plan.memory_per_worker,
+            'max_log_size':
+            self.application.run_plan.max_log_size * 1024 * 1024,
         }
 
         if config.apps.graphite.carbon:
@@ -480,6 +479,7 @@ class Application(Document):
     current_package = ReferenceField(Package, dbref=False, required=False)
     packages = ListField(ReferenceField(Package, dbref=False,
                                         reverse_delete_rule=NULLIFY))
+    run_plan = ReferenceField('ApplicationRunPlan', dbref=False)
 
     _default_manager = QuerySetManager()
 
@@ -553,13 +553,6 @@ class Application(Document):
         if self.metadata:
             return sorted(list(utils.supported_versions(
                 self.upaas_config, self.metadata_config).keys()), reverse=True)
-
-    @property
-    def run_plan(self):
-        """
-        Application run plan if it is present, None otherwise.
-        """
-        return ApplicationRunPlan.objects(application=self).first()
 
     @property
     def can_start(self):
@@ -646,21 +639,19 @@ class Application(Document):
 
     def start_application(self):
         if self.current_package:
-            run_plan = self.run_plan
-            if not run_plan:
+            if not self.run_plan:
                 log.error("Trying to start '%s' without run plan" % self.name)
                 return
 
-            backends = select_best_backends(run_plan,
+            backends = select_best_backends(self.run_plan,
                                             package=self.current_package)
             if not backends:
                 log.error(_("Can't start '{name}', no backend "
                             "available").format(name=self.name))
-                run_plan.delete()
+                self.run_plan.delete()
                 return
 
-            run_plan.backends = backends
-            run_plan.save()
+            self.run_plan.update(set__backends=backends)
             ApplicationFlag.objects(
                 application=self, name=IsStartingFlag.name).update_one(
                     set__pending_backends=[b.backend for b in backends],
@@ -705,10 +696,8 @@ class Application(Document):
     def update_application(self):
         if self.run_plan:
 
-            run_plan = self.run_plan
-
-            current_backends = [bc.backend for bc in run_plan.backends]
-            new_backends = select_best_backends(run_plan)
+            current_backends = [bc.backend for bc in self.run_plan.backends]
+            new_backends = select_best_backends(self.run_plan)
             if not new_backends:
                 log.error(_("Can't update '{name}', no backend "
                             "available").format(name=self.name))
@@ -718,9 +707,9 @@ class Application(Document):
             for backend_conf in new_backends:
                 if backend_conf.backend in current_backends:
                     # replace backend settings with updated version
-                    run_plan.update(
+                    self.run_plan.update(
                         pull__backends__backend=backend_conf.backend)
-                    run_plan.update(push__backends=backend_conf)
+                    self.run_plan.update(push__backends=backend_conf)
                     updated_backends.append(backend_conf.backend)
                 else:
                     # add backend to run plan if not already there

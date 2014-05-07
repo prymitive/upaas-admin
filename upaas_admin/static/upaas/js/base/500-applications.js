@@ -35,7 +35,7 @@ window.UPAAS.applications.update_actions = function(app) {
         $(edit_id).attr('href', '#').parent().addClass('disabled');
         $(stop_id).attr('href', '#').parent().addClass('disabled');
     }
-    else if (app.instance_count == 0 && app.can_start == false) {
+    else if (!app.run_plan && app.instance_count == 0 && app.can_start == false) {
         // stopped, can't start
         $(start_id).attr('href', '#').parent().addClass('disabled');
         $(edit_id).attr('href', '#').parent().addClass('disabled');
