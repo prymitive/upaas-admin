@@ -214,7 +214,7 @@ def create_app(request):
             task.delete()
         if app.run_plan:
             app.run_plan.delete()
-        app.delete()     
+        app.delete()
     request.addfinalizer(cleanup)
 
     request.instance.app = app
