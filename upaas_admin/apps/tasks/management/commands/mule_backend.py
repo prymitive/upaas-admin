@@ -197,12 +197,12 @@ class Command(MuleCommand):
             name=application.name))
         self.mark_task_successful(task)
 
-    def wait_until_reloaded(self, application, timelimit=300):
+    def wait_until_reloaded(self, application, timelimit=120):
         # FIXME track pid change
         sleep(5)
-        return self.wait_until(application, running=True)
+        return self.wait_until(application, running=True, timelimit=timelimit)
 
-    def wait_until(self, application, running=True, timelimit=300):
+    def wait_until(self, application, running=True, timelimit=120):
 
         run_plan = self.backend.application_settings(application)
         if not run_plan:
