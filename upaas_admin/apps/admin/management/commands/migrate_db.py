@@ -68,7 +68,9 @@ class Command(BaseCommand):
     def migrate_run_plans(self):
         for run_plan in ApplicationRunPlan.objects():
             if not run_plan.application.run_plan:
-                    run_plan.application.update(set__run_plan=run_plan)
+                log.info(
+                    "Migrating run plan for %s" % run_plan.application.name)
+                run_plan.application.update(set__run_plan=run_plan)
 
     def handle(self, *args, **options):
         self.migrate_domains()
