@@ -417,7 +417,6 @@ def create_router(request):
 
 @pytest.fixture(scope="function")
 def create_run_plan(request):
-    create_app(request)
     create_pkg(request)
     create_backend(request)
     create_router(request)
