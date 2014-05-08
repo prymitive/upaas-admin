@@ -212,7 +212,9 @@ def create_app(request):
             flag.delete()
         for task in app.tasks:
             task.delete()
-        app.delete()
+        if app.run_plan:
+            app.run_plan.delete()
+        app.delete()     
     request.addfinalizer(cleanup)
 
     request.instance.app = app
@@ -251,6 +253,8 @@ def create_buildable_app(request):
             flag.delete()
         for task in app.tasks:
             task.delete()
+        if app.run_plan:
+            app.run_plan.delete()
         app.delete()
     request.addfinalizer(cleanup)
 
