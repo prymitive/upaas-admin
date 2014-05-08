@@ -17,6 +17,7 @@ from mongoengine import (Document, EmbeddedDocument, QuerySetManager,
 from django.core.management.base import BaseCommand
 
 from upaas_admin.apps.applications.models import Application, ApplicationDomain
+from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 
 
 log = logging.getLogger("migrate_db")
@@ -64,5 +65,11 @@ class Command(BaseCommand):
             app.update(unset__old_domains=True)
         log.info("%d domain(s) migrated, %d error(s)" % (done, errors))
 
+    def migrate_run_plans(self):
+        for run_plan in ApplicationRunPlan.objects():
+            if not run_plan.application.run_plan:
+                    run_plan.application.update(set__run_plan=run_plan)
+
     def handle(self, *args, **options):
         self.migrate_domains()
+        self.migrate_run_plans()
