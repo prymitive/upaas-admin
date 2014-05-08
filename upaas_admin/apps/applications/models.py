@@ -332,11 +332,12 @@ class Package(Document):
         options.append('\n# starting subscriptions block')
         for router in RouterServer.objects(is_enabled=True):
             options.append('subscribe2 = server=%s:%d,key=%s' % (
-                router.private_ip, router.subscription_port,
+                router.subscription_ip, router.subscription_port,
                 self.application.system_domain))
             for domain in self.application.custom_domains:
                 options.append('subscribe2 = server=%s:%d,key=%s' % (
-                    router.private_ip, router.subscription_port, domain.name))
+                    router.subscription_ip, router.subscription_port,
+                    domain.name))
 
         options.append('\n')
         return options
@@ -619,7 +620,8 @@ class Application(Document):
 
     @property
     def router_ip_list(self):
-        return [r.public_ip for r in RouterServer.objects(is_enabled=True)]
+        return [r.subscription_ip for r in RouterServer.objects(
+            is_enabled=True)]
 
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])

@@ -35,9 +35,9 @@
         %th
           - trans "Name"
         %th
-          - trans "Public IP address"
+          - trans "Subscription IP address"
         %th
-          - trans "Private IP address"
+          - trans "Subscription port"
         %th
           - trans "Enabled"
 
@@ -48,9 +48,9 @@
             %a{'href':'{% url "admin_router_edit" router_object.name %}'}
               = router_object.name
           %td
-            = router_object.public_ip
+            = router_object.subscription_ip
           %td
-            = router_object.private_ip
+            = router_object.subscription_port
           %td
             - if router_object.is_enabled
               %i.fa.fa-thumbs-o-up

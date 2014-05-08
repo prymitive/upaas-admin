@@ -404,8 +404,7 @@ def create_router(request):
     if router:
         router.delete()
 
-    router = RouterServer(name='router', private_ip='127.0.0.1',
-                          public_ip='127.0.0.1')
+    router = RouterServer(name='router', subscription_ip='127.0.0.1')
     router.save()
 
     def cleanup():

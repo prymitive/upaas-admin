@@ -154,7 +154,7 @@ class PackageTest(MongoEngineTestCase):
         self.assertTrue('var_app_id = %s' % self.app.safe_id in config)
         self.assertTrue('env = REDMINE_LANG=en' in config)
         skey = 'subscribe2 = server=%s:%d,key=%s' % (
-            self.router.private_ip, self.router.subscription_port,
+            self.router.subscription_ip, self.router.subscription_port,
             self.domain.name)
         self.assertTrue(skey in config)
 

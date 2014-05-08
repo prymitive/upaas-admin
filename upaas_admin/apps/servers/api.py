@@ -45,8 +45,7 @@ class RouterResource(MongoEngineResource):
         resource_name = 'router'
         filtering = {
             'id': ALL,
-            'private_ip': ALL,
-            'public_ip': ALL,
+            'subscription_ip': ALL,
             'name': ALL,
         }
         authentication = UpaasApiKeyAuthentication()

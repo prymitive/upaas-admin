@@ -200,7 +200,7 @@ class AdminTest(MongoEngineTestCase):
         self.login_as_user()
         url = reverse('admin_router_create')
         resp = self.client.post(url, {'is_enabled': True,
-                                      'public_ip': '123.456.789.876'})
+                                      'subscription_ip': '123.456.789.876'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "This field is required.")
         self.assertContains(
@@ -212,29 +212,25 @@ class AdminTest(MongoEngineTestCase):
 
         url = reverse('admin_router_create')
         resp = self.client.post(url, {'is_enabled': False, 'name': 'router1',
-                                      'public_ip': '8.8.8.8',
-                                      'private_ip': '127.0.0.1',
+                                      'subscription_ip': '127.0.0.1',
                                       'subscription_port': 3333})
         self.assertEqual(resp.status_code, 302)
         router = RouterServer.objects(name='router1').first()
         self.assertNotEqual(router, None)
         self.assertEqual(router.name, 'router1')
         self.assertEqual(router.is_enabled, False)
-        self.assertEqual(router.public_ip.strNormal(), '8.8.8.8')
-        self.assertEqual(router.private_ip.strNormal(), '127.0.0.1')
+        self.assertEqual(router.subscription_ip.strNormal(), '127.0.0.1')
         self.assertEqual(router.subscription_port, 3333)
 
         url = reverse('admin_router_edit', args=[router.name])
         resp = self.client.post(url, {'is_enabled': True, 'name': 'router2',
-                                      'public_ip': '7.7.7.7',
-                                      'private_ip': '127.0.0.2',
+                                      'subscription_ip': '127.0.0.2',
                                       'subscription_port': 4444})
         self.assertEqual(resp.status_code, 302)
         router.reload()
         self.assertEqual(router.name, 'router2')
         self.assertEqual(router.is_enabled, True)
-        self.assertEqual(router.public_ip.strNormal(), '7.7.7.7')
-        self.assertEqual(router.private_ip.strNormal(), '127.0.0.2')
+        self.assertEqual(router.subscription_ip.strNormal(), '127.0.0.2')
         self.assertEqual(router.subscription_port, 4444)
 
         router.delete()

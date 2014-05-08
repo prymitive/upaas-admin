@@ -137,10 +137,9 @@ class RouterServer(Document):
     date_created = DateTimeField(required=True, default=datetime.datetime.now)
     name = StringField(required=True, max_length=60, unique=True,
                        verbose_name=_('name'))
-    private_ip = IPv4Field(required=True, unique=True,
-                           verbose_name=_('private IP address'))
-    public_ip = IPv4Field(required=True, unique=True,
-                          verbose_name=_('public IP address'))
+    subscription_ip = IPv4Field(
+        required=True, unique=True,
+        verbose_name=_('subscription listening IP address'))
     subscription_port = IntField(required=True, default=2626, min_value=1,
                                  max_value=65535,
                                  verbose_name=_('subscription port'))
@@ -149,7 +148,7 @@ class RouterServer(Document):
     _default_manager = QuerySetManager()
 
     meta = {
-        'indexes': ['name', 'private_ip', 'public_ip', 'is_enabled'],
+        'indexes': ['name', 'subscription_ip', 'is_enabled'],
         'ordering': ['name'],
     }
 

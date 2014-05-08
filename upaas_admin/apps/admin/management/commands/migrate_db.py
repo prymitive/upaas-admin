@@ -16,8 +16,10 @@ from mongoengine import (Document, EmbeddedDocument, QuerySetManager,
 
 from django.core.management.base import BaseCommand
 
+from upaas_admin.common.fields import IPv4Field
 from upaas_admin.apps.applications.models import Application, ApplicationDomain
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
+from upaas_admin.apps.servers.models import RouterServer
 
 
 log = logging.getLogger("migrate_db")
@@ -38,16 +40,22 @@ class OldApplication(Document):
     meta = {'collection': 'application'}
 
 
+class OldRouterServer(Document):
+    name = StringField(required=True, max_length=60, unique=True)
+    private_ip = IPv4Field()
+    public_ip = IPv4Field()
+    meta = {'collection': 'router_server'}
+
+
 class Command(BaseCommand):
 
-    help = 'Create missing MongoDB indexes'
+    help = 'Migrate database after upgrade'
 
     def migrate_domains(self):
         done = 0
         errors = 0
         for app in OldApplication.objects():
             new_app = Application.objects(id=app.id).first()
-            log.info("Application: %s" % app.name)
             for old_domain in app.old_domains:
                 log.info("Migrating domain: %s / %s" % (app.name,
                                                         old_domain.name))
@@ -63,7 +71,8 @@ class Command(BaseCommand):
                 else:
                     done += 1
             app.update(unset__old_domains=True)
-        log.info("%d domain(s) migrated, %d error(s)" % (done, errors))
+        if done or errors:
+            log.info("%d domain(s) migrated, %d error(s)" % (done, errors))
 
     def migrate_run_plans(self):
         for run_plan in ApplicationRunPlan.objects():
@@ -72,6 +81,15 @@ class Command(BaseCommand):
                     "Migrating run plan for %s" % run_plan.application.name)
                 run_plan.application.update(set__run_plan=run_plan)
 
+    def migrate_routers(self):
+        for router in OldRouterServer.objects():
+            if router.private_ip:
+                log.info("Migrating router: %s" % router.name)
+                RouterServer.objects(name=router.name).update_one(
+                    set__subscription_ip=router.private_ip)
+                router.update(unset__public_ip=True, unset__private_ip=True)
+
     def handle(self, *args, **options):
         self.migrate_domains()
         self.migrate_run_plans()
+        self.migrate_routers()
