@@ -52,10 +52,14 @@ class Command(MuleCommand):
                                           NeedsUpgradeFlag.name]):
                 continue
             if not self.is_application_running(app):
+                log.info(_("Application {name} is not running, "
+                           "starting").format(name=app.name))
                 ApplicationFlag.objects(
                     application=app, name=IsStartingFlag.name).update_one(
                         add_to_set__pending_backends=self.backend, upsert=True)
             elif not self.is_vassal_config_valid(app):
+                log.info(_("Application {name} vassal config is invalid, "
+                           "restarting").format(name=app.name))
                 ApplicationFlag.objects(
                     application=app, name=NeedsRestartFlag.name).update_one(
                         add_to_set__pending_backends=self.backend, upsert=True)
