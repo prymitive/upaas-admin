@@ -2,6 +2,7 @@
   <script type="text/haml-template" id="upaas-tasks-dropdown-details">
   - var task_header_id = 'upaas-task-menu-header-' + task.id;
   - var task_header_li_class = 'dropdown-header';
+  - var task_header_timestamp_id = 'upaas-task-menu-timestamp-' + task.id;
   - var task_body_li_class = 'upaas-task-link';
   - if (task.is_failed) {
     - task_header_li_class += ' upaas-task-failed';
@@ -15,7 +16,8 @@
     - else {
       = gettext("Started")
       !
-      = moment(task.date_created).fromNow()
+      %span{id: task_header_timestamp_id}
+        = moment(task.date_created).fromNow()
 
   - var task_body_id = 'upaas-task-menu-item-' + task.id;
   %li{class: task_body_li_class, id: task_body_id}

@@ -41,6 +41,7 @@ window.UPAAS.tasks.RunningTasks = new window.UPAAS.tasks.RunningTaskCollection()
 
 
 window.UPAAS.tasks.running_task_dict = {};
+window.UPAAS.tasks.running_task_timers = {};
 
 
 window.UPAAS.tasks.update_task_list_view = function(task) {
@@ -79,6 +80,18 @@ window.UPAAS.tasks.render_task_menu_item = function(task) {
         }
         window.UPAAS.tasks.running_task_dict[task.attributes.id] = task_html;
         $('#upaas-tasks-menu').append(task_html);
+        window.UPAAS.tasks.running_task_timers[task.attributes.id] = setInterval(
+            function(){
+                var text;
+                if (task.attributes.is_finished) {
+                    text = moment(task.attributes.date_finished).fromNow();
+                } else {
+                    text = moment(task.attributes.date_created).fromNow();
+                }
+                $('#upaas-task-menu-timestamp-' + task.attributes.id).html(text);
+            },
+            3000
+        );
     }
 }
 
@@ -111,6 +124,10 @@ window.UPAAS.tasks.parse_removed_running_task = function(data) {
         $('#upaas-task-menu-item-' + task.attributes.id).remove();
         $('#upaas-task-menu-divider-' + task.attributes.id).remove();
         delete window.UPAAS.tasks.running_task_dict[task.attributes.id];
+
+        clearInterval(window.UPAAS.tasks.running_task_timers[task.attributes.id]);
+        delete window.UPAAS.tasks.running_task_timers[task.attributes.id];
+
         $('#upaas-tasks-menu').children('li').not('#upaas-tasks-menu-li-dummy').first().filter('.divider').remove();
         if ($('#upaas-tasks-menu').children('li').not('#upaas-tasks-menu-li-dummy').length == 0) {
             $('#upaas-tasks-menu-li-dummy').show();
