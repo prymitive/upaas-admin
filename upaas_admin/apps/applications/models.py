@@ -618,11 +618,6 @@ class Application(Document):
         """
         return "upaas-app-id=%s" % self.safe_id
 
-    @property
-    def router_ip_list(self):
-        return [r.subscription_ip for r in RouterServer.objects(
-            is_enabled=True)]
-
     def get_absolute_url(self):
         return reverse('app_details', args=[self.safe_id])
 
