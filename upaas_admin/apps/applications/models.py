@@ -428,6 +428,10 @@ class ApplicationDomain(Document):
     name = StringField(required=True, unique=True, min_length=4, max_length=64)
     validated = BooleanField()
 
+    meta = {
+        'indexes': ['application']
+    }
+
     @property
     def safe_id(self):
         return str(self.id)
@@ -459,7 +463,8 @@ class ApplicationFlag(Document):
     meta = {
         'indexes': [
             {'fields': ['name', 'application'], 'unique': True},
-            # TODO add indexes after profiling
+            {'fields': ['name']},
+            {'fields': ['pending']},
         ],
         'ordering': ['-date_created'],
     }
