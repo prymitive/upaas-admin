@@ -80,17 +80,22 @@ class MuleBackendHelper(object):
                     break
 
         if not backend and not local_ip:
-            log.error("No IP address found for local backend!")
+            log.error(_("No IP address found for local backend!"))
             return
 
         if backend:
+            if backend.ip == IP('127.0.0.1'):
+                # allow using localhost as backend IP, don't auto update
+                # it in such case
+                return backend
+
             local_ips = local_ipv4_addresses()
             if backend.ip not in [IP(ip) for ip in local_ips]:
                 local_ip = local_ips[0]
-                log.info("Updating IP for '%s' from '%s' to '%s'" % (
-                    name, backend.ip, local_ip))
-                backend.ip = IP(local_ip)
-                backend.save()
+                log.info(_("Updating IP for {name} from {oldip} to "
+                           "{newip}").format(name=name, oldip=backend.ip,
+                                             newip=local_ip))
+                backend.update(set__ip=IP(local_ip))
         else:
             log.info(_("Local backend not found, registering as '{name}' "
                        "with IP {ip}").format(name=name, ip=local_ip))
