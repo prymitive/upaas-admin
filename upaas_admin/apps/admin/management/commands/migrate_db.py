@@ -19,7 +19,7 @@ from django.core.management.base import BaseCommand
 from upaas_admin.common.fields import IPv4Field
 from upaas_admin.apps.applications.models import Application, ApplicationDomain
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
-from upaas_admin.apps.servers.models import RouterServer
+from upaas_admin.apps.servers.models import RouterServer, BackendServer
 
 
 log = logging.getLogger("migrate_db")
@@ -89,7 +89,12 @@ class Command(BaseCommand):
                     set__subscription_ip=router.private_ip)
                 router.update(unset__public_ip=True, unset__private_ip=True)
 
+    def migrate_backends(self):
+        for backend in BackendServer.objects():
+            backend.update(unset__worker_ping=True)
+
     def handle(self, *args, **options):
         self.migrate_domains()
         self.migrate_run_plans()
         self.migrate_routers()
+        self.migrate_backends()
