@@ -3,6 +3,7 @@
 
 - load i18n
 - load django_bootstrap_breadcrumbs
+- load upaas_mb_to_bytes
 
 
 - block breadcrumbs
@@ -37,6 +38,10 @@
         %th
           - trans "IP address"
         %th
+          - trans "CPUs"
+        %th
+          - trans "Memory"
+        %th
           - trans "Enabled"
         %th
           - trans "Status"
@@ -49,6 +54,10 @@
               = backend_object.name
           %td
             = backend_object.ip
+          %td
+            = backend_object.cpu_cores
+          %td
+            = backend_object.memory_mb|mb_to_bytes|filesizeformat
           %td
             - if backend_object.is_enabled
               %i.fa.fa-thumbs-o-up

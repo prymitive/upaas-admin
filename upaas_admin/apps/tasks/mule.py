@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from time import sleep
 from socket import gethostname
 from threading import Thread
+from multiprocessing import cpu_count
 
 from IPy import IP
 
@@ -27,6 +28,7 @@ from django.utils.translation import ugettext as _
 
 from upaas.inet import local_ipv4_addresses
 from upaas.processes import is_pid_running
+from upaas.utils import backend_total_memory
 
 from upaas_admin.apps.servers.models import BackendServer
 from upaas_admin.apps.tasks.models import MongoLogHandler, Task
@@ -56,8 +58,7 @@ class MuleBackendHelper(object):
     def pinger(self):
         key = 'set__worker_ping__%s' % self.name
         while not self.exiting:
-            BackendServer.objects(id=self.backend.id).update_one(
-                **{key: datetime.now()})
+            self.backend.update(**{key: datetime.now()})
             sleep(self.interval)
 
     def start_pinger(self, interval=60):
@@ -84,18 +85,8 @@ class MuleBackendHelper(object):
             return
 
         if backend:
-            if backend.ip == IP('127.0.0.1'):
-                # allow using localhost as backend IP, don't auto update
-                # it in such case
-                return backend
-
-            local_ips = local_ipv4_addresses()
-            if backend.ip not in [IP(ip) for ip in local_ips]:
-                local_ip = local_ips[0]
-                log.info(_("Updating IP for {name} from {oldip} to "
-                           "{newip}").format(name=name, oldip=backend.ip,
-                                             newip=local_ip))
-                backend.update(set__ip=IP(local_ip))
+            if backend.autodetect:
+                self.update_backend(backend)
         else:
             log.info(_("Local backend not found, registering as '{name}' "
                        "with IP {ip}").format(name=name, ip=local_ip))
@@ -103,6 +94,49 @@ class MuleBackendHelper(object):
             backend.save()
 
         return backend
+
+    def update_backend(self, backend):
+        if backend.ip == IP('127.0.0.1'):
+            # allow using localhost as backend IP, don't auto update
+            # it in such case
+            return
+
+        updates = {}
+
+        local_ips = local_ipv4_addresses()
+        if backend.ip not in [IP(ip) for ip in local_ips]:
+            local_ip = local_ips[0]
+            log.info(_("Updating IP for {name} from {oldip} to "
+                       "{newip}").format(name=backend.name, oldip=backend.ip,
+                                         newip=local_ip))
+            updates['set__ip'] = local_ip
+
+        cpus = cpu_count()
+        if backend.cpu_cores != cpus:
+            log.info(_("Updating cpu cores for {name} from {oldcpus} to "
+                       "{cpus}").format(name=backend.name,
+                                        oldcpus=backend.cpu_cores or 0,
+                                        cpus=cpus))
+            updates['set__cpu_cores'] = cpus
+
+        mem = backend_total_memory()
+        if mem:
+            # convert to MB
+            mem = mem / 1024 / 1024
+            if backend.memory_mb != mem:
+                log.info(_(
+                    "Updating memory size for {name} from {oldmem}MB to "
+                    "{mem}MB").format(name=backend.name,
+                                      oldmem=backend.memory_mb or 0,
+                                      mem=mem))
+                updates['set__memory_mb'] = mem
+        else:
+            log.error(_("Can't find local backend physical memory size, "
+                        "is /proc mounted ?"))
+
+        if updates:
+            backend.update(**updates)
+            backend.reload()
 
 
 class MuleTaskHelper(object):
