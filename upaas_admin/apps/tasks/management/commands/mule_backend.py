@@ -76,7 +76,7 @@ class Command(MuleCommand):
                 name=flag.application.name))
             task = self.create_task(flag.application, flag.title,
                                     flag=flag.name)
-            self.restart_app(task, flag.application)
+            self.restart_app(task, flag.application, flag)
         elif flag.name in [IsStartingFlag.name, NeedsUpgradeFlag.name]:
             if flag.name == IsStartingFlag.name:
                 log.info(_("Application {name} needs starting").format(
@@ -160,7 +160,7 @@ class Command(MuleCommand):
                                          name=application.name))
             self.fail_task(task)
 
-    def restart_app(self, task, application):
+    def restart_app(self, task, application, flag):
         backend_conf = application.run_plan.backend_settings(self.backend)
         if backend_conf:
             backend_conf.package.save_vassal_config(backend_conf)
@@ -170,7 +170,7 @@ class Command(MuleCommand):
                 name=application.name))
             self.mark_task_successful(task)
         else:
-            self.fail_task(task)
+            self.fail_flag(flag, task)
 
     def stop_app(self, task, application):
         if os.path.isfile(application.vassal_path):
