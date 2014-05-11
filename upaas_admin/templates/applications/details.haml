@@ -47,6 +47,13 @@
         %dd
           = flag.title
 
+    - with app.state_helper.needs_rescheduling as flag
+      - if flag
+        %dt
+          {% trans "Pending task" %}:
+        %dd
+          = flag.title
+
     - with app.state_helper.needs_starting as flag
       - trans "Starting on" as title
       - include 'applications/partials/flag_status.html'

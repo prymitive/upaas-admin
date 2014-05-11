@@ -162,7 +162,8 @@ class Scheduler(object):
                         name=backend.name))
                     plan_min[bid] += 1
                     missing -= 1
-                    break
+                    if missing <= 0:
+                        break
 
         backends = []
 

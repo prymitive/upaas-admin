@@ -19,7 +19,8 @@ from upaas.checksum import calculate_file_sha256, calculate_string_sha256
 from upaas_admin.apps.applications.models import ApplicationFlag
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.constants import (
-    NeedsRestartFlag, NeedsStoppingFlag, IsStartingFlag, NeedsUpgradeFlag)
+    NeedsRestartFlag, NeedsStoppingFlag, IsStartingFlag, NeedsUpgradeFlag,
+    NeedsReschedulingFlag)
 from upaas_admin.apps.tasks.mule import MuleCommand
 from upaas_admin.common.uwsgi import fetch_json_stats
 from upaas_admin.apps.applications.exceptions import UnpackError
@@ -32,7 +33,8 @@ class Command(MuleCommand):
 
     mule_name = _('Backend')
     mule_flags = [NeedsStoppingFlag.name, NeedsRestartFlag.name,
-                  IsStartingFlag.name, NeedsUpgradeFlag.name]
+                  IsStartingFlag.name, NeedsUpgradeFlag.name,
+                  NeedsReschedulingFlag.name]
 
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
@@ -63,6 +65,15 @@ class Command(MuleCommand):
                 ApplicationFlag.objects(
                     application=app, name=NeedsRestartFlag.name).update_one(
                         add_to_set__pending_backends=self.backend, upsert=True)
+            else:
+                run_plan = app.run_plan
+                if run_plan and not run_plan.is_valid():
+                    log.info(_("Application {name} run plan is invalid, "
+                               "rescheduling").format(name=app.name))
+                    ApplicationFlag.objects(
+                        application=app,
+                        name=NeedsReschedulingFlag.name).update_one(
+                            unset__pending=True, upsert=True)
 
     def handle_flag(self, flag):
         if flag.name == NeedsStoppingFlag.name:
@@ -89,6 +100,10 @@ class Command(MuleCommand):
                                         flag=flag.name)
                 self.start_app(task, flag.application,
                                flag.application.run_plan)
+        elif flag.name == NeedsReschedulingFlag.name:
+            log.info(_("Application {name} needs rescheduling").format(
+                name=flag.application.name))
+            flag.application.update_application()
 
     def is_application_running(self, application):
         if not os.path.exists(application.vassal_path):

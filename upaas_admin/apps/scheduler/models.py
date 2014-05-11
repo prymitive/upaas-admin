@@ -111,6 +111,26 @@ class ApplicationRunPlan(Document):
         self.reload()
         return self.backend_settings(backend)
 
+    def is_valid(self):
+        total_min = 0
+        total_max = 0
+        for backend_conf in self.backends:
+            if not backend_conf.backend.is_enabled:
+                log.warning(_(
+                    "Backend {backend} is disable, run plan for {name} is no "
+                    "longer valid").format(
+                        backend=backend_conf.backend.name,
+                        name=self.application.name))
+                return False
+            total_min += backend_conf.workers_min
+            total_max += backend_conf.workers_max
+        if total_min != self.workers_min or total_max != self.workers_max:
+            log.warning(_(
+                "Allocated workers count is different then expected, run plan"
+                " for {name} is invalid").format(name=self.application.name))
+            return False
+        return True
+
 
 signals.pre_delete.connect(ApplicationRunPlan.pre_delete,
                            sender=ApplicationRunPlan)

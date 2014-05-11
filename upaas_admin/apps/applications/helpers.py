@@ -39,3 +39,8 @@ class ApplicationStateHelper(object):
     @property
     def needs_upgrade(self):
         return self.pending_backends(flags.NeedsUpgradeFlag.name)
+
+    @property
+    def needs_rescheduling(self):
+        return self.app.flags.filter(name=flags.NeedsReschedulingFlag.name,
+                                     pending__ne=False).first()

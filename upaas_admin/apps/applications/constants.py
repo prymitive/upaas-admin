@@ -39,14 +39,20 @@ class NeedsRestartFlag:
     title = _('Restarting application instance')
 
 
+class NeedsReschedulingFlag:
+    name = 'NEEDS_RESCHEDULING'
+    title = _('Rescheduling application instances')
+
+
 FLAGS_BY_NAME = {
     NeedsBuildingFlag.name: NeedsBuildingFlag,
     IsStartingFlag.name: IsStartingFlag,
     NeedsUpgradeFlag.name: NeedsUpgradeFlag,
     NeedsStoppingFlag.name: NeedsStoppingFlag,
     NeedsRestartFlag.name: NeedsRestartFlag,
+    NeedsReschedulingFlag.name: NeedsReschedulingFlag,
 }
 
 
 # list of flags that should execute single task on single backend
-SINGLE_SHOT_FLAGS = [NeedsBuildingFlag.name]
+SINGLE_SHOT_FLAGS = [NeedsBuildingFlag.name, NeedsReschedulingFlag.name]
