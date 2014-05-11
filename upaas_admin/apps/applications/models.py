@@ -35,7 +35,7 @@ from upaas import processes
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.applications.exceptions import UnpackError
-from upaas_admin.apps.scheduler.base import select_best_backends
+from upaas_admin.apps.scheduler.base import Scheduler
 from upaas_admin.apps.tasks.constants import TaskStatus
 from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.applications.constants import (
@@ -645,8 +645,9 @@ class Application(Document):
                 log.error("Trying to start '%s' without run plan" % self.name)
                 return
 
-            backends = select_best_backends(self.run_plan,
-                                            package=self.current_package)
+            scheduler = Scheduler()
+            backends = scheduler.find_backends(self.run_plan,
+                                               package=self.current_package)
             if not backends:
                 log.error(_("Can't start '{name}', no backend "
                             "available").format(name=self.name))
@@ -699,7 +700,8 @@ class Application(Document):
         if self.run_plan:
 
             current_backends = [bc.backend for bc in self.run_plan.backends]
-            new_backends = select_best_backends(self.run_plan)
+            scheduler = Scheduler()
+            new_backends = scheduler.find_backends(self.run_plan)
             if not new_backends:
                 log.error(_("Can't update '{name}', no backend "
                             "available").format(name=self.name))

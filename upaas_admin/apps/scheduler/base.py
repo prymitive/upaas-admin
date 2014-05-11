@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-    :copyright: Copyright 2013-2014 by Łukasz Mierzwa
+    :copyright: Copyright 2014 by Łukasz Mierzwa
     :contact: l.mierzwa@gmail.com
 """
 
 
-from __future__ import unicode_literals
+from operator import itemgetter
 
 import logging
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
+from django.conf import settings
 
 from upaas_admin.apps.servers.models import BackendServer
 from upaas_admin.apps.scheduler.models import BackendRunPlanSettings
@@ -18,95 +19,147 @@ from upaas_admin.apps.scheduler.models import BackendRunPlanSettings
 log = logging.getLogger(__name__)
 
 
-def select_best_backend(exclude=None, application=None):
-    """
-    Return backend server that is the least loaded one or None if there is no
-    enabled backend.
-    """
-    if exclude is None:
-        exclude = []
-    # FIXME make it aware of each backend resources
-    scores = {}
-    for backend in BackendServer.objects(is_enabled=True,
-                                         id__nin=[b.id for b in exclude]):
-        if backend.run_plans:
+class Scheduler(object):
+
+    def __init__(self):
+        self.backends = BackendServer.objects(is_enabled=True)
+        self.backend_by_id = dict((b.safe_id, b) for b in self.backends)
+        self.backends_count = len(self.backends)
+        self.default_worker_memory = \
+            settings.UPAAS_CONFIG.defaults.limits.memory_per_worker
+        self.allocated_mem = {}
+        self.allocated_cpu = {}
+        self.mem_load = {}
+        self.cpu_load = {}
+        self.scores = {}
+        self.calculate_scores()
+
+    def calculate_scores(self):
+        self.allocated_mem = {}
+        self.allocated_cpu = {}
+        self.mem_load = {}
+        self.cpu_load = {}
+        self.scores = {}
+
+        for backend in self.backends:
+            self.allocated_mem[backend.safe_id] = 0
+            self.allocated_cpu[backend.safe_id] = 0
             for run_plan in backend.run_plans:
-                if application and run_plan.application.id == application.id:
-                    # if this run plan is for application we are trying to find
-                    # backends than ignore it, prevents jumping apps on update
-                    continue
-                scores = dict(list(scores.items()) + list({
-                    backend: run_plan.workers_max * run_plan.memory_per_worker
-                }.items()))
-            log.debug("Backend %s has %d run plans, with final score %d" % (
-                backend.name, len(backend.run_plans), scores.get(backend, 0)))
+                bconf = run_plan.backend_settings(backend)
+                self.allocated_mem[backend.safe_id] += \
+                    bconf.workers_max * run_plan.memory_per_worker
+                self.allocated_cpu[backend.safe_id] += bconf.workers_max
+
+        for backend in self.backends:
+            self.update_load(backend.safe_id)
+            self.update_score(backend.safe_id)
+            log.debug(_(
+                "Backend {name} current allocations: cpu={cpu} memory={mem}, "
+                "load: cpu={cpuload} mem={memload}, score={score}").format(
+                    name=backend.name,
+                    cpu=self.allocated_cpu[backend.safe_id],
+                    mem=self.allocated_mem[backend.safe_id],
+                    cpuload=self.cpu_load[backend.safe_id],
+                    memload=self.mem_load[backend.safe_id],
+                    score=self.scores[backend.safe_id]))
+
+    def update_load(self, backend_id):
+        backend = self.backend_by_id[backend_id]
+        mem_load = self.allocated_mem[backend_id] / float(backend.memory_mb)
+        cpu_load = self.allocated_cpu[backend_id] / float(backend.cpu_cores)
+        self.mem_load[backend_id] = mem_load
+        self.cpu_load[backend_id] = cpu_load
+
+    def update_score(self, backend_id):
+        backend = self.backend_by_id[backend_id]
+        mem_free = backend.memory_mb - self.allocated_mem[backend_id]
+        cpu_load = self.mem_load[backend_id]
+        mem_load = self.mem_load[backend_id]
+        self.scores[backend_id] = cpu_load * mem_load
+        if mem_load > 0.9 or mem_free <= self.default_worker_memory:
+            # backend is overloaded put it on the bottom of the list
+            self.scores[backend.safe_id] *= 99999
+
+    def backends_range(self, max_workers):
+        """
+        Returns number of backends that should be used for given number of
+        workers. Tuple is returned (min backend count, max backend count).
+        """
+        if max_workers == 1:
+            return 1, 1
+        elif max_workers <= 4:
+            return min(2, self.backends_count), min(2, self.backends_count)
+        elif max_workers <= 8:
+            return min(2, self.backends_count), min(2, self.backends_count)
+        elif max_workers <= 15:
+            return min(3, self.backends_count), min(3, self.backends_count)
+        elif max_workers <= 32:
+            return min(4, self.backends_count), min(8, self.backends_count)
         else:
-            scores[backend] = 0
-            log.debug("Backend %s has no run plans" % backend.name)
-    if sum(scores.values()):
-        log.debug("Backend scores: %s" % scores)
-        score = sorted(scores.values())[0]
-        for (backend, backend_score) in list(scores.items()):
-            if score == backend_score:
-                return backend
-    else:
-        # no run plans, just return first backend
-        return BackendServer.objects(
-            is_enabled=True, id__nin=[b.id for b in exclude]).first()
+            return min(5, self.backends_count), max(5, self.backends_count)
 
+    def select_best_backend(self, plan, min_backends, max_backends):
+        """
+        Select least loaded backend for application run plan.
+        Backend ID is returned (string format).
+        """
+        for bid, __ in sorted(self.scores.items(), key=itemgetter(1)):
+            if bid in plan and len(plan.keys()) < min_backends:
+                # backend is already scheduled and we need more backends
+                # skip it so we can fulfill min_backends requirement
+                continue
+            elif bid not in plan and len(plan.keys()) >= max_backends:
+                # backend is not scheduled but we already got maximum backends
+                # retured, skip it so we can fulfill max_backends requirement
+                continue
+            return bid
 
-def split_workers(workers, backends):
-    # TODO right now we try to split workers into equal chunks, but we need
-    # to do this with each backend resources in mind
-    workers_list = list(range(workers))
-    return [len(workers_list[i::backends]) for i in range(backends)]
+    def find_backends(self, run_plan, **kwargs):
+        plan_max = {}
+        plan_min = {}
+        min_backends, max_backends = self.backends_range(run_plan.workers_max)
+        log.info(_("Will use between {minb} and {maxb} backends").format(
+            minb=min_backends, maxb=max_backends))
 
+        scheduled_max = 0
+        while scheduled_max < run_plan.workers_max:
+            bid = self.select_best_backend(plan_max, min_backends,
+                                           max_backends)
+            if bid is None:
+                log.error(_("No more backends can be found, got only "
+                            "{l}").format(l=len(plan_max.keys())))
+                if plan_max:
+                    break
+                else:
+                    return []
+            plan_max[bid] = plan_max.get(bid, 0) + 1
+            # allocations must to updated only for max workers
+            self.allocated_cpu[bid] += 1
+            self.allocated_mem[bid] += run_plan.memory_per_worker
+            self.update_load(bid)
+            self.update_score(bid)
+            scheduled_max += 1
 
-def select_best_backends(run_plan, **kwargs):
-    """
-    Select best backends for given application run plan. Returns a list of
-    backends where application should be running. If there are no backends to
-    run empty list will be returned.
-    """
-    # TODO needs better scheduling of the number of backends application should
-    # use, also we need to check resources
+        scheduled_min = 0
+        for bid, workers_max in plan_max.items():
+            if run_plan.workers_min == run_plan.workers_max:
+                plan_min[bid] = plan_max[bid]
+            else:
+                plan_min[bid] = 1
+            scheduled_min += plan_min[bid]
 
-    # FIXME translate
-    log.info("Selecting backends for %s, workers: %d - %d, memory per "
-             "worker: %d MB" % (run_plan.application.name,
-                                run_plan.workers_min, run_plan.workers_max,
-                                run_plan.memory_per_worker))
+        missing = run_plan.workers_min - scheduled_min
+        while missing > 0:
+            for bid, __ in sorted(self.scores.items(), key=itemgetter(1)):
+                if bid in plan_max and plan_max[bid] > plan_min[bid]:
+                    plan_min[bid] += 1
+                    missing -= 1
 
-    available_backends = len(BackendServer.objects(is_enabled=True))
-    if available_backends == 0:
-        return []
+        backends = []
 
-    if available_backends == 1:
-        needs_backends = 1
-    elif run_plan.workers_min < 4:
-        needs_backends = 1
-    elif run_plan.workers_min < 9:
-        needs_backends = 2
-    else:
-        needs_backends = run_plan.workers_max / 3
-    if needs_backends > available_backends:
-        needs_backends = available_backends
-
-    workers_per_backend = split_workers(run_plan.workers_max, needs_backends)
-    log.info(_("Worker mapping for {name}: {count} backends, "
-               "{mapping}").format(name=run_plan.application.name,
-                                   count=needs_backends,
-                                   mapping=workers_per_backend))
-
-    # FIXME find backends first, set values after that
-    workers_min = ((run_plan.workers_min / needs_backends) + (
-        run_plan.workers_min % needs_backends)) or run_plan.workers_min
-
-    backends = []
-    for workers_count in workers_per_backend:
-        backend = select_best_backend(exclude=[b.backend for b in backends],
-                                      application=run_plan.application)
-        if backend:
+        for bid, workers_max in plan_max.items():
+            workers_min = plan_min[bid]
+            backend = self.backend_by_id[bid]
             backend_conf = run_plan.backend_settings(backend)
             if backend_conf:
                 kwargs['socket'] = backend_conf.socket
@@ -118,22 +171,17 @@ def select_best_backends(run_plan, **kwargs):
                 kwargs['socket'] = ports[0]
                 kwargs['stats'] = ports[1]
                 if not ports:
-                    log.warning(_("Didn't found free ports on backend "
-                                  "{name}").format(name=backend.name))
+                    log.error(_("No free ports found on backend "
+                                "{name}").format(name=backend.name))
                     continue
             brps = BackendRunPlanSettings(backend=backend,
                                           workers_min=workers_min,
-                                          workers_max=workers_count, **kwargs)
+                                          workers_max=workers_max, **kwargs)
             backends.append(brps)
-        else:
-            log.warning(_("Can find more available backends, got {got}, "
-                          "{needed}").format(got=len(backends),
-                                             needed=needs_backends))
-            break
 
-    log.info(_("Got backends for {name}: {servers}").format(
-        name=run_plan.application.name,
-        servers=", ".join(["%s: %d - %d" % (
-            b.backend.name, b.workers_min, b.workers_max) for b in backends])))
+        log.info(_("Got backends for {name}: {servers}").format(
+            name=run_plan.application.name, servers=", ".join(
+                ["%s: %d - %d" % (b.backend.name, b.workers_min,
+                                  b.workers_max) for b in backends])))
 
-    return backends
+        return backends

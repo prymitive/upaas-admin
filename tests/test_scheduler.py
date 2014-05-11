@@ -11,7 +11,7 @@ import pytest
 
 from upaas_admin.common.tests import MongoEngineTestCase
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
-from upaas_admin.apps.scheduler.base import select_best_backends
+from upaas_admin.apps.scheduler.base import Scheduler
 
 
 class SchedulerTest(MongoEngineTestCase):
@@ -25,28 +25,48 @@ class SchedulerTest(MongoEngineTestCase):
 
     def backends_count_check(self, min_workers, max_workers, expected):
         run_plan = self.create_run_plan(min_workers, max_workers)
-        backends = select_best_backends(run_plan)
+        scheduler = Scheduler()
+        backends = scheduler.find_backends(run_plan)
         self.assertEqual(len(backends), len(expected))
 
-        idx = 0
+        total_min = 0
+        total_max = 0
+        bconfs = []
         for bconf in backends:
-            emin, emax = expected[idx]
-            self.assertEqual(bconf.workers_min, emin)
-            self.assertEqual(bconf.workers_max, emax)
+            bconfs.append((bconf.workers_min, bconf.workers_max))
+            total_min += bconf.workers_min
+            total_max += bconf.workers_max
+        bconfs = sorted(bconfs)
+
+        self.assertEqual(total_max, max_workers)
+        self.assertTrue(min_workers <= total_min <= max_workers)
+
+        expected = sorted(expected)
+
+        idx = 0
+        for bmin, bmax in bconfs:
+            self.assertEqual(bmin, expected[idx][0])
+            self.assertEqual(bmax, expected[idx][1])
             idx += 1
 
     @pytest.mark.usefixtures("create_app", "create_pkg")
     def test_scheduler_no_backends(self):
         run_plan = self.create_run_plan(1, 1)
-        backends = select_best_backends(run_plan)
+        scheduler = Scheduler()
+        backends = scheduler.find_backends(run_plan)
         self.assertEqual(len(backends), 0)
 
     @pytest.mark.usefixtures("create_app", "create_pkg", "create_backend_list")
     def test_scheduler_select_best_backends(self):
-        return
         self.backends_count_check(1, 1, [(1, 1)])
-        self.backends_count_check(1, 4, [(1, 4)])
+        self.backends_count_check(1, 4, [(1, 2), (1, 2)])
         self.backends_count_check(4, 5, [(2, 3), (2, 2)])
         self.backends_count_check(2, 8, [(1, 4), (1, 4)])
         self.backends_count_check(4, 8, [(2, 4), (2, 4)])
-        self.backends_count_check(10, 10, [(5, 5), (5, 5)])
+        self.backends_count_check(9, 11, [(3, 3), (3, 4), (3, 4)])
+        self.backends_count_check(10, 10, [(3, 3), (4, 4), (3, 3)])
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_backend_list")
+    def test_scheduler_select_best_backends_huge(self):
+        self.backends_count_check(1, 40, [(1, 4) for _ in range(0, 10)])
+        self.backends_count_check(500, 1000, [(50, 100) for _ in range(0, 10)])
