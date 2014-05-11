@@ -70,5 +70,7 @@ class SchedulerTest(MongoEngineTestCase):
 
     @pytest.mark.usefixtures("create_app", "create_pkg", "create_backend_list")
     def test_scheduler_select_best_backends_huge(self):
+        self.backends_count_check(10, 20, [(1, 3), (1, 3), (1, 3), (1, 3),
+                                           (2, 2), (2, 2), (1, 2), (1, 2)])
         self.backends_count_check(1, 40, [(1, 4) for _ in range(0, 10)])
         self.backends_count_check(500, 1000, [(50, 100) for _ in range(0, 10)])

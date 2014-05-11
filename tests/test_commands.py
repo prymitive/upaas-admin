@@ -125,6 +125,27 @@ class CommandTest(MongoEngineTestCase):
         call_command('mule_backend', task_limit=1, ping_disabled=True)
         self.check_task_is_successful(self.app.tasks.first())
 
+    @pytest.mark.usefixtures("setup_monkeypatch", "create_app", "create_pkg",
+                             "create_run_plan")
+    def test_mule_backend_cmd_reschedule_from_invalid_run_plan(self):
+        self.monkeypatch.setattr('upaas_admin.apps.tasks.management.commands.'
+                                 'mule_backend.Command.is_application_running',
+                                 lambda x, y: True)
+        self.app.start_application()
+        self.assertEqual(self.app.run_plan.workers_max, 4)
+        self.app.run_plan.update(set__workers_max=8)
+        self.app.run_plan.reload()
+        self.assertEqual(self.app.run_plan.workers_max, 8)
+        self.assertEqual(self.app.run_plan.backends[0].workers_max, 4)
+        self.app.flags.delete()
+        call_command('mule_backend', task_limit=1, ping_disabled=True)
+        flag = self.app.flags.first()
+        self.assertNotEqual(flag, None)
+        self.assertEqual(flag.name, 'NEEDS_RESTART')
+        self.app.run_plan.reload()
+        self.assertEqual(self.app.run_plan.workers_max, 8)
+        self.assertEqual(self.app.run_plan.backends[0].workers_max, 8)
+
     def test_create_user_cmd(self):
         from upaas_admin.apps.users.models import User
         self.assertEqual(call_command('create_user', login='mylogin',
