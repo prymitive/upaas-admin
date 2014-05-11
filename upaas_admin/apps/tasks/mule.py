@@ -90,7 +90,9 @@ class MuleBackendHelper(object):
         else:
             log.info(_("Local backend not found, registering as '{name}' "
                        "with IP {ip}").format(name=name, ip=local_ip))
-            backend = BackendServer(name=name, ip=local_ip, is_enabled=False)
+            backend = BackendServer(name=name, ip=local_ip, is_enabled=False,
+                                    cpu_cores=cpu_count(),
+                                    memory_mb=backend_total_memory())
             backend.save()
 
         return backend

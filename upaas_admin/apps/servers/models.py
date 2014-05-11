@@ -36,8 +36,10 @@ class BackendServer(Document):
     is_enabled = BooleanField(default=True, verbose_name=_('enabled'))
     autodetect = BooleanField(default=True,
                               verbose_name=_('Autodetect IP and resources'))
-    memory_mb = IntField(required=True, verbose_name=_('Physical memory (MB)'))
-    cpu_cores = IntField(required=True, verbose_name=_('CPU cores'))
+    memory_mb = IntField(required=True, min_value=0,
+                         verbose_name=_('Physical memory (MB)'))
+    cpu_cores = IntField(required=True, min_value=1,
+                         verbose_name=_('CPU cores'))
     worker_ping = DictField()
 
     _default_manager = QuerySetManager()

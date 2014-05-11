@@ -254,6 +254,7 @@ class AdminTest(MongoEngineTestCase):
     def test_admin_backend_create_invalid_post(self):
         self.login_as_user()
         url = reverse('admin_backend_create')
+
         resp = self.client.post(url, {'is_enabled': True,
                                       'ip': '123.456.789.876'})
         self.assertEqual(resp.status_code, 200)
@@ -267,22 +268,28 @@ class AdminTest(MongoEngineTestCase):
 
         url = reverse('admin_backend_create')
         resp = self.client.post(url, {'is_enabled': False, 'name': 'backend1',
-                                      'ip': '8.8.8.8'})
+                                      'ip': '8.8.8.8', 'cpu_cores': '2',
+                                      'memory_mb': '512'})
         self.assertEqual(resp.status_code, 302)
         backend = BackendServer.objects(name='backend1').first()
         self.assertNotEqual(backend, None)
         self.assertEqual(backend.name, 'backend1')
         self.assertEqual(backend.is_enabled, False)
         self.assertEqual(backend.ip.strNormal(), '8.8.8.8')
+        self.assertEqual(backend.cpu_cores, 2)
+        self.assertEqual(backend.memory_mb, 512)
 
         url = reverse('admin_backend_edit', args=[backend.name])
         resp = self.client.post(url, {'is_enabled': True, 'name': 'backend2',
-                                      'ip': '7.7.7.7'})
+                                      'ip': '7.7.7.7', 'cpu_cores': '8',
+                                      'memory_mb': '128'})
         self.assertEqual(resp.status_code, 302)
         backend.reload()
         self.assertEqual(backend.name, 'backend2')
         self.assertEqual(backend.is_enabled, True)
         self.assertEqual(backend.ip.strNormal(), '7.7.7.7')
+        self.assertEqual(backend.cpu_cores, 8)
+        self.assertEqual(backend.memory_mb, 128)
 
         backend.delete()
         self.assertEqual(BackendServer.objects().first(), None)

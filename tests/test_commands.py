@@ -40,6 +40,33 @@ class CommandTest(MongoEngineTestCase):
         call_command('mule_builder', task_limit=1, ping_disabled=True)
 
     @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
+                             "create_buildable_app", "create_backend")
+    def test_mule_builder_cmd_update_backend(self):
+        self.backend.update(set__ip='4.4.4.4', set__cpu_cores=99999,
+                            set__memory_mb=1)
+        self.backend.reload()
+        self.assertEqual(self.backend.ip.strNormal(), '4.4.4.4')
+        self.assertEqual(self.backend.cpu_cores, 99999)
+        self.assertEqual(self.backend.memory_mb, 1)
+        self.app.build_package()
+        self.assertNotEqual(self.app.flags, [])
+        call_command('mule_builder', task_limit=1, ping_disabled=True)
+        self.backend.reload()
+        self.assertNotEqual(self.backend.ip.strNormal(), '4.4.4.4')
+        self.assertNotEqual(self.backend.cpu_cores, 99999)
+        self.assertNotEqual(self.backend.memory_mb, 1)
+
+    @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
+                             "create_buildable_app", "create_backend")
+    def test_mule_builder_cmd_pings(self):
+        self.assertEqual(self.backend.worker_ping, {})
+        self.app.build_package()
+        self.assertNotEqual(self.app.flags, [])
+        call_command('mule_builder', task_limit=1, ping_interval=1)
+        self.backend.reload()
+        self.assertNotEqual(self.backend.worker_ping, {})
+
+    @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
                              "create_buildable_app_with_pkg")
     def test_mule_builder_cmd_incremental(self):
         self.app.build_package()

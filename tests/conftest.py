@@ -366,7 +366,8 @@ def create_backend(request):
     if backend:
         backend.delete()
 
-    backend = BackendServer(name=name, ip='127.0.0.1')
+    backend = BackendServer(name=name, ip='127.0.0.1', memory_mb=512,
+                            cpu_cores=1)
     backend.save()
 
     def cleanup():
@@ -386,7 +387,8 @@ def create_backend_list(request):
         if backend:
             backend.delete()
 
-        backend = BackendServer(name=name, ip='127.0.0.%d' % i)
+        backend = BackendServer(name=name, ip='127.0.0.%d' % i, memory_mb=512,
+                                cpu_cores=1)
         backend.save()
         backends.append(backend)
 
