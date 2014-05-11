@@ -60,6 +60,7 @@ class SchedulerTest(MongoEngineTestCase):
     def test_scheduler_select_best_backends(self):
         self.backends_count_check(1, 1, [(1, 1)])
         self.backends_count_check(1, 4, [(1, 2), (1, 2)])
+        self.backends_count_check(3, 8, [(1, 4), (2, 4)])
         self.backends_count_check(4, 5, [(2, 3), (2, 2)])
         self.backends_count_check(2, 8, [(1, 4), (1, 4)])
         self.backends_count_check(4, 8, [(2, 4), (2, 4)])

@@ -148,12 +148,21 @@ class Scheduler(object):
                 plan_min[bid] = 1
             scheduled_min += plan_min[bid]
 
+        log.debug(_("Scheduled min workers: {m}, needed {n}").format(
+            m=scheduled_min, n=run_plan.workers_min))
+
         missing = run_plan.workers_min - scheduled_min
+        log.debug(_("Missing min workers: {m}").format(m=missing))
         while missing > 0:
+            log.debug(_("Still missing min workers: {m}").format(m=missing))
             for bid, __ in sorted(self.scores.items(), key=itemgetter(1)):
                 if bid in plan_max and plan_max[bid] > plan_min[bid]:
+                    backend = self.backend_by_id[bid]
+                    log.debug(_("Adding missing min worker to {name}").format(
+                        name=backend.name))
                     plan_min[bid] += 1
                     missing -= 1
+                    break
 
         backends = []
 
