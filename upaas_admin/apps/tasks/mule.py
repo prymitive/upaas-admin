@@ -317,13 +317,16 @@ class MuleCommand(NoArgsCommand):
         root_logger.addHandler(self.log_handler)
 
     def remove_logger(self):
-        self.log_handler.flush()
-        root_logger = logging.getLogger()
-        for handler in root_logger.handlers:
-            level = self.log_handlers_level.get(handler)
-            if level is not None:
-                handler.level = level
-        root_logger.removeHandler(self.log_handler)
+        if self.log_handler:
+            self.log_handler.flush()
+        if self.log_handlers_level:
+            root_logger = logging.getLogger()
+            for handler in root_logger.handlers:
+                level = self.log_handlers_level.get(handler)
+                if level is not None:
+                    handler.level = level
+        if self.log_handler:
+            root_logger.removeHandler(self.log_handler)
 
     def mark_exiting(self, *args):
         log.info(_("Shutting down, waiting for current task to finish"))
