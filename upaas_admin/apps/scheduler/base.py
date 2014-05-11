@@ -114,7 +114,7 @@ class Scheduler(object):
                 continue
             return bid
 
-    def find_backends(self, run_plan, **kwargs):
+    def find_backends(self, run_plan):
         plan_max = {}
         plan_min = {}
         min_backends, max_backends = self.backends_range(run_plan.workers_max)
@@ -161,22 +161,24 @@ class Scheduler(object):
             workers_min = plan_min[bid]
             backend = self.backend_by_id[bid]
             backend_conf = run_plan.backend_settings(backend)
+            values = {}
             if backend_conf:
-                kwargs['socket'] = backend_conf.socket
-                kwargs['stats'] = backend_conf.stats
-                if 'package' not in kwargs:
-                    kwargs['package'] = backend_conf.package
+                values['socket'] = backend_conf.socket
+                values['stats'] = backend_conf.stats
             else:
                 ports = backend.find_free_ports(2)
-                kwargs['socket'] = ports[0]
-                kwargs['stats'] = ports[1]
+                values['socket'] = ports[0]
+                values['stats'] = ports[1]
                 if not ports:
                     log.error(_("No free ports found on backend "
                                 "{name}").format(name=backend.name))
                     continue
-            brps = BackendRunPlanSettings(backend=backend,
-                                          workers_min=workers_min,
-                                          workers_max=workers_max, **kwargs)
+            brps = BackendRunPlanSettings(
+                backend=backend,
+                workers_min=workers_min,
+                workers_max=workers_max,
+                package=run_plan.application.current_package,
+                **values)
             backends.append(brps)
 
         log.info(_("Got backends for {name}: {servers}").format(

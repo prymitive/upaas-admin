@@ -646,8 +646,7 @@ class Application(Document):
                 return
 
             scheduler = Scheduler()
-            backends = scheduler.find_backends(self.run_plan,
-                                               package=self.current_package)
+            backends = scheduler.find_backends(self.run_plan)
             if not backends:
                 log.error(_("Can't start '{name}', no backend "
                             "available").format(name=self.name))

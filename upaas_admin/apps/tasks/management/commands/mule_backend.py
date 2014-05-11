@@ -110,6 +110,11 @@ class Command(MuleCommand):
             return True
 
     def start_app(self, task, application, run_plan):
+        if not application.current_package:
+            log.error(_("Application {name} has current package, can't "
+                        "start").format(name=application.name))
+            self.fail_task(task)
+
         backend_conf = run_plan.backend_settings(self.backend)
         if backend_conf:
             if backend_conf.package.id != application.current_package.id:
