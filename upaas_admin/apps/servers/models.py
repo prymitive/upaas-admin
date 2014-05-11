@@ -7,7 +7,6 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import logging
 from random import randrange
 
@@ -15,8 +14,6 @@ from mongoengine import *
 
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-
-from upaas.inet import local_ipv4_addresses
 
 from upaas_admin.common.fields import IPv4Field
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
@@ -48,13 +45,6 @@ class BackendServer(Document):
         'indexes': ['name', 'ip', 'is_enabled'],
         'ordering': ['name'],
     }
-
-    @classmethod
-    def get_local_backend(cls):
-        for local_ip in local_ipv4_addresses():
-            backend = cls.objects(ip=local_ip).first()
-            if backend:
-                return backend
 
     @property
     def safe_id(self):
