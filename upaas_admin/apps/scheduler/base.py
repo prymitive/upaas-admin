@@ -167,7 +167,7 @@ class Scheduler(object):
 
         backends = []
 
-        for bid, workers_max in sorted(plan_max.items(), key=itemgetter(1)):
+        for bid, workers_max in sorted(plan_max.items(), key=itemgetter(1, 0)):
             workers_min = plan_min[bid]
             backend = self.backend_by_id[bid]
             backend_conf = run_plan.backend_settings(backend)
