@@ -103,7 +103,7 @@ class Scheduler(object):
         Select least loaded backend for application run plan.
         Backend ID is returned (string format).
         """
-        for bid, __ in sorted(self.scores.items(), key=itemgetter(1)):
+        for bid, __ in sorted(self.scores.items(), key=itemgetter(1, 0)):
             if bid in plan and len(plan.keys()) < min_backends:
                 # backend is already scheduled and we need more backends
                 # skip it so we can fulfill min_backends requirement
@@ -167,7 +167,7 @@ class Scheduler(object):
 
         backends = []
 
-        for bid, workers_max in plan_max.items():
+        for bid, workers_max in sorted(plan_max.items(), key=itemgetter(1)):
             workers_min = plan_min[bid]
             backend = self.backend_by_id[bid]
             backend_conf = run_plan.backend_settings(backend)
@@ -195,5 +195,8 @@ class Scheduler(object):
             name=run_plan.application.name, servers=", ".join(
                 ["%s: %d - %d" % (b.backend.name, b.workers_min,
                                   b.workers_max) for b in backends])))
+        log.info(_("Total workers for {name}: {minw} - {maxw}").format(
+            name=run_plan.application.name, minw=sum(plan_min.values()),
+            maxw=sum(plan_max.values())))
 
         return backends

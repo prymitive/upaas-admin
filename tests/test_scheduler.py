@@ -74,3 +74,13 @@ class SchedulerTest(MongoEngineTestCase):
                                            (2, 2), (2, 2), (1, 2), (1, 2)])
         self.backends_count_check(1, 40, [(1, 4) for _ in range(0, 10)])
         self.backends_count_check(500, 1000, [(50, 100) for _ in range(0, 10)])
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "create_backend_list")
+    def test_scheduler_select_best_backends_variable(self):
+        idx = 1
+        for backend in self.backend_list:
+            idx += 1
+            backend.update(set__memory_mb=512*(idx/2), set__cpu_cores=1+idx/2)
+        self.backends_count_check(4, 16, [(1, 1), (1, 1),
+                                          (1, 2), (1, 2), (1, 2), (1, 2),
+                                          (1, 3), (1, 3)])
