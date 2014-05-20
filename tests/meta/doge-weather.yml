@@ -1,5 +1,5 @@
 os:
-  Debian: &deb
+  debian: &deb
     packages:
       - git-core
   Ubuntu: *deb
