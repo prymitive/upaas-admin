@@ -275,8 +275,14 @@ class ApplicationTest(MongoEngineTestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 404)
 
-    @pytest.mark.usefixtures("create_app")
+    @pytest.mark.usefixtures("create_app", "setup_monkeypatch")
     def test_app_assign_domain_invalid_post(self):
+        def no_txt():
+            from dns.resolver import NoAnswer
+            raise NoAnswer
+
+        self.monkeypatch.setattr('upaas_admin.apps.applications.forms.query',
+                                 lambda x, y: no_txt())
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
         resp = self.client.post(url, {'name': 'www.u-paas.org'})
