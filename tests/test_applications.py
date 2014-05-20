@@ -285,9 +285,9 @@ class ApplicationTest(MongoEngineTestCase):
                                  lambda x, y: no_txt())
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'No TXT record for domain www.u-paas.org')
+        self.assertContains(resp, 'No TXT record for domain www.upaas')
         self.assertEqual(len(self.app.custom_domains), 0)
 
     @pytest.mark.usefixtures("create_app", "setup_monkeypatch")
@@ -300,9 +300,9 @@ class ApplicationTest(MongoEngineTestCase):
                                  lambda x, y: nx_domain())
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, 'Domain www.u-paas.org does not exist')
+        self.assertContains(resp, 'Domain www.upaas does not exist')
         self.assertEqual(len(self.app.custom_domains), 0)
 
     @pytest.mark.usefixtures("create_app", "setup_monkeypatch")
@@ -314,7 +314,7 @@ class ApplicationTest(MongoEngineTestCase):
                                  lambda x, y: error())
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp,
                             "Unhandled exception during domain verification")
@@ -326,17 +326,17 @@ class ApplicationTest(MongoEngineTestCase):
                                  'validation', False)
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(len(self.app.custom_domains), 1)
 
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Domain www.u-paas.org was already assigned")
+        self.assertContains(resp, "Domain www.upaas was already assigned")
         self.assertEqual(len(self.app.custom_domains), 1)
 
         domain = self.app.custom_domains[0]
-        self.assertEqual(domain.name, 'www.u-paas.org')
+        self.assertEqual(domain.name, 'www.upaas')
         url = reverse('app_remove_domain', args=[domain.safe_id])
 
         resp = self.client.get(url)
@@ -360,7 +360,7 @@ class ApplicationTest(MongoEngineTestCase):
                                  lambda x, y: [dnsmockrecord])
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(len(self.app.custom_domains), 1)
         for domain in self.app.custom_domains:
@@ -374,10 +374,10 @@ class ApplicationTest(MongoEngineTestCase):
                                  lambda x, y: [dnsmockrecord])
         self.login_as_user()
         url = reverse('app_assign_domain', args=[self.app.safe_id])
-        resp = self.client.post(url, {'name': 'www.u-paas.org'})
+        resp = self.client.post(url, {'name': 'www.upaas'})
         self.assertEqual(resp.status_code, 200)
         self.assertContains(
-            resp, "No verification code in TXT record for www.u-paas.org")
+            resp, "No verification code in TXT record for www.upaas")
         self.assertEqual(len(self.app.custom_domains), 0)
 
     @pytest.mark.usefixtures("create_app")

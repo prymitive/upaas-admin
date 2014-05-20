@@ -14,8 +14,8 @@ admin:
   # specified, details can be found in django docs:
   # https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
   domains:
-    - "www.u-paas.org"
-    - "u-paas.org"
+    - "www.upaas"
+    - "upaas"
 
 
 mongodb:

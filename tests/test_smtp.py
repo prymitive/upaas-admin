@@ -15,7 +15,7 @@ from upaas_admin.common.tests import MongoEngineTestCase
 class SMTPTest(MongoEngineTestCase):
 
     def test_send_email(self):
-        mail.send_mail('Subject', 'Test message', 'from@u-paas.org',
-                       ['to@u-paas.org'], fail_silently=False)
+        mail.send_mail('Subject', 'Test message', 'from@upaas',
+                       ['to@upaas'], fail_silently=False)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, 'Subject')

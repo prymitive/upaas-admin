@@ -316,7 +316,7 @@ def create_pkg(request):
 def create_pkg_with_custom_domain(request):
     create_pkg(request)
 
-    name = 'www.u-paas.org'
+    name = 'www.upaas'
     domain = ApplicationDomain(application=request.instance.app, name=name,
                                validated=True)
     domain.save()
