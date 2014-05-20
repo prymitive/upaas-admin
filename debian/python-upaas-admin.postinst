@@ -18,8 +18,9 @@ case "$1" in
     if [ -e  /etc/uwsgi-emperor/vassals/upaas_tasks.ini ]; then
       date > /run/upaas_tasks.reload
     fi
-    upaas_admin migrate_db > /dev/null
-    upaas_admin create_indexes > /dev/null
+    cd /
+    upaas_admin migrate_db
+    upaas_admin create_indexes
     exit 0
   ;;
 

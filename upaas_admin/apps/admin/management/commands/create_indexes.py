@@ -53,7 +53,7 @@ class Command(BaseCommand):
                     models[obj.__name__] = obj
 
         for model in list(models.values()):
-            log.info("Checking %s" % model.__name__)
+            log.debug("Checking %s" % model.__name__)
             if model._meta and model._meta.get('indexes') and \
                     not model._meta.get('abstract'):
                 model.ensure_indexes()
