@@ -145,6 +145,8 @@ TEMPLATE_LOADERS = (
 # =============================================================================
 
 MIDDLEWARE_CLASSES += (
+    # will add Date and Content-Length headers
+    'django.middleware.http.ConditionalGetMiddleware',
 )
 
 
