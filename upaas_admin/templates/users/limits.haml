@@ -14,7 +14,7 @@
     .panel.panel-default
       .panel-body
         %h1.text-center
-          = user.running_applications.count
+          = user.running_applications|length
           \/
           - if user.limits.running_apps
             = user.limits.running_apps
