@@ -96,6 +96,7 @@ class ApplicationResource(MongoEngineResource):
         instances = 0
         if bundle.obj.run_plan:
             instances = len(bundle.obj.run_plan.backends)
+        bundle.data['package_count'] = len(bundle.obj.packages)
         bundle.data['instance_count'] = instances
         bundle.data['can_start'] = bundle.obj.can_start
         return bundle

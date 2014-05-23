@@ -10,9 +10,11 @@
             %i.fa.fa-plus
           = tab.tab_label
           - if tab.tab_id == 'site_index'
-            %span.badge{'class': 'upaas-user-badge-apps{% if not user.applications %} hidden{% endif %}'}
-              = user.applications|length
+            - with user.applications.count as apps_count
+              %span.badge{'class': 'upaas-user-badge-apps{% if not apps_count %} hidden{% endif %}'}
+                = apps_count
           - if tab.tab_id == 'users_tasks'
-            %span.badge{'class': 'upaas-user-badge-tasks{% if not user.tasks %} hidden{% endif %}'}
-              = user.tasks|length
+            - with user.running_tasks.count as tasks_count
+              %span.badge{'class': 'upaas-user-badge-tasks{% if not tasks_count %} hidden{% endif %}'}
+                = tasks_count
   .tab-content

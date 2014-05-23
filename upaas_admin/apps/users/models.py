@@ -19,6 +19,7 @@ from mongoengine import signals, Q
 
 from upaas_admin.apps.scheduler.models import UserLimits, ApplicationRunPlan
 from upaas_admin.apps.applications.models import Application, Task
+from upaas_admin.apps.tasks.constants import TaskStatus
 
 
 log = logging.getLogger(__name__)
@@ -102,6 +103,10 @@ class User(MongoUser):
         List of all tasks for this application.
         """
         return Task.objects(application__in=self.applications)
+
+    @property
+    def running_tasks(self):
+        return self.tasks.filter(status=TaskStatus.running)
 
     @staticmethod
     def has_usable_password():

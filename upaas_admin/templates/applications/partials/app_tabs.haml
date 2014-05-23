@@ -8,16 +8,20 @@
         %a{'href':'{% url tab.tab_id app.safe_id %}'}
           = tab.tab_label
           - if tab.tab_id == 'app_packages'
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-packages{% if not app.packages %} hidden{% endif %}'}
-              = app.packages|length
+            - with app.packages|length as pkg_count
+              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-packages{% if not pkg_count %} hidden{% endif %}'}
+                = pkg_count
           - if tab.tab_id == 'app_instances'
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-instances{% if not app.run_plan %} hidden{% endif %}'}
-              = app.run_plan.backends|length
+            - with app.run_plan.backends|length as backends_count
+              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-instances{% if not backends_count %} hidden{% endif %}'}
+                = backends_count
           - if tab.tab_id == 'app_tasks'
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks{% if not app.tasks %} hidden{% endif %}'}
-              = app.tasks|length
+            - with app.running_tasks.count as tasks_count
+              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks{% if not tasks_count %} hidden{% endif %}'}
+                = tasks_count
           - if tab.tab_id == 'app_domains'
-            %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-custom_domains{% if not app.custom_domains %} hidden{% endif %}'}
-              = app.custom_domains|length
+            - with app.custom_domains.count as domains_count
+              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-custom_domains{% if not domains_count %} hidden{% endif %}'}
+                = domains_count
 
   .tab-content

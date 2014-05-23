@@ -114,6 +114,12 @@ window.UPAAS.tasks.parse_running_task = function(task) {
 window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.tasks.parse_running_task, ['remove']);
 
 
+window.UPAAS.tasks.update_running_task_badge = function(data) {
+    window.UPAAS.utils.update_badge('.upaas-user-badge-tasks', data.collection.length);
+}
+window.UPAAS.utils.bind_backbone(window.UPAAS.tasks.RunningTasks, window.UPAAS.tasks.update_running_task_badge);
+
+
 window.UPAAS.tasks.parse_removed_running_task = function(data) {
     window.UPAAS.tasks.update_task_menu_badge(data);
     var task = window.UPAAS.utils.where_or_get_first(window.UPAAS.tasks.Tasks, {id: data.attributes.id});

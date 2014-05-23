@@ -54,8 +54,8 @@ window.UPAAS.applications.parse_updates = function(data) {
 
     // update apps badges and icons
     $.each(data.collection.models, function (i, app) {
-        window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-packages', app.attributes.packages.length);
-        window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-tasks', app.attributes.tasks.length);
+        window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-packages', app.attributes.package_count);
+        window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-tasks', app.attributes.running_tasks.length);
         window.UPAAS.utils.update_badge('.upaas-app-' + app.attributes.id + '-badge-instances', app.attributes.instance_count);
         if (app.attributes.instance_count > 0) {
             $('#upaas-app-status-icon-' + app.attributes.id).removeClass('fa-stop').addClass('fa-play');
