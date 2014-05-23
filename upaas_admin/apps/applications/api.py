@@ -68,14 +68,9 @@ class ApplicationResource(MongoEngineResource):
     current_package = ReferenceField(
         'upaas_admin.apps.applications.api.PackageResource', 'current_package',
         full=True, null=True, readonly=True)
-    packages = ReferencedListField(
-        'upaas_admin.apps.applications.api.PackageResource', 'packages',
-        null=True, readonly=True)
     run_plan = ReferenceField(
         'upaas_admin.apps.scheduler.api.RunPlanResource', 'run_plan',
         full=True, null=True, readonly=True)
-    tasks = ReferencedListField('upaas_admin.apps.tasks.api.TaskResource',
-                                'tasks', null=True, readonly=True)
     running_tasks = ReferencedListField(
         'upaas_admin.apps.tasks.api.TaskResource', 'running_tasks', null=True,
         readonly=True)
@@ -84,6 +79,7 @@ class ApplicationResource(MongoEngineResource):
         always_return_data = True
         queryset = Application.objects.all()
         resource_name = 'application'
+        excludes = ['packages', 'tasks']
         filtering = {
             'id': ALL,
             'name': ALL,
