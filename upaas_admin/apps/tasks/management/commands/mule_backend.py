@@ -126,7 +126,7 @@ class Command(MuleCommand):
 
     def start_app(self, task, application, run_plan):
         if not application.current_package:
-            log.error(_("Application {name} has current package, can't "
+            log.error(_("Application {name} has no current package, can't "
                         "start").format(name=application.name))
             self.fail_task(task)
 
@@ -152,12 +152,13 @@ class Command(MuleCommand):
                 application.remove_unpacked_packages()
                 task.update(set__progress=20)
 
-            log.info(_("Unpacking application package"))
-            try:
-                backend_conf.package.unpack()
-            except UnpackError as e:
-                log.error(_("Unpacking failed: {e}").format(e=e))
-                self.fail_task(task)
+            if not os.path.exists(backend_conf.package.package_path):
+                log.info(_("Unpacking application package"))
+                try:
+                    backend_conf.package.unpack()
+                except UnpackError as e:
+                    log.error(_("Unpacking failed: {e}").format(e=e))
+                    self.fail_task(task)
             task.update(set__progress=50)
 
             backend_conf.package.save_vassal_config(backend_conf)
