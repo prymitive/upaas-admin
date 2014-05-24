@@ -19,7 +19,7 @@ from mongoengine import (Document, DateTimeField, StringField, LongField,
                          ReferenceField, ListField, DictField, QuerySetManager,
                          BooleanField, IntField, NULLIFY, signals)
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
@@ -189,15 +189,21 @@ class Package(Document):
 
         template = None
         try:
-            template = config.interpreters[self.interpreter_name]['any'][
+            template_any = config.interpreters[self.interpreter_name]['any'][
                 'uwsgi']['template']
         except (AttributeError, KeyError):
             pass
+        else:
+            if template_any:
+                template = template_any
         try:
-            template = config.interpreters[self.interpreter_name][
+            template_version = config.interpreters[self.interpreter_name][
                 self.interpreter_version]['uwsgi']['template']
         except (AttributeError, KeyError):
             pass
+        else:
+            if template_version:
+                template = template_version
 
         max_memory = backend_conf.workers_max
         max_memory *= self.application.run_plan.memory_per_worker

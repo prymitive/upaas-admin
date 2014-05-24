@@ -1,4 +1,6 @@
 any:
+  env:
+    PYTHONPATH: /home:/home/app:$PYTHONPATH
   uwsgi:
     template: templates/python.ini
   settings:

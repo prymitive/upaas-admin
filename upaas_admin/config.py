@@ -11,6 +11,26 @@ from upaas.config import base
 from upaas.compat import unicode
 
 
+class InterpreterConfig(base.Config):
+
+    schema = {
+        "env": base.DictEntry(value_type=unicode),
+        "uwsgi": {
+            "plugin": base.StringEntry(),
+            "template": base.FSPathEntry(),
+            "vars": base.DictEntry(),
+        },
+        "settings": base.DictEntry(value_type=unicode),
+        "packages": base.ListEntry(value_type=unicode),
+        "actions": {
+            "setup": {
+                "interpreter": base.ScriptEntry(),
+                "main": base.ScriptEntry(),
+            }
+        }
+    }
+
+
 class UPaaSConfig(base.Config):
 
     schema = {
@@ -101,7 +121,21 @@ class UPaaSConfig(base.Config):
                                            required=True),
             }
         },
-        "interpreters": base.WildcardEntry(),
+        "interpreters": {
+            "env": base.DictEntry(),
+            "uwsgi": {
+                "template": base.StringEntry(required=True),
+            },
+            "actions": {
+                "setup": {
+                    "system": base.ScriptEntry(),
+                    "finalize": base.ScriptEntry(),
+                }
+            },
+            "ruby": base.ConfigDictEntry(InterpreterConfig),
+            "php": base.ConfigDictEntry(InterpreterConfig),
+            "python": base.ConfigDictEntry(InterpreterConfig),
+        }
     }
 
 
