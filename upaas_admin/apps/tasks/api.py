@@ -56,7 +56,7 @@ class TaskResource(MongoEngineResource):
             'status': ALL,
         }
         authentication = UpaasApiKeyAuthentication()
-        authorization = ReadOnlyAuthorization()
+        authorization = TaskAuthorization()
 
     def dehydrate(self, bundle):
         bundle.data['icon_class'] = bundle.obj.icon_class
