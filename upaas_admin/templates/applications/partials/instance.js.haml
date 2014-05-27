@@ -42,15 +42,15 @@
               = gettext("State")
             %th
               = gettext("Memory")
-            %th
+            %th.hidden-xs
               = gettext("Restarts")
-            %th
+            %th.hidden-xs
               = gettext("Harakiri")
             %th
               = gettext("Requests")
-            %th
+            %th.hidden-xs
               = gettext("Avg response time")
-            %th
+            %th.hidden-xs
               = gettext("Bytes out")
           %tbody
             - if (instance.stats != null) {
@@ -69,16 +69,16 @@
                       = worker.status
                     %td
                       = window.UPAAS.utils.bytes_to_human(worker.rss);
-                    %td
+                    %td.hidden-xs
                       = worker.respawn_count
-                    %td
+                    %td.hidden-xs
                       = worker.harakiri_count
                     %td
                       = worker.requests
-                    %td
+                    %td.hidden-xs
                       = Math.round(worker.avg_rt / 1000);
                       ms
-                    %td
+                    %td.hidden-xs
                       = window.UPAAS.utils.bytes_to_human(worker.tx);
               - if (total_workers == 0) {
                 %tr
@@ -97,13 +97,13 @@
                   :plain
                     /
                   = window.UPAAS.utils.bytes_to_human(instance.backend.limits.backend_memory_bytes);
-                %td
+                %td.hidden-xs
                   = total_harakiri
-                %td
+                %td.hidden-xs
                   = total_requests
-                %td
+                %td.hidden-xs
                   = total_avg_rt_summary
-                %td
+                %td.hidden-xs
                   = window.UPAAS.utils.bytes_to_human(total_tx);
             - else {
               %tr.danger
