@@ -50,8 +50,7 @@ class Command(MuleCommand):
         self.last_app_check = datetime.now()
         for app in ApplicationRunPlan.objects(
                 backends__backend=self.backend).distinct('application'):
-            if app.flags.filter(name__in=[NeedsStoppingFlag.name,
-                                          NeedsUpgradeFlag.name]):
+            if app.flags:
                 continue
             if not self.is_application_running(app):
                 log.info(_("Application {name} is not running, "
