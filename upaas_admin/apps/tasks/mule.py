@@ -215,14 +215,13 @@ class MuleTaskHelper(object):
         if backends:
             log.debug(_("{len} non responsive backends: {names}").format(
                 len=len(backends), names=[b.name for b in backends]))
-            for task in Task.objects(locked_by_backend__in=backends,
-                                     locked_since__lte=timestamp):
+            for task in Task.objects(backend__in=backends,
+                                     date_created__lte=timestamp):
                 log.warning(_("Task '{name}' with id {tid} is locked on non "
                               "backend {backend}, but it didn't send any "
                               "pings for 10 minutes, marking as "
                               "failed").format(
-                    name=task.title, tid=task.safe_id,
-                    backend=task.locked_by_backend))
+                    name=task.title, tid=task.safe_id, backend=task.backend))
                 task.update(set__status=TaskStatus.failed,
                             set__date_finished=datetime.now())
         self.last_clean[name] = datetime.now()
