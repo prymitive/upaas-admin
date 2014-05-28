@@ -124,10 +124,14 @@ class ApplicationRunPlan(Document):
                 return False
             total_min += backend_conf.workers_min
             total_max += backend_conf.workers_max
-        if total_min != self.workers_min or total_max != self.workers_max:
+        if total_min < self.workers_min or total_max != self.workers_max:
             log.warning(_(
                 "Allocated workers count is different then expected, run plan"
-                " for {name} is invalid").format(name=self.application.name))
+                " for {name} is invalid [min expected >={mie}, got: {mig}] "
+                "[max expected ={mxe}, got: {mxg}]").format(
+                    name=self.application.name, mie=backend_conf.workers_min,
+                    mig=total_min, mxe=backend_conf.workers_max,
+                    mxg=total_max))
             return False
         return True
 
