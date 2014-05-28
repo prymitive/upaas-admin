@@ -20,6 +20,8 @@
           - trans "Application"
         %th
           - trans "Created"
+        %th
+          - trans "Backend"
 
     %tbody
       - for task in tasks
@@ -34,9 +36,11 @@
           %td
             %a{'href':'{% url "app_task_details" task.safe_id %}'}
               = task.date_created
+          %td
+            = task.backend.name
       - empty
         %tr
-          %td.text-center{'colspan':'4'}
+          %td.text-center{'colspan':'5'}
             - trans "No tasks"
 
   - include "partials/pagination_footer.html"
