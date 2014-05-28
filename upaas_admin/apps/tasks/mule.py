@@ -217,6 +217,7 @@ class MuleTaskHelper(object):
             log.debug(_("{len} non responsive backends: {names}").format(
                 len=len(backends), names=[b.name for b in backends]))
             for task in Task.objects(backend__in=backends,
+                                     status=TaskStatus.running,
                                      date_created__lte=timestamp):
                 log.warning(_("Task '{name}' with id {tid} is locked on "
                               "backend {backend}, but it didn't send any "
