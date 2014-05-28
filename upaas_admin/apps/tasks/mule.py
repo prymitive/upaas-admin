@@ -210,6 +210,7 @@ class MuleTaskHelper(object):
         timestamp = datetime.now() - timedelta(seconds=600)
         backends = BackendServer.objects(**{
             'id__ne': local_backend.id,
+            'is_enabled__ne': False,
             'worker_ping__%s__lte' % self.name: timestamp
         })
         if backends:
@@ -217,11 +218,12 @@ class MuleTaskHelper(object):
                 len=len(backends), names=[b.name for b in backends]))
             for task in Task.objects(backend__in=backends,
                                      date_created__lte=timestamp):
-                log.warning(_("Task '{name}' with id {tid} is locked on non "
+                log.warning(_("Task '{name}' with id {tid} is locked on "
                               "backend {backend}, but it didn't send any "
                               "pings for 10 minutes, marking as "
                               "failed").format(
-                    name=task.title, tid=task.safe_id, backend=task.backend))
+                    name=task.title, tid=task.safe_id,
+                    backend=task.backend.name))
                 task.update(set__status=TaskStatus.failed,
                             set__date_finished=datetime.now())
         self.last_clean[name] = datetime.now()
@@ -235,6 +237,7 @@ class MuleTaskHelper(object):
         timestamp = datetime.now() - timedelta(seconds=600)
         backends = BackendServer.objects(**{
             'id__ne': local_backend.id,
+            'is_enabled__ne': False,
             'worker_ping__%s__lte' % self.name: timestamp
         })
         if backends:
