@@ -401,6 +401,15 @@ def create_backend_list(request):
 
 
 @pytest.fixture(scope="function")
+def delete_backends(request):
+
+    def cleanup():
+        BackendServer.objects().delete()
+
+    request.addfinalizer(cleanup)
+
+
+@pytest.fixture(scope="function")
 def create_router(request):
     router = RouterServer.objects(name='router').first()
     if router:

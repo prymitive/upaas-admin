@@ -12,6 +12,7 @@ import pytest
 from upaas_admin.common.tests import MongoEngineTestCase
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
 from upaas_admin.apps.scheduler.base import Scheduler
+from upaas_admin.apps.servers.models import BackendServer
 
 
 class SchedulerTest(MongoEngineTestCase):
@@ -22,6 +23,12 @@ class SchedulerTest(MongoEngineTestCase):
                                   workers_max=max_workers,
                                   memory_per_worker=128,
                                   max_log_size=1)
+
+    def create_backend(self, idx, cpu, mem):
+        backend = BackendServer(name='backend%d' % idx, ip='127.0.0.%d' % idx,
+                                cpu_cores=cpu, memory_mb=mem)
+        backend.save()
+        return backend
 
     def backends_count_check(self, min_workers, max_workers, expected):
         run_plan = self.create_run_plan(min_workers, max_workers)
@@ -84,3 +91,9 @@ class SchedulerTest(MongoEngineTestCase):
         self.backends_count_check(4, 16, [(1, 1), (1, 1),
                                           (1, 2), (1, 2), (1, 2), (1, 2),
                                           (1, 3), (1, 3)])
+
+    @pytest.mark.usefixtures("create_app", "create_pkg", "delete_backends")
+    def test_scheduler_select_best_backends_two(self):
+        self.create_backend(1, 2, 2048)
+        self.create_backend(2, 1, 1024)
+        self.backends_count_check(2, 32, [(1, 11), (1, 21)])

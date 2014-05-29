@@ -32,9 +32,8 @@ class Scheduler(object):
         self.mem_load = {}
         self.cpu_load = {}
         self.scores = {}
-        self.calculate_scores()
 
-    def calculate_scores(self):
+    def calculate_scores(self, exclude_applications=[]):
         self.allocated_mem = {}
         self.allocated_cpu = {}
         self.mem_load = {}
@@ -45,6 +44,8 @@ class Scheduler(object):
             self.allocated_mem[backend.safe_id] = 0
             self.allocated_cpu[backend.safe_id] = 0
             for run_plan in backend.run_plans:
+                if run_plan.application in exclude_applications:
+                    continue
                 bconf = run_plan.backend_settings(backend)
                 self.allocated_mem[backend.safe_id] += \
                     bconf.workers_max * run_plan.memory_per_worker
@@ -115,6 +116,8 @@ class Scheduler(object):
             return bid
 
     def find_backends(self, run_plan):
+        self.calculate_scores(exclude_applications=[run_plan.application])
+
         plan_max = {}
         plan_min = {}
         min_backends, max_backends = self.backends_range(run_plan.workers_max)
