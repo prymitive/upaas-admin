@@ -54,7 +54,7 @@ class Scheduler(object):
         for backend in self.backends:
             self.update_load(backend.safe_id)
             self.update_score(backend.safe_id)
-            log.debug(_(
+            log.info(_(
                 "Backend {name} current allocations: cpu={cpu} memory={mem}, "
                 "load: cpu={cpuload} mem={memload}, score={score}").format(
                     name=backend.name,
