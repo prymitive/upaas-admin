@@ -83,8 +83,10 @@ class Command(BaseCommand):
 
     def migrate_routers(self):
         collection = RouterServer._get_collection()
-        if 'private_ip_1' in collection.index_information():
-            collection.drop_index('private_ip_1')
+        for name in ['private_ip_1', 'public_ip_1']:
+            if name in collection.index_information():
+                log.info("Dropping old router index: %s" % name)
+                collection.drop_index(name)
         for router in OldRouterServer.objects():
             if router.private_ip:
                 log.info("Migrating router: %s" % router.name)
