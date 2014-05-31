@@ -61,3 +61,7 @@ files:
 uwsgi:
   settings:
     - "route = ^/ basicauth:UPAAS,admin:adm123"
+
+
+features:
+  storage: True
