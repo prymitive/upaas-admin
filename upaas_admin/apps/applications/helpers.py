@@ -67,10 +67,8 @@ class ApplicationFeatureHelper(object):
         features = {}
         metadata = self.app.metadata_config
         for name, config in settings.UPAAS_CONFIG.apps.features.items():
-            disabled = False
-            if metadata.features and not metadata.features.get(name, True):
-                disabled = True
-            if config.enabled and not disabled:
+            if config.enabled and metadata.features and metadata.features.get(
+                    name, True):
                 features[name] = config
         return features
 
