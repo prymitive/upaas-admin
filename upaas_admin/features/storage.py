@@ -46,7 +46,7 @@ class StorageFeature(Feature):
         except:
             group = getgrnam(settings.UPAAS_CONFIG.apps.uid)
         else:
-            group = getgrgid(uid)
+            group = getgrgid(gid)
 
         os.chown(directory, user.pw_uid, group.gr_gid)
 
