@@ -7,7 +7,18 @@
 
 from __future__ import unicode_literals
 
+import logging
+
+from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
+
+from upaas.utils import load_handler
+from upaas.config.base import ConfigurationError
+
 from upaas_admin.apps.applications import constants as flags
+
+
+log = logging.getLogger(__name__)
 
 
 class ApplicationStateHelper(object):
@@ -44,3 +55,38 @@ class ApplicationStateHelper(object):
     def needs_rescheduling(self):
         return self.app.flags.filter(name=flags.NeedsReschedulingFlag.name,
                                      pending__ne=False).first()
+
+
+class ApplicationFeatureHelper(object):
+
+    def __init__(self, application):
+        self.app = application
+
+    @property
+    def enabled_features(self):
+        features = {}
+        metadata = self.app.metadata_config
+        for name, config in settings.UPAAS_CONFIG.apps.features.items():
+            disabled = False
+            if metadata.features and not metadata.features.get(name, True):
+                disabled = True
+            if config.enabled and not disabled:
+                features[name] = config
+        return features
+
+    def load_feature(self, name, config):
+        try:
+            return load_handler(config.handler, name, config.settings)
+        except ConfigurationError as e:
+            log.error(_("Error while loading {name} feature: {msg}").format(
+                name=name, msg=e))
+
+    def load_enabled_features(self):
+        features = []
+        for name, config in self.enabled_features.items():
+            feature = self.load_feature(name, config)
+            if feature:
+                features.append(feature)
+            else:
+                log.error(_("{name} feature failed to load").format(name=name))
+        return features

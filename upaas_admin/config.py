@@ -31,6 +31,15 @@ class InterpreterConfig(base.Config):
     }
 
 
+class FeatureConfig(base.Config):
+
+    schema = {
+        "handler": base.StringEntry(required=True),
+        "enabled": base.BooleanEntry(default=False),
+        "settings": base.WildcardEntry(),
+    }
+
+
 class UPaaSConfig(base.Config):
 
     schema = {
@@ -94,6 +103,7 @@ class UPaaSConfig(base.Config):
                 "retry_delay": base.IntegerEntry(default=7),
                 "root": base.StringEntry(default="uwsgi"),
             },
+            "features": base.ConfigDictEntry(FeatureConfig),
         },
         "defaults": {
             "limits": {

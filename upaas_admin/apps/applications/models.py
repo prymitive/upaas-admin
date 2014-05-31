@@ -28,9 +28,9 @@ from upaas import tar
 from upaas.checksum import calculate_file_sha256, calculate_string_sha256
 from upaas.config.base import UPAAS_CONFIG_DIRS
 from upaas.config.metadata import MetadataConfig
-from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import StorageError
 from upaas import processes
+from upaas.utils import load_handler
 
 from upaas_admin.apps.servers.models import RouterServer, BackendServer
 from upaas_admin.apps.scheduler.models import ApplicationRunPlan
@@ -41,7 +41,8 @@ from upaas_admin.apps.tasks.models import Task
 from upaas_admin.apps.applications.constants import (
     NeedsBuildingFlag, NeedsStoppingFlag, NeedsRestartFlag, IsStartingFlag,
     NeedsUpgradeFlag, FLAGS_BY_NAME)
-from upaas_admin.apps.applications.helpers import ApplicationStateHelper
+from upaas_admin.apps.applications.helpers import (
+    ApplicationStateHelper, ApplicationFeatureHelper)
 
 
 log = logging.getLogger(__name__)
@@ -123,8 +124,8 @@ class Package(Document):
                         "delete").format(pkg=self.safe_id))
             return
 
-        storage = find_storage_handler(self.upaas_config.storage.handler,
-                                       self.upaas_config.storage.settings)
+        storage = load_handler(self.upaas_config.storage.handler,
+                               self.upaas_config.storage.settings)
         if not storage:
             log.error(_("Storage handler '{handler}' not found, cannot "
                         "package file").format(
@@ -346,6 +347,10 @@ class Package(Document):
                     domain.name))
 
         options.append('\n')
+
+        for feature in self.application.feature_helper.load_enabled_features():
+            options = feature.update_vassal(self.application, options)
+
         return options
 
     def check_vassal_config(self, options):
@@ -379,8 +384,8 @@ class Package(Document):
         directory = tempfile.mkdtemp(dir=self.upaas_config.paths.workdir,
                                      prefix="upaas_package_").encode("utf-8")
 
-        storage = find_storage_handler(self.upaas_config.storage.handler,
-                                       self.upaas_config.storage.settings)
+        storage = load_handler(self.upaas_config.storage.handler,
+                               self.upaas_config.storage.settings)
         if not storage:
             log.error("Storage handler '%s' not "
                       "found" % self.upaas_config.storage.handler)
@@ -413,6 +418,9 @@ class Package(Document):
 
         with open(os.path.join(workdir, self.ack_filename), 'w') as ack:
             ack.write(_('Unpacked: {now}').format(now=datetime.datetime.now()))
+
+        for feature in self.application.feature_helper.load_enabled_features():
+            feature.after_unpack(self.application, workdir)
 
         log.info(_("Package unpacked, moving into '{path}'").format(
             path=self.package_path))
@@ -506,6 +514,7 @@ class Application(Document):
     def __init__(self, *args, **kwargs):
         super(Application, self).__init__(*args, **kwargs)
         self.state_helper = ApplicationStateHelper(self)
+        self.feature_helper = ApplicationFeatureHelper(self)
 
     @property
     def safe_id(self):
@@ -758,8 +767,8 @@ class Application(Document):
         app that are kept in database for rollback feature are set in user
         limits as 'packages_per_app'.
         """
-        storage = find_storage_handler(self.upaas_config.storage.handler,
-                                       self.upaas_config.storage.settings)
+        storage = load_handler(self.upaas_config.storage.handler,
+                               self.upaas_config.storage.settings)
         if not storage:
             log.error("Storage handler '%s' not found, cannot trim "
                       "packages" % self.upaas_config.storage.handler)

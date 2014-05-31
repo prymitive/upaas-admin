@@ -7,33 +7,32 @@
 
 from __future__ import unicode_literals
 
-from upaas.config.base import Config, BooleanEntry
+from upaas.config.base import Config
 
 
 class Feature(object):
 
-    # default set of options for every feature
-    base_configuration_schema = {
-        'enabled': BooleanEntry()
-    }
-
     # feature specific options
     configuration_schema = {}
 
-    def __init__(self, settings):
-        schema = self.configuration_schema
-        schema.update(self.base_configuration_schema)
-        self.settings = Config(settings, schema=schema)
+    def __init__(self, name, settings):
+        self.name = name
+        self.settings = Config(settings, schema=self.configuration_schema)
 
-    def update_vassal(self, options):
+    def update_vassal(self, application, options):
         """
         Called at the end of uWSGI vassal config file generation, can be used
         to add new or alter already stored options.
         """
-        # FIXME add to code
         return options
 
-    def builder_mule_update_env(self, env):
+    def after_unpack(self, application, workdir):
+        """
+        Called after application package is unpacked.
+        """
+        pass
+
+    def builder_mule_update_env(self, application, env):
         """
         Called every time a command is going to be executed in builder mule,
         it can be used to update environment variables.
@@ -41,16 +40,9 @@ class Feature(object):
         # FIXME add to code
         return env
 
-    def builder_mule_after_clone(self):
+    def builder_mule_after_clone(self, application):
         """
         Called in builder mule after cloning application repository.
-        """
-        # FIXME add to code
-        pass
-
-    def backend_mule_after_unpack(self):
-        """
-        Called in backend mule after application package is unpacked.
         """
         # FIXME add to code
         pass

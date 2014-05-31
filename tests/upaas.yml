@@ -114,6 +114,14 @@ apps:
       - 127.0.0.1:2003
     render_url: http://localhost/render/
 
+  features:
+    storage:
+      handler: upaas_admin.features.storage.StorageFeature
+      enabled: True
+      settings:
+        path: /tmp
+        mountpoint: /storage
+
 
 defaults:
   limits:

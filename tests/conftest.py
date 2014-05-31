@@ -20,9 +20,9 @@ from django.conf import settings
 from django.test.utils import get_runner
 from django.utils.html import escape
 
-from upaas.storage.utils import find_storage_handler
 from upaas.storage.exceptions import FileNotFound
 from upaas.distro import distro_name, distro_version, distro_arch
+from upaas.utils import load_handler
 
 from upaas_admin.config import load_main_config
 from upaas_admin.apps.users.models import User
@@ -83,8 +83,8 @@ def create_pkg_file(request):
     tar.close()
 
     upaas_config = load_main_config()
-    storage = find_storage_handler(upaas_config.storage.handler,
-                                   upaas_config.storage.settings)
+    storage = load_handler(upaas_config.storage.handler,
+                           upaas_config.storage.settings)
     storage.put(local_path, remote_path)
 
     def cleanup():
