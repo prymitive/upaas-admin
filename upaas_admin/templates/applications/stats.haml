@@ -104,7 +104,8 @@
         title: "{% trans "Requests" %}",
         areaMode: "stacked",
         hideLegend: true,
-        vtitle: "{% trans "number per second" %}"
+        vtitle: "{% trans "number per second" %}",
+        yMin: 0
       },
       'metric-rss': {
         target: [
@@ -126,7 +127,8 @@
         areaMode: "stacked",
         hideLegend: true,
         vtitle: "{% trans "bytes per second" %}",
-        yUnitSystem: "binary"
+        yUnitSystem: "binary",
+        yMin: 0
       }
     }
 
