@@ -19,3 +19,7 @@ actions:
 
 env:
   REDMINE_LANG: en
+
+
+features:
+  storage: True
