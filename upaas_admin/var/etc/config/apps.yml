@@ -45,7 +45,7 @@ features:
       mountpoint: /storage
 
   mongodb:
-    handler: upaas_admin.features.storage.MongoDBFeature
+    handler: upaas_admin.features.mongodb.MongoDBFeature
     enabled: False
     settings:
       uri: mongodb://localhost:27017/
