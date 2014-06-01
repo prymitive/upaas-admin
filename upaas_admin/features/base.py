@@ -37,10 +37,3 @@ class Feature(object):
         Can be used to update environment variables.
         """
         return env
-
-    def builder_mule_after_clone(self, application):
-        """
-        Called in builder mule after cloning application repository.
-        """
-        # FIXME add to code
-        pass
