@@ -115,6 +115,7 @@ apps:
     render_url: http://localhost/render/
 
   features:
+
     storage:
       handler: upaas_admin.features.storage.StorageFeature
       enabled: True
@@ -122,6 +123,12 @@ apps:
         path: /tmp
         mountpoint: /storage
 
+    mongodb:
+      handler: upaas_admin.features.storage.MongoDBFeature
+      enabled: True
+      settings:
+        uri: mongodb://localhost:27017/
+        template: mongodb://%login%:%password%@localhost:27017/%database%
 
 defaults:
   limits:
