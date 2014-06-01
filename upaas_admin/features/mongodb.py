@@ -84,8 +84,7 @@ class MongoDBFeature(Feature):
             collection = db[collection_name]
             collection.insert({})
             db.drop_collection(collection_name)
-            db.add_user(login, password,
-                        roles=[{'role': 'dbAdmin', 'db': name}])
+            db.add_user(login, password, roles=['dbAdmin'])
             db.authenticate(login, password)
             db.logout()
         connection.close()
