@@ -14,7 +14,11 @@ interpreter:
   type: ruby
   versions:
     - 1.9.3
-    - 2.0.0
+    - "2"
+
+
+features:
+  mongodb: True
 
 
 repository:
@@ -29,7 +33,7 @@ actions:
   setup:
     before:
       - sed -i s/"gem 'gitlab'"/"#gitlab off"/g Gemfile
-      - cp config/config.example.yml config/config.yml
+      - sed -i s/"UPAASDOMAIN"/"$UPAAS_SYSTEM_DOMAIN"/g config/config.yml
     main:
       - gem install bundler
       - bundle install --without test development
@@ -37,6 +41,7 @@ actions:
 
 
 files:
+
   /tmp/after.sh: |
     if [ -n "$UPAAS_FRESH_PACKAGE" ]; then
       echo ">>> Generating secret token"
@@ -52,12 +57,24 @@ files:
     rake db:migrate || exit 1
     echo ">> Precompilling assets"
     rake assets:precompile || exit 1
+
   config/mongoid.yml: |
     production:
-      sessions:
-        default:
-          database: errbit-dev
-          hosts:
-            - 'localhost:27017'
-      options:
-        identity_map_enabled: true
+      uri: <%= ENV['UPAAS_MONGODB_URI'] %>
+      identity_map_enabled: true
+
+  config/config.yml: |
+    host: UPAASDOMAIN
+    enforce_ssl: false
+    email_from: errbit@UPAASDOMAIN
+    per_app_email_at_notices: false
+    email_at_notices: [1, 10, 100]
+    per_app_notify_at_notices: false
+    notify_at_notices: [0]
+    confirm_resolve_err: true
+    user_has_username: false
+    allow_comments_with_issue_tracker: true
+    display_internal_errors: true
+    use_gravatar: true
+    gravatar_default: identicon
+    github_authentication: false
