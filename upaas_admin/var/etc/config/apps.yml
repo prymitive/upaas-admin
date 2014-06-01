@@ -36,9 +36,17 @@ uwsgi:
     - "^(response|final|error)-route$"
 
 features:
+
   storage:
     handler: upaas_admin.features.storage.StorageFeature
     enabled: False
     settings:
       path: /var/upaas/storage
       mountpoint: /storage
+
+  mongodb:
+    handler: upaas_admin.features.storage.MongoDBFeature
+    enabled: False
+    settings:
+      uri: mongodb://localhost:27017/
+      template: mongodb://%login%:%password%@localhost:27017/%database%

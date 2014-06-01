@@ -19,12 +19,11 @@ class Feature(object):
         self.name = name
         self.settings = Config(settings, schema=self.configuration_schema)
 
-    def update_vassal(self, application, options):
+    def before_building(self, application):
         """
-        Called at the end of uWSGI vassal config file generation, can be used
-        to add new or alter already stored options.
+        Called in builder mule at the beginning of package building.
         """
-        return options
+        pass
 
     def after_unpack(self, application, workdir):
         """
@@ -37,3 +36,10 @@ class Feature(object):
         Can be used to update environment variables.
         """
         return env
+
+    def update_vassal(self, application, options):
+        """
+        Called at the end of uWSGI vassal config file generation, can be used
+        to add new or alter already stored options.
+        """
+        return options

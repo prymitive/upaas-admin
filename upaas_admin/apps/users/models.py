@@ -15,7 +15,7 @@ import logging
 from mongoengine.queryset import QuerySetManager
 from mongoengine.django.auth import User as MongoUser
 from mongoengine.fields import StringField
-from mongoengine import signals, Q
+from mongoengine import signals
 
 from upaas_admin.apps.scheduler.models import UserLimits, ApplicationRunPlan
 from upaas_admin.apps.applications.models import Application, Task

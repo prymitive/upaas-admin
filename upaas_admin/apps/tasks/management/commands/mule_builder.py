@@ -72,8 +72,9 @@ class Command(MuleCommand):
         log.info(_("Current revision: {rev}").format(
             rev=current_revision))
 
-        env = {}
+        env = {'UPAAS_SYSTEM_DOMAIN': app.system_domain}
         for feature in app.feature_helper.load_enabled_features():
+            feature.before_building(app)
             env = feature.update_env(app, env)
 
         build_result = None

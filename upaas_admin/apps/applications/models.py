@@ -303,6 +303,9 @@ class Package(Document):
         for key, value in list(variables.items()):
             options.append('var_%s = %s' % (key, value))
 
+        for feature in self.application.feature_helper.load_enabled_features():
+            envs = feature.update_env(self.application, envs)
+
         options.append('\n# starting ENV variables list')
         for key, value in list(envs.items()):
             options.append('env = %s=%s' % (key, value))
@@ -311,9 +314,6 @@ class Package(Document):
         if self.application.custom_domains:
             options.append('env = UPAAS_CUSTOM_DOMAINS=%s' % ','.join(
                 [d.name for d in self.application.custom_domains]))
-
-        for feature in self.application.feature_helper.load_enabled_features():
-            envs = feature.update_env(self.application, envs)
 
         options.append('\n# starting options from app metadata')
         for opt in self.uwsgi_options_from_metadata():

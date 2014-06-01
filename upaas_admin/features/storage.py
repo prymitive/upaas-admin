@@ -13,7 +13,7 @@ from pwd import getpwnam, getpwuid
 from grp import getgrnam, getgrgid
 
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from upaas.config.base import FSPathEntry
 
@@ -78,7 +78,7 @@ class StorageFeature(Feature):
             workdir, self.settings.mountpoint.lstrip('/'))
         if not os.path.exists(mountpoint):
             log.info(_("Creating {name} mountpoint dir: {path}").format(
-                name=application.name, path=self.mountpoint))
+                name=application.name, path=self.settings.mountpoint))
             os.mkdir(mountpoint, 0o700)
             try:
                 self.chown(mountpoint)
