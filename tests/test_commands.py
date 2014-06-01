@@ -36,10 +36,10 @@ class CommandTest(MongoEngineTestCase):
                              "create_buildable_app")
     def test_mule_builder_cmd(self):
         self.app.build_package()
-        self.app.reload()
-        self.app.current_package.unpack()
         self.assertNotEqual(self.app.flags, [])
         call_command('mule_builder', task_limit=1, ping_disabled=True)
+        self.app.reload()
+        self.app.current_package.unpack()
 
     @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
                              "create_buildable_app", "create_backend")
