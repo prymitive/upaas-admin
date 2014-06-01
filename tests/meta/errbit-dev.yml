@@ -60,8 +60,9 @@ files:
 
   config/mongoid.yml: |
     production:
-      uri: <%= ENV['UPAAS_MONGODB_URI'] %>
-      identity_map_enabled: true
+      sessions:
+        default:
+          uri: <%= ENV['UPAAS_MONGODB_URI'] %>
 
   config/config.yml: |
     host: UPAASDOMAIN
