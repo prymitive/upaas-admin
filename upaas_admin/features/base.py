@@ -32,12 +32,10 @@ class Feature(object):
         """
         pass
 
-    def builder_mule_update_env(self, application, env):
+    def update_env(self, application, env):
         """
-        Called every time a command is going to be executed in builder mule,
-        it can be used to update environment variables.
+        Can be used to update environment variables.
         """
-        # FIXME add to code
         return env
 
     def builder_mule_after_clone(self, application):

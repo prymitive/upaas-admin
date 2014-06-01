@@ -30,6 +30,8 @@ class StorageFeature(Feature):
         "mountpoint": FSPathEntry(required=True),
     }
 
+    env_key = 'UPAAS_STORAGE_MOUNTPOINT'
+
     def application_dir(self, application):
         return os.path.join(self.settings.path, application.safe_id)
 
@@ -49,6 +51,10 @@ class StorageFeature(Feature):
             group = getgrgid(gid)
 
         os.chown(directory, user.pw_uid, group.gr_gid)
+
+    def update_env(self, application, env):
+        env[self.env_key] = self.settings.mountpoint
+        return env
 
     def update_vassal(self, application, options):
         app_dir = self.application_dir(application)

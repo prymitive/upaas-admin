@@ -312,6 +312,9 @@ class Package(Document):
             options.append('env = UPAAS_CUSTOM_DOMAINS=%s' % ','.join(
                 [d.name for d in self.application.custom_domains]))
 
+        for feature in self.application.feature_helper.load_enabled_features():
+            envs = feature.update_env(self.application, envs)
+
         options.append('\n# starting options from app metadata')
         for opt in self.uwsgi_options_from_metadata():
             options.append(opt)

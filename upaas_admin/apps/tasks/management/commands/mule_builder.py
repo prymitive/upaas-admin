@@ -72,13 +72,18 @@ class Command(MuleCommand):
         log.info(_("Current revision: {rev}").format(
             rev=current_revision))
 
+        env = {}
+        for feature in app.feature_helper.load_enabled_features():
+            env = feature.update_env(app, env)
+
         build_result = None
         try:
             builder = Builder(upaas_config, metadata_obj)
             for result in builder.build_package(
                     system_filename=system_filename,
                     interpreter_version=interpreter_version,
-                    current_revision=current_revision):
+                    current_revision=current_revision,
+                    env=env):
                 log.debug(_("Build progress: {proc}%").format(
                     proc=result.progress))
                 build_result = result
