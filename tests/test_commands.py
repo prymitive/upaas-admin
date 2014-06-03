@@ -7,6 +7,9 @@
 
 from __future__ import unicode_literals
 
+import os
+import shutil
+
 import pytest
 
 from django.core.management import call_command
@@ -40,6 +43,8 @@ class CommandTest(MongoEngineTestCase):
         call_command('mule_builder', task_limit=1, ping_disabled=True)
         self.app.reload()
         self.app.current_package.unpack()
+        self.assertTrue(os.path.exists(self.app.current_package.package_path))
+        shutil.rmtree(self.app.current_package.package_path)
 
     @pytest.mark.usefixtures("mock_chroot", "mock_build_commands",
                              "create_buildable_app", "create_backend")
