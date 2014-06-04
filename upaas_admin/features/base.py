@@ -15,8 +15,15 @@ class Feature(object):
     # feature specific options
     configuration_schema = {}
 
-    def __init__(self, name, settings):
+    def __init__(self, name, settings, value):
+        """
+        :param settings: yaml encoded configuration of this feature
+        :param value: feature value from application metadata, only features
+                      with value interpreted as True are loaded. This might be
+                      yaml encoded configuration for given application.
+        """
         self.name = name
+        self.value = value
         self.settings = Config(settings, schema=self.configuration_schema)
 
     def before_building(self, application):

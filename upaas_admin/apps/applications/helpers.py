@@ -67,22 +67,25 @@ class ApplicationFeatureHelper(object):
         features = {}
         metadata = self.app.metadata_config
         for name, config in settings.UPAAS_CONFIG.apps.features.items():
-            if config.enabled and metadata.features and metadata.features.get(
-                    name, True):
-                features[name] = config
+            value = False
+            if metadata.features:
+                value = metadata.features.get(name, False)
+            if config.enabled and value:
+                features[name] = [config, value]
         return features
 
-    def load_feature(self, name, config):
+    def load_feature(self, name, config, value):
         try:
-            return load_handler(config.handler, name, config.settings)
+            return load_handler(config.handler, name, config.settings, value)
         except ConfigurationError as e:
             log.error(_("Error while loading {name} feature: {msg}").format(
                 name=name, msg=e))
 
     def load_enabled_features(self):
         features = []
-        for name, config in self.enabled_features.items():
-            feature = self.load_feature(name, config)
+        for name, params in self.enabled_features.items():
+            config, value = params
+            feature = self.load_feature(name, config, value)
             if feature:
                 features.append(feature)
             else:
