@@ -116,6 +116,10 @@ apps:
 
   features:
 
+    cron:
+      handler: upaas_admin.features.cron.CronFeature
+      enabled: True
+
     storage:
       handler: upaas_admin.features.storage.StorageFeature
       enabled: True

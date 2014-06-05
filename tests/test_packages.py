@@ -157,6 +157,9 @@ class PackageTest(MongoEngineTestCase):
             self.router.subscription_ip, self.router.subscription_port,
             self.domain.name)
         self.assertTrue(skey in config)
+        self.assertTrue('cron = -1 20 30 1 -1 ping' in config)
+        self.assertTrue('cron = -1 -1 -1 -1 -1 pong' in config)
+        self.assertTrue('env = UPAAS_STORAGE_MOUNTPOINT=/storage' in config)
 
     @pytest.mark.usefixtures("create_pkg", "create_backend", "create_router")
     def test_save_vassal_config_method(self):

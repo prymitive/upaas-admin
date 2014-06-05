@@ -66,3 +66,9 @@ uwsgi:
 features:
   storage: True
   mongodb: True
+  cron:
+    - command: ping
+      hour: 20
+      day: 30
+      month: 1
+    - command: pong
