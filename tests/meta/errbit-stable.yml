@@ -28,6 +28,8 @@ features:
   mongodb: True
   cron:
     - command: bundle exec rake errbit:db:clear_resolved
+      minute: 0
+      hour: 8
 
 actions:
   setup:
