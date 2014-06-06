@@ -354,6 +354,8 @@ class Package(Document):
         for feature in self.application.feature_helper.load_enabled_features():
             options = feature.update_vassal(self.application, options)
 
+        options.append('\n')
+
         return options
 
     def check_vassal_config(self, options):
