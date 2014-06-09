@@ -14,12 +14,12 @@ import hashlib
 
 from django.utils.translation import ugettext as _
 
-from mongoengine import (Document, ReferenceField, StringField, IntField,
-                         QuerySetManager)
+from mongoengine import Document, ReferenceField, StringField, QuerySetManager
 
 from psycopg2 import connect, OperationalError
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-from upaas.config.base import StringEntry
+from upaas.config.base import StringEntry, IntegerEntry
 
 from upaas_admin.features.base import Feature
 
@@ -44,8 +44,8 @@ class PostgreSQLFeature(Feature):
 
     configuration_schema = {
         "host": StringEntry(required=True),
-        "port": IntField(min_value=1, max_value=65535, default=5432,
-                         required=True),
+        "port": IntegerEntry(min_value=1, max_value=65535, default=5432,
+                             required=True),
         "login": StringEntry(required=True),
         "password": StringEntry(),
     }
@@ -57,7 +57,7 @@ class PostgreSQLFeature(Feature):
     env_key_password = 'PGPASSWORD'
 
     def generate_name(self, application):
-        return '%s-%s' % (application.name, application.safe_id)
+        return '%s_%s' % (application.name, application.safe_id)
 
     def generate_auth(self, application):
         auth = FeatureApplicationPostgresqlAuth.objects(
@@ -80,6 +80,12 @@ class PostgreSQLFeature(Feature):
         return env
 
     def before_building(self, application):
+        kwargs = {}
+        try:
+            kwargs['password'] = self.settings.password
+        except AttributeError:
+            pass
+
         name = self.generate_name(application)
         login, password = self.generate_auth(application)
 
@@ -93,13 +99,14 @@ class PostgreSQLFeature(Feature):
             connection = connect(dbname='postgres', host=self.settings.host,
                                  port=self.settings.port,
                                  user=self.settings.login,
-                                 password=self.settings.password or None)
+                                 **kwargs)
+            connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             cursor = connection.cursor()
-            cursor.execute("CREATE USER %s WITH PASSWORD '%s'",
-                           (login, password))
+            cursor.execute("CREATE USER %s WITH PASSWORD '%s'" % (login,
+                                                                  password))
             cursor.execute("CREATE DATABASE %s" % name)
-            cursor.execute("GRANT ALL PRIVILEGES ON DATABASE %s to %s",
-                           (name, login))
+            cursor.execute("GRANT ALL PRIVILEGES ON DATABASE %s to %s" % (
+                name, login))
             cursor.close()
             connection.close()
         else:
