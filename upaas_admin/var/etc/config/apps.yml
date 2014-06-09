@@ -54,3 +54,11 @@ features:
     settings:
       uri: mongodb://localhost:27017/
       template: mongodb://%login%:%password%@localhost:27017/%database%
+
+  postgresql:
+    handler: upaas_admin.features.postgresql.PostgreSQLFeature
+    enabled: False
+    settings:
+      host: localhost
+      login: postgres
+      password: postgres
