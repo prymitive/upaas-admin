@@ -24,6 +24,7 @@ env:
 features:
   storage: True
   mongodb: True
+  postgresql: True
   cron:
     - command: ping
       hour: 20

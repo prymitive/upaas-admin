@@ -32,7 +32,8 @@ Depends: ${misc:Depends}, ${python:Depends},
  python-ipy (>= 0.81),
  python-dnspython (>= 1.9.4),
  python-mongoengine (>= 0.8.7),
- python-django-passwords (>= 0.2.0)
+ python-django-passwords (>= 0.2.0),
+ python-psycopg2
 XB-Python-Version: ${python:Versions}
 Provides: ${python:Provides}
 Description: uPaaS admin API and UI

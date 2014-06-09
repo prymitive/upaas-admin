@@ -134,6 +134,13 @@ apps:
         uri: mongodb://localhost:27017/
         template: mongodb://%login%:%password%@localhost:27017/%database%
 
+    postgresql:
+      handler: upaas_admin.features.postgresql.PostgreSQLFeature
+      enabled: True
+      settings:
+        host: localhost
+        login: postgres
+
 defaults:
   limits:
     running_apps: 0
