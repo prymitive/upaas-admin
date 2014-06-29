@@ -9,19 +9,19 @@
           = tab.tab_label
           - if tab.tab_id == 'app_packages'
             - with app.packages|length as pkg_count
-              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-packages{% if not pkg_count %} hidden{% endif %}'}
+              %span.badge.upaas-badge-default{'class': 'upaas-app-{{ app.safe_id }}-badge-packages{% if not pkg_count %} hidden{% endif %}'}
                 = pkg_count
           - if tab.tab_id == 'app_instances'
             - with app.run_plan.backends|length as backends_count
-              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-instances{% if not backends_count %} hidden{% endif %}'}
+              %span.badge.upaas-badge-default{'class': 'upaas-app-{{ app.safe_id }}-badge-instances{% if not backends_count %} hidden{% endif %}'}
                 = backends_count
           - if tab.tab_id == 'app_tasks'
             - with app.running_tasks.count as tasks_count
-              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks{% if not tasks_count %} hidden{% endif %}'}
+              %span.badge.upaas-badge-default{'class': 'upaas-app-{{ app.safe_id }}-badge-tasks{% if not tasks_count %} hidden{% endif %}'}
                 = tasks_count
           - if tab.tab_id == 'app_domains'
             - with app.custom_domains.count as domains_count
-              %span.badge{'class': 'upaas-app-{{ app.safe_id }}-badge-custom_domains{% if not domains_count %} hidden{% endif %}'}
+              %span.badge.upaas-badge-default{'class': 'upaas-app-{{ app.safe_id }}-badge-custom_domains{% if not domains_count %} hidden{% endif %}'}
                 = domains_count
 
   .tab-content

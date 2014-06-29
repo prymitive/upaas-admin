@@ -34,9 +34,13 @@ window.UPAAS.utils.rgb_to_hex = function (rgb) {
 
 window.UPAAS.utils.update_badge = function(id, value) {
     if (value) {
-        $(id).text(value).removeClass('hidden');
+        if ($(id).text() != value) {
+            $(id).removeClass('upaas-badge-default');
+        }
+        $(id).text(value);
+
     } else {
-        $(id).text('').addClass('hidden');
+        $(id).text('');
     }
 }
 
