@@ -11,8 +11,9 @@
   %li{role: "presentation", class: task_header_li_class, id: task_header_id}
     - if (task.is_finished) {
       = gettext("Finished")
-      :
-      = moment(task.date_finished).fromNow()
+      !
+      %span{id: task_header_timestamp_id}
+        = moment(task.date_finished).fromNow()
     - else {
       = gettext("Started")
       !
