@@ -14,6 +14,6 @@ tzlocal==1.1.1
 django-pure-pagination==0.2.1
 django-tabination==0.4
 django.js==0.8.1
-dnspython==1.11.1
+dnspython==1.12
 django-passwords==0.2.0
 psycopg2==2.5.3
