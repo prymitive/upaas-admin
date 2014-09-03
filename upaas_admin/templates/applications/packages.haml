@@ -52,15 +52,15 @@
                   %li{'class':'{% if not package.filename %}disabled{% endif %}'}
                     -if package.filename
                       %a{'href':'{% url "package_rollback" package.safe_id %}'}
-                        %i.fa.fa-undo
+                        %i.fa.fa-fw.fa-undo
                         - trans "Rollback"
                     - else
                       %a{'href':'#'}
-                        %i.fa.fa-undo
+                        %i.fa.fa-fw.fa-undo
                         - trans "Rollback"
                   %li
                     %a{'href':'{% url "package_delete" package.safe_id %}'}
-                      %i.fa.fa-trash-o
+                      %i.fa.fa-fw.fa-trash-o
                       - trans "Delete"
 
       - empty

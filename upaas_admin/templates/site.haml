@@ -65,14 +65,16 @@
               %ul.dropdown-menu{'role':'menu'}
                 %li
                   %a{'href':'{% url "users_profile" %}'}
+                    %i.fa.fa-fw.fa-user
                     - trans "Account"
                 %li
                   %a{'href':'{% url "password" %}'}
+                    %i.fa.fa-fw.fa-lock
                     - trans "Change password"
-            %li
-              %a#upaas-link-logout{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
-                %i.fa.fa-sign-out
-                - trans "Log out"
+                %li
+                  %a{'href':'{% url "django.contrib.auth.views.logout_then_login" %}'}
+                    %i.fa.fa-fw.fa-sign-out
+                    - trans "Log out"
 
     .container
 

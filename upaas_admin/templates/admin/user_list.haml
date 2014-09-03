@@ -78,19 +78,19 @@
                 %li.divider{'role':'presentation'}
                 %li
                   %a{'href':'{% url "admin_user_edit" user_object.safe_id %}'}
-                    %i.fa.fa-pencil
+                    %i.fa.fa-fw.fa-pencil
                     - trans "Edit user account"
                 %li
                   - if user_object.limits_settings
                     %a{'href':'{% url "admin_user_limits_edit" user_object.limits_settings.safe_id %}'}
-                      %i.fa.fa-tachometer
+                      %i.fa.fa-fw.fa-tachometer
                       - trans "Edit custom limits"
                     %a{'href':'{% url "admin_user_limits_delete" user_object.limits_settings.safe_id %}'}
-                      %i.fa.fa-trash-o
+                      %i.fa.fa-fw.fa-trash-o
                       - trans "Delete custom limits"
                   - else
                     %a{'href':'{% url "admin_user_limits_create" user_object.safe_id %}'}
-                      %i.fa.fa-tachometer
+                      %i.fa.fa-fw.fa-tachometer
                       - trans "Create custom limits"
 
   - include "partials/pagination_footer.html"

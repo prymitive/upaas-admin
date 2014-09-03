@@ -3,18 +3,18 @@
 
 %li
   %a{'href':'{% url "build_package" app.safe_id %}'}
-    %i.fa.fa-cog
+    %i.fa.fa-fw.fa-cog
     - trans "Build new package"
 %li.divider
 %li{'class':'{% if not app.can_start %}disabled{% endif %}'}
   %a{'href':'{% if app.can_start %}{% url "app_start" app.safe_id %}{% else %}#{% endif %}', 'class': 'upaas-app-action-start-={ app.safe_id }'}
-    %i.fa.fa-play
+    %i.fa.fa-fw.fa-play
     - trans "Run application"
 %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
   %a{'href':'{% if app.run_plan %}{% url "app_edit_run_plan" app.safe_id %}{% else %}#{% endif %}', 'class': 'upaas-app-action-edit-={ app.safe_id }'}
-    %i.fa.fa-pencil
+    %i.fa.fa-fw.fa-pencil
     - trans "Edit application"
 %li{'class':'{% if not app.run_plan %}disabled{% endif %}'}
   %a{'href':'{% if app.run_plan %}{% url "app_stop" app.safe_id %}{% else %}#{% endif %}', 'class': 'upaas-app-action-stop-={ app.safe_id }'}
-    %i.fa.fa-stop
+    %i.fa.fa-fw.fa-stop
     - trans "Stop application"
