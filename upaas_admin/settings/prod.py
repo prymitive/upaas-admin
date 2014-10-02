@@ -177,13 +177,14 @@ MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
 
 from mongoengine import connect
 from mongoengine.connection import ConnectionError
+from pymongo.errors import ConnectionFailure
 from pymongo import ReadPreference
 
 
 def _connect(*args, **kwargs):
     try:
         connect(*args, **kwargs)
-    except ConnectionError as e:
+    except (ConnectionError, ConnectionFailure) as e:
         print("Database connection error: %s" % e)
         sys.exit(255)
 
