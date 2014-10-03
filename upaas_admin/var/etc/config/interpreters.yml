@@ -15,6 +15,9 @@ actions:
       - echo "exit 101\n" >> /usr/sbin/policy-rc.d
       - chmod 755 /usr/sbin/policy-rc.d
       - ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+      - echo "deb http://archive.ubuntu.com/ubuntu precise main restricted universe multiverse" > /etc/apt/sources.list
+      - echo "deb http://archive.ubuntu.com/ubuntu precise-updates main restricted universe multiverse" >> /etc/apt/sources.list
+      - echo "deb http://archive.ubuntu.com/ubuntu precise-security main restricted universe multiverse" >> /etc/apt/sources.list
       - apt-add-repository -y ppa:brightbox/ruby-ng
       - apt-add-repository -y ppa:ondrej/php5
       - apt-add-repository -y ppa:fkrull/deadsnakes
