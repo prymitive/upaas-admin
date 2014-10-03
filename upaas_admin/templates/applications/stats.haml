@@ -66,8 +66,8 @@
   - compressed_js 'daterangepicker'
 
   :javascript
-    var default_start = moment().subtract('hours', 2);
-    var default_end = moment();
+    var default_start = moment.utc().subtract('hours', 2);
+    var default_end = moment.utc();
 
     var metric = 'metric-requests';
     var start = default_start;
@@ -133,9 +133,9 @@
     }
 
     function render() {
-      var diff = Math.round(moment() - end) / 1000;
+      var diff = Math.round(moment.utc() - end) / 1000;
       if (diff < 300) {
-        end = moment();
+        end = moment.utc();
         start.add('seconds', diff);
       }
       var options = graph_options[metric];
@@ -143,8 +143,8 @@
         width: $('#graph-placeholder').width(),
         url: "{{ graphite_settings.render_url }}",
         tz: "{{ TIME_ZONE }}",
-        from: moment(start).format("HH:mm_YYYYMMDD"),
-        until: moment(end).format("HH:mm_YYYYMMDD"),
+        from: moment.utc(start).format("HH:mm_YYYYMMDD"),
+        until: moment.utc(end).format("HH:mm_YYYYMMDD"),
         bgcolor: window.UPAAS.utils.rgb_to_hex($('#graph-placeholder').css('background-color'))
       });
       $("#graph").graphite(options);
@@ -164,7 +164,7 @@
         startDate: default_start,
         endDate: default_end,
         minDate: '{{ app.date_created|date:"c" }}',
-        maxDate: moment().add('hours', 1),
+        maxDate: moment.utc().add('hours', 1),
 
         timePicker: true,
         timePickerIncrement: 10,
@@ -173,10 +173,10 @@
 
         ranges: {
            '{% trans "Last 2 hours" %}': [default_start, default_end],
-           '{% trans "Last 12 hours" %}': [moment().subtract('hours', 12), moment()],
-           '{% trans "Today" %}': [moment().startOf('day'), moment()],
-           '{% trans "Yesterday" %}': [moment().subtract('days', 1).startOf('day'), moment().subtract('days', 1).endOf('day')],
-           '{% trans "Last 7 Days" %}': [moment().subtract('days', 6), moment()],
+           '{% trans "Last 12 hours" %}': [moment.utc().subtract('hours', 12), moment.utc()],
+           '{% trans "Today" %}': [moment.utc().startOf('day'), moment.utc()],
+           '{% trans "Yesterday" %}': [moment.utc().subtract('days', 1).startOf('day'), moment.utc().subtract('days', 1).endOf('day')],
+           '{% trans "Last 7 Days" %}': [moment.utc().subtract('days', 6), moment.utc()],
          },
 
         locale: {

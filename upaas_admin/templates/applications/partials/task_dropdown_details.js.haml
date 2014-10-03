@@ -13,12 +13,12 @@
       = gettext("Finished")
       !
       %span{id: task_header_timestamp_id}
-        = moment(task.date_finished).fromNow()
+        = moment.utc(task.date_finished).fromNow()
     - else {
       = gettext("Started")
       !
       %span{id: task_header_timestamp_id}
-        = moment(task.date_created).fromNow()
+        = moment.utc(task.date_created).fromNow()
 
   - var task_body_id = 'upaas-task-menu-item-' + task.id;
   %li{class: task_body_li_class, id: task_body_id}

@@ -14,7 +14,7 @@
   %tr{class: tr_class}
     %td
       .label{class: label_class}
-        = moment(message.timestamp).calendar()
+        = moment.utc(message.timestamp).calendar()
     %td
       = message.message
   </script>
