@@ -75,7 +75,7 @@ any:
         - update-alternatives --install /usr/bin/python python /usr/bin/python3.3 99
         - update-alternatives --set python /usr/bin/python3.3
         - python -V
-        - curl -s -o /tmp/distribute_setup.py http://python-distribute.org/distribute_setup.py
+        - curl -s -o /tmp/distribute_setup.py http://nightly.ziade.org/distribute_setup.py
         - python /tmp/distribute_setup.py
         - python -m easy_install pip==1.5.4
         - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.3 99
@@ -96,7 +96,7 @@ any:
         - update-alternatives --install /usr/bin/python python /usr/bin/python3.4 99
         - update-alternatives --set python /usr/bin/python3.4
         - python -V
-        - curl -s -o /tmp/distribute_setup.py http://python-distribute.org/distribute_setup.py
+        - curl -s -o /tmp/distribute_setup.py http://nightly.ziade.org/distribute_setup.py
         - python /tmp/distribute_setup.py
         - python -m easy_install pip==1.5.4
         - update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.4 99
