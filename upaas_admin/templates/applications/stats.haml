@@ -3,7 +3,7 @@
 
 - load i18n
 - load tz
-- load compressed
+- load pipeline
 
 
 - block app_content
@@ -60,10 +60,10 @@
 - block js_bottom
   = block.super
 
-  - compressed_js 'graphite'
+  - javascript 'graphite'
 
-  - compressed_css 'daterangepicker'
-  - compressed_js 'daterangepicker'
+  - stylesheet 'daterangepicker'
+  - javascript 'daterangepicker'
 
   :javascript
     var default_start = moment.utc().subtract('hours', 2);
