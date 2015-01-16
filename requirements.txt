@@ -1,5 +1,5 @@
 -e git+https://github.com/prymitive/upaas-common.git#egg=upaas-common
-django==1.6.6
+django==1.6.10
 blinker==1.3
 hamlpy==0.82.2
 mongoengine==0.8.7
