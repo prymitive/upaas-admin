@@ -5,4 +5,4 @@ django-debug-toolbar==1.2.2
 django-debug-toolbar-template-timings==0.6.4
 django-debug-toolbar-mongo==0.1.10
 coverage==3.7.1
-python-coveralls==2.4.3
+python-coveralls==2.5.0
