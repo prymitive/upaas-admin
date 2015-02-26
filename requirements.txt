@@ -5,8 +5,8 @@ hamlpy==0.82.2
 mongoengine==0.8.7
 django-tastypie-mongoengine==0.4.6
 django-crispy-forms==1.4.0
-django-pipeline==1.4.5
-django-bootstrap-breadcrumbs==0.7.0
+django-pipeline==1.4.6
+django-bootstrap-breadcrumbs==0.7.1
 IPy==0.82
 django-gravatar2==1.2.1
 django-mongoforms==0.3.1
@@ -16,4 +16,4 @@ django-tabination==0.4
 django.js==0.8.1
 dnspython==1.12
 django-passwords==0.2.0
-psycopg2==2.5.4
+psycopg2==2.6
