@@ -12,8 +12,11 @@ import sys
 import logging
 
 from tzlocal import get_localzone
+from mongoengine import connect
+from pymongo import ReadPreference
 
 from upaas_admin.config import load_main_config
+import upaas_admin as project_module
 
 from django.conf.global_settings import *   # pylint: disable=W0614,W0401
 
@@ -91,8 +94,6 @@ INSTALLED_APPS = (
 # =============================================================================
 # Calculation of directories relative to the project module location
 # =============================================================================
-
-import upaas_admin as project_module
 
 PROJECT_DIR = os.path.dirname(os.path.realpath(project_module.__file__))
 
@@ -174,9 +175,6 @@ SESSION_ENGINE = 'mongoengine.django.sessions'
 SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 MONGOENGINE_USER_DOCUMENT = 'upaas_admin.apps.users.models.User'
-
-from mongoengine import connect
-from pymongo import ReadPreference
 
 
 def _connect(*args, **kwargs):
