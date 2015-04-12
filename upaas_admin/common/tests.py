@@ -25,10 +25,7 @@ class MongoEngineTestRunner(DiscoverRunner):
     mongodb_name = "testrun-%d" % time.time()
 
     def setup_databases(self, **kwargs):
-        try:
-            disconnect()
-        except:
-            pass
+        disconnect()
         connect(self.mongodb_name)
         return super(MongoEngineTestRunner, self).setup_databases(**kwargs)
 
@@ -36,10 +33,7 @@ class MongoEngineTestRunner(DiscoverRunner):
         from mongoengine.connection import get_connection, disconnect
         connection = get_connection()
         connection.drop_database(self.mongodb_name)
-        try:
-            disconnect()
-        except:
-            pass
+        disconnect()
         super(MongoEngineTestRunner, self).teardown_databases(old_config,
                                                               **kwargs)
 
